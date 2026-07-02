@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Footer, Navigation } from "@/components/ui";
-import { cloudinaryImage, travelPhotos } from "@/lib/photography";
+import { travelPhotos } from "@/lib/photography";
+import { PhotographyGrid } from "./photography-grid";
 
 export const metadata = {
   title: "Photography | Shaun Whiting",
@@ -29,27 +29,7 @@ export default function PhotographyPage() {
         </section>
 
         <section className="container-pad border-t border-black/10 py-14 dark:border-white/10 sm:py-20">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {travelPhotos.map((photo) => (
-              <figure key={photo.publicId} className="group relative overflow-hidden rounded-[24px] bg-mist dark:bg-white/6">
-                <div className="relative aspect-[3/2]">
-                  <Image
-                    src={cloudinaryImage(photo.publicId)}
-                    alt={`Travel photography from ${photo.country}`}
-                    fill
-                    sizes="(min-width: 1024px) 31vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover transition duration-300 group-hover:scale-[1.03]"
-                  />
-                </div>
-                <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/62 via-black/18 to-transparent px-5 pb-5 pt-16 text-white">
-                  <span className="text-lg font-[520] tracking-[-0.01em]">{photo.country}</span>
-                  <span className="text-2xl leading-none" aria-hidden="true">
-                    {photo.flag}
-                  </span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+          <PhotographyGrid photos={travelPhotos} />
         </section>
 
         <section className="container-pad pb-14 sm:pb-20">

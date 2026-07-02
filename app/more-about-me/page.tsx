@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType } from "react";
-import { Camera, Globe2, Route } from "lucide-react";
+import { Camera, Route } from "lucide-react";
 import { Footer, Navigation } from "@/components/ui";
 import { cloudinaryImage, featuredTravelPhotos } from "@/lib/photography";
 
@@ -75,28 +75,11 @@ export default function MoreAboutMePage() {
         </section>
 
         <section className="container-pad border-t border-black/10 py-14 dark:border-white/10 sm:py-20">
-          <div className="grid gap-10 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-20">
-            <SectionIntro icon={Globe2} eyebrow="Travel" title="75 countries visited." />
-            <p className="max-w-3xl text-xl font-[330] leading-[1.45] tracking-[-0.01em] text-black/72 dark:text-white/72 lg:pt-[98px]">
-              Travel keeps me curious about how people move, decide and adapt to different environments. Those observations continue to shape how I think about products.
+          <div className="mb-10 grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-20">
+            <SectionIntro icon={Camera} eyebrow="Travel Photography" title="75 countries visited." />
+            <p className="max-w-4xl text-xl font-[330] leading-[1.45] tracking-[-0.01em] text-black/72 dark:text-white/72 lg:pt-[98px]">
+              Travel keeps me curious about how people move, decide and adapt to different environments. Photography slows me down and helps me notice texture, rhythm, weather and the quiet details that shape everyday experiences.
             </p>
-          </div>
-        </section>
-
-        <section className="container-pad border-t border-black/10 py-14 dark:border-white/10 sm:py-20">
-          <div className="mb-10 grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)_420px] lg:gap-20">
-            <SectionIntro icon={Camera} eyebrow="Photography" title="A few favourite moments." />
-            <p className="text-xl font-[330] leading-[1.45] tracking-[-0.01em] text-black/72 dark:text-white/72 lg:pt-[98px]">
-              Photography slows me down. It helps me notice texture, rhythm, people, weather and the quiet details that are easy to miss.
-            </p>
-            <div className="lg:pt-[98px]">
-              <Link
-                href="/photography"
-                className="inline-flex rounded-full border border-ink px-6 py-3 text-base font-[520] tracking-[-0.01em] text-ink transition duration-200 hover:bg-ink hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-paper dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-ink dark:focus-visible:ring-offset-[#0d0d0c]"
-              >
-                See all →
-              </Link>
-            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {featuredTravelPhotos.map((photo) => (
@@ -118,6 +101,14 @@ export default function MoreAboutMePage() {
                 </figcaption>
               </figure>
             ))}
+          </div>
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="/photography"
+              className="inline-flex rounded-full border border-ink px-6 py-3 text-base font-[520] tracking-[-0.01em] text-ink transition duration-200 hover:bg-ink hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-paper dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-ink dark:focus-visible:ring-offset-[#0d0d0c]"
+            >
+              See all →
+            </Link>
           </div>
         </section>
 
