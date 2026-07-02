@@ -123,13 +123,13 @@ export function PhotographyGrid({ photos }: { photos: TravelPhoto[] }) {
             >
               <ChevronRight size={24} strokeWidth={2} aria-hidden="true" />
             </button>
-            <div className="relative min-h-0 flex-1 bg-paper dark:bg-[#11110f]">
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-[24px] bg-black">
               <Image
                 src={cloudinaryImage(selectedPhoto.publicId)}
                 alt={`Travel photography from ${selectedPhoto.country}`}
                 fill
                 sizes="100vw"
-                className="object-contain"
+                className="object-cover"
                 priority
               />
             </div>
@@ -147,7 +147,7 @@ export function PhotographyGrid({ photos }: { photos: TravelPhoto[] }) {
                   </span>
                 </div>
               </div>
-              <div className="mt-4 flex max-w-full gap-2 overflow-x-auto pb-1">
+              <div className="mt-3 flex max-w-full gap-2 overflow-x-auto px-1 py-1">
                 {photos.map((photo, index) => {
                   const isSelected = index === selectedIndex;
 
