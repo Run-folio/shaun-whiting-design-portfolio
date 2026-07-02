@@ -40,7 +40,7 @@ const heroStats: HeroStat[] = [
   { value: 16, label: "Years designing" },
   { value: 67, suffix: "M+", label: "Users reached" },
   { value: 72, prefix: "$", suffix: "M", label: "Measured savings" },
-  { text: "AI · SaaS · Systems", label: "Focus areas" },
+  { text: "AI · Systems", label: "Focus areas" },
 ];
 
 const principleIcons = [Route, Network, Gauge, Handshake, Repeat2];
@@ -245,7 +245,14 @@ export function FeaturedWork() {
                   <div className="grid gap-8 rounded-[24px] bg-white p-6 dark:bg-[#151514] lg:grid-cols-[minmax(0,0.42fr)_minmax(360px,0.58fr)] lg:p-8">
                     <div>
                       <p className="mb-5 font-mono text-xs uppercase tracking-[0.16em] text-signal">0{index + 1} / {project.industry}</p>
-                      <h3 className="text-balance text-4xl font-[540] leading-[1.02] tracking-[-0.025em] sm:text-5xl">{project.title}</h3>
+                      <h3 className="text-balance text-4xl font-[540] leading-[1.02] tracking-[-0.025em] sm:text-5xl">
+                        <Link
+                          href={project.href}
+                          className="rounded-sm transition duration-200 hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#151514]"
+                        >
+                          {project.title}
+                        </Link>
+                      </h3>
                     </div>
                     <div className="flex flex-col justify-between">
                       <div>
