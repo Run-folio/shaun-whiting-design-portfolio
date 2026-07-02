@@ -6,7 +6,7 @@ import { PhotographyGrid } from "./photography-grid";
 export const metadata = {
   title: "Photography | Shaun Whiting",
   description:
-    "Travel photography from Shaun Whiting, captured across countries, mountains, cities and unfamiliar places.",
+    "Travel photography from Shaun Whiting, shaped by curiosity, movement and attention to small details.",
 };
 
 export default function PhotographyPage() {
@@ -19,11 +19,11 @@ export default function PhotographyPage() {
             <div>
               <p className="mb-6 font-mono text-xs uppercase tracking-[0.16em] text-signal">Photography</p>
               <h1 className="max-w-5xl text-balance text-6xl font-[320] leading-[0.98] tracking-[-0.045em] text-ink dark:text-white sm:text-7xl lg:text-[7.6rem]">
-                A few favourite moments<span className="text-signal">.</span>
+                Notes from moving through the world<span className="text-signal">.</span>
               </h1>
             </div>
             <p className="max-w-2xl text-2xl font-[330] leading-[1.35] tracking-[-0.02em] text-ink dark:text-white sm:text-3xl">
-              Places, textures and small details collected while moving through the world.
+              A visual record of places that made me slow down, look closer and pay attention to how people, weather and small systems shape a moment.
             </p>
           </div>
         </section>
