@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Navigation, Footer } from "@/components/ui";
-import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion";
 import type { CaseStudyMedia } from "@/lib/case-studies";
 import { caseStudies, getCaseStudy } from "@/lib/case-studies";
 
@@ -50,7 +49,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
       <main className="bg-paper text-ink dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
         <article>
           <header className="px-6 pb-8 pt-28 sm:px-8 sm:pb-10 lg:px-20 lg:pt-32 xl:px-24">
-            <Reveal className="mx-auto max-w-[1400px]">
+            <div className="mx-auto max-w-[1400px]">
               <Link
                 href="/#work"
                 className="mb-8 inline-flex items-center gap-2 text-sm font-[480] tracking-[-0.01em] text-black/58 transition duration-200 hover:text-signal dark:text-white/58 dark:hover:text-signal lg:mb-10"
@@ -72,15 +71,15 @@ export default async function CaseStudyPage({ params }: PageProps) {
                   </p>
                   <dl className="mt-8 grid gap-4 border-t border-black/10 pt-5 text-sm dark:border-white/10 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                     <Meta label="Role" value={study.role} />
-                    <Meta label="Team" value={study.team ?? study.industry} />
-                    <Meta label="Duration" value={study.duration ?? study.year} />
+                    <Meta label="Industry" value={study.industry} />
+                    <Meta label="Context" value={study.year} />
                   </dl>
                 </div>
               </div>
-            </Reveal>
+            </div>
           </header>
 
-          <Reveal as="section" className="px-6 sm:px-8 lg:px-20 xl:px-24">
+          <section className="px-6 sm:px-8 lg:px-20 xl:px-24">
             <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[24px] bg-mist dark:bg-white/6">
               <div className="relative">
                 <Image
@@ -94,9 +93,9 @@ export default async function CaseStudyPage({ params }: PageProps) {
                 />
               </div>
             </div>
-          </Reveal>
+          </section>
 
-          <Reveal as="section" className="px-6 py-12 sm:px-8 sm:py-16 lg:px-20 lg:py-20 xl:px-24">
+          <section className="px-6 py-12 sm:px-8 sm:py-16 lg:px-20 lg:py-20 xl:px-24">
             <div className="mx-auto grid max-w-[1400px] gap-8 lg:grid-cols-[minmax(0,0.52fr)_minmax(420px,0.48fr)] lg:gap-14">
               <div>
                 <SectionEyebrow>Project overview</SectionEyebrow>
@@ -118,20 +117,20 @@ export default async function CaseStudyPage({ params }: PageProps) {
                 <MediaGrid items={study.overviewMedia} />
               </div>
             ) : null}
-          </Reveal>
-
-          <section className="bg-ink px-6 py-5 text-white sm:px-8 lg:px-20 xl:px-24">
-            <StaggerGroup className="mx-auto grid max-w-[1400px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {study.metrics.map((metric) => (
-                <StaggerItem key={`${metric.value}-${metric.label}`}>
-                  <p className="text-4xl font-[340] tracking-[-0.025em] lg:text-5xl">{metric.value}</p>
-                  <p className="mt-2 max-w-xs text-sm font-[330] leading-[1.4] text-white/70">{metric.label}</p>
-                </StaggerItem>
-              ))}
-            </StaggerGroup>
           </section>
 
-          <Reveal as="section" className="px-6 py-16 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
+          <section className="bg-ink px-6 py-5 text-white sm:px-8 lg:px-20 xl:px-24">
+            <div className="mx-auto grid max-w-[1400px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {study.metrics.map((metric) => (
+                <div key={`${metric.value}-${metric.label}`}>
+                  <p className="text-4xl font-[340] tracking-[-0.025em] lg:text-5xl">{metric.value}</p>
+                  <p className="mt-2 max-w-xs text-sm font-[330] leading-[1.4] text-white/70">{metric.label}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="px-6 py-16 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
             <div className="mx-auto max-w-[1400px]">
               <div className="grid gap-10 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-16">
                 <div>
@@ -140,41 +139,24 @@ export default async function CaseStudyPage({ params }: PageProps) {
                     What needed to be solved<span className="text-signal">.</span>
                   </h2>
                 </div>
-                <StaggerGroup className={`grid gap-3 ${study.challengeMedia?.length ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-2"}`}>
-                  {study.challenges.map((challenge, index) => (
-                    <StaggerItem
-                      key={challenge}
-                      className={
-                        study.challengeMedia?.length
-                          ? "rounded-lg bg-mist p-5 text-lg font-[330] tracking-[-0.01em] ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5 dark:bg-[#151514] dark:hover:ring-white/10"
-                          : "flex items-start gap-4 rounded-lg bg-mist p-6 text-lg font-[330] tracking-[-0.01em] ring-1 ring-black/5 transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift dark:bg-[#151514] dark:ring-white/10"
-                      }
-                    >
-                      {study.challengeMedia?.length ? (
-                        challenge
-                      ) : (
-                        <>
-                          <span className="font-mono text-xs leading-[1.8] text-signal">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                          <span>{challenge}</span>
-                        </>
-                      )}
-                    </StaggerItem>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {study.challenges.map((challenge) => (
+                    <div key={challenge} className="rounded-lg bg-mist p-5 text-lg font-[330] tracking-[-0.01em] dark:bg-[#151514]">
+                      {challenge}
+                    </div>
                   ))}
-                </StaggerGroup>
+                </div>
               </div>
               {study.challengeMedia?.length ? <MediaGrid items={study.challengeMedia} className="mt-10" /> : null}
             </div>
-          </Reveal>
+          </section>
 
-          <Reveal as="section" className="border-y border-black/10 px-6 py-16 dark:border-white/10 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
+          <section className="border-y border-black/10 px-6 py-16 dark:border-white/10 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
             <div className="mx-auto max-w-[1400px]">
               <SectionEyebrow>Process and product decisions</SectionEyebrow>
               <div className="mt-8 grid gap-6">
                 {study.sections.map((section, index) => (
-                  <Reveal
-                    as="section"
+                  <section
                     key={`${section.title}-${index}`}
                     className="grid gap-8 border-t border-black/10 pt-8 dark:border-white/10 lg:grid-cols-[minmax(0,0.48fr)_minmax(320px,0.52fr)]"
                   >
@@ -188,17 +170,9 @@ export default async function CaseStudyPage({ params }: PageProps) {
                     </div>
                     <div>
                       {section.body ? (
-                        section.bullets || section.media?.length ? (
-                          <p className="text-xl font-[330] leading-[1.45] tracking-[-0.01em] text-black/72 dark:text-white/72">
-                            {section.body}
-                          </p>
-                        ) : (
-                          <div className="rounded-lg bg-block-lime p-7 text-ink sm:p-8">
-                            <p className="text-balance text-[clamp(1.35rem,1.9vw,1.8rem)] font-[340] leading-[1.32] tracking-[-0.02em]">
-                              {section.body}
-                            </p>
-                          </div>
-                        )
+                        <p className="text-xl font-[330] leading-[1.45] tracking-[-0.01em] text-black/72 dark:text-white/72">
+                          {section.body}
+                        </p>
                       ) : null}
                       {section.bullets ? (
                         <ul className="mt-6 grid gap-3">
@@ -216,43 +190,36 @@ export default async function CaseStudyPage({ params }: PageProps) {
                         <MediaGrid items={section.media} />
                       </div>
                     ) : null}
-                  </Reveal>
+                  </section>
                 ))}
               </div>
             </div>
-          </Reveal>
+          </section>
 
           <section className="px-6 py-16 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
-            <StaggerGroup className="mx-auto grid max-w-[1200px] gap-6 lg:grid-cols-2">
-              <StaggerItem>
-                <ImpactList title="Quantitative impact" items={study.impact.quantitative} />
-              </StaggerItem>
-              <StaggerItem>
-                <ImpactList title="Qualitative impact" items={study.impact.qualitative} />
-              </StaggerItem>
-            </StaggerGroup>
+            <div className="mx-auto grid max-w-[1200px] gap-6 lg:grid-cols-2">
+              <ImpactList title="Quantitative impact" items={study.impact.quantitative} />
+              <ImpactList title="Qualitative impact" items={study.impact.qualitative} />
+            </div>
           </section>
 
           {study.nextSteps ? (
-            <Reveal as="section" className="px-6 pb-16 sm:px-8 sm:pb-20 lg:px-20 lg:pb-28 xl:px-24">
+            <section className="px-6 pb-16 sm:px-8 sm:pb-20 lg:px-20 lg:pb-28 xl:px-24">
               <div className="mx-auto max-w-[1200px]">
                 <SectionEyebrow>Future opportunities</SectionEyebrow>
-                <StaggerGroup className="mt-8 grid gap-4 md:grid-cols-3">
+                <div className="mt-8 grid gap-4 md:grid-cols-3">
                   {study.nextSteps.map((step) => (
-                    <StaggerItem
-                      key={step.title}
-                      className="rounded-lg bg-mist p-6 ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5 dark:bg-[#151514] dark:hover:ring-white/10"
-                    >
+                    <div key={step.title} className="rounded-lg bg-mist p-6 dark:bg-[#151514]">
                       <h3 className="text-xl font-[540] tracking-[-0.015em]">{step.title}</h3>
                       <p className="mt-3 text-base font-[330] leading-[1.45] text-black/64 dark:text-white/64">{step.text}</p>
-                    </StaggerItem>
+                    </div>
                   ))}
-                </StaggerGroup>
+                </div>
               </div>
-            </Reveal>
+            </section>
           ) : null}
 
-          <Reveal as="section" className="px-6 pb-20 sm:px-8 lg:px-20 xl:px-24">
+          <section className="px-6 pb-20 sm:px-8 lg:px-20 xl:px-24">
             <div className="mx-auto rounded-lg bg-block-lime p-8 text-ink sm:p-10 lg:max-w-[1200px] lg:p-14">
               <p className="font-mono text-xs uppercase tracking-[0.18em]">Next case study</p>
               <div className="mt-8 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
@@ -268,7 +235,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
                 </Link>
               </div>
             </div>
-          </Reveal>
+          </section>
         </article>
       </main>
       <Footer />
@@ -291,7 +258,7 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
 
 function ImpactList({ title, items }: { title: string; items: string[] }) {
   return (
-    <section className="rounded-lg bg-mist p-6 ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5 dark:bg-[#151514] dark:hover:ring-white/10 sm:p-8">
+    <section className="rounded-lg bg-mist p-6 dark:bg-[#151514] sm:p-8">
       <h2 className="text-3xl font-[340] leading-[1.08] tracking-[-0.025em]">{title}</h2>
       <ul className="mt-8 grid gap-4">
         {items.map((item) => (
@@ -305,71 +272,51 @@ function ImpactList({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-function MediaFigure({ item }: { item: CaseStudyMedia }) {
-  return (
-    <figure className="overflow-hidden rounded-[24px] bg-mist dark:bg-white/6">
-      <div
-        className={
-          item.type === "video"
-            ? `relative ${item.portrait ? "mx-auto aspect-[9/16] max-h-[620px] max-w-[360px]" : "aspect-video"}`
-            : "relative"
-        }
-      >
-        {item.type === "video" ? (
-          <video className="h-full w-full object-contain" controls muted playsInline preload="metadata">
-            <source src={item.src} type="video/mp4" />
-          </video>
-        ) : (
-          <Image
-            src={item.src}
-            alt={item.alt ?? item.caption}
-            width={1800}
-            height={1100}
-            sizes="100vw"
-            className="h-auto w-full"
-          />
-        )}
-        {item.callouts?.length
-          ? item.callouts.map((callout, index) => (
-              <span
-                key={`${callout.x}-${callout.y}-${callout.label}`}
-                className="group absolute z-10 -translate-x-1/2 -translate-y-1/2"
-                style={{ left: `${callout.x}%`, top: `${callout.y}%` }}
-              >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-signal font-mono text-xs font-[540] text-white shadow-[0_2px_10px_rgba(0,0,0,0.25)] ring-2 ring-white/80">
-                  {index + 1}
-                </span>
-                <span className="pointer-events-none absolute left-9 top-1/2 w-max max-w-[220px] -translate-y-1/2 rounded-md bg-ink/92 px-3 py-1.5 text-xs font-[400] leading-snug text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                  {callout.label}
-                </span>
-              </span>
-            ))
-          : null}
-      </div>
-      <figcaption className="border-t border-black/10 px-5 py-4 text-sm font-[330] leading-[1.45] text-black/62 dark:border-white/10 dark:text-white/62">
-        {item.caption}
-      </figcaption>
-    </figure>
-  );
-}
-
 function MediaGrid({ items, className = "" }: { items: CaseStudyMedia[]; className?: string }) {
-  const wideItems = items.filter((item) => item.wide);
-  const gridItems = items.filter((item) => !item.wide);
-  const hasPortrait = gridItems.some((item) => item.portrait);
+  const hasPortrait = items.some((item) => item.portrait);
 
   return (
-    <div className={`space-y-5 ${className}`}>
-      {wideItems.map((item) => (
-        <MediaFigure key={`${item.src}-${item.caption}`} item={item} />
+    <div className={`grid gap-5 ${hasPortrait ? "md:grid-cols-[minmax(0,1fr)_minmax(260px,360px)]" : ""} ${className}`}>
+      {items.map((item) => (
+        <figure
+          key={`${item.src}-${item.caption}`}
+          className={`overflow-hidden rounded-[24px] bg-mist dark:bg-white/6 ${
+            item.type !== "video" && hasPortrait ? "" : ""
+          }`}
+        >
+          <div
+            className={
+              item.type === "video"
+                ? `relative ${item.portrait ? "mx-auto aspect-[9/16] max-h-[620px] max-w-[360px]" : "aspect-video"}`
+                : ""
+            }
+          >
+            {item.type === "video" ? (
+              <video
+                className="h-full w-full object-contain"
+                controls
+                muted
+                playsInline
+                preload="metadata"
+              >
+                <source src={item.src} type="video/mp4" />
+              </video>
+            ) : (
+              <Image
+                src={item.src}
+                alt={item.alt ?? item.caption}
+                width={1800}
+                height={1100}
+                sizes="100vw"
+                className="h-auto w-full"
+              />
+            )}
+          </div>
+          <figcaption className="border-t border-black/10 px-5 py-4 text-sm font-[330] leading-[1.45] text-black/62 dark:border-white/10 dark:text-white/62">
+            {item.caption}
+          </figcaption>
+        </figure>
       ))}
-      {gridItems.length ? (
-        <div className={`grid gap-5 ${hasPortrait ? "md:grid-cols-[minmax(0,1fr)_minmax(260px,360px)]" : ""}`}>
-          {gridItems.map((item) => (
-            <MediaFigure key={`${item.src}-${item.caption}`} item={item} />
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }

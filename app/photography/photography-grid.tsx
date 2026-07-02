@@ -89,20 +89,20 @@ export function PhotographyGrid({ photos }: { photos: TravelPhoto[] }) {
 
       {selectedPhoto ? (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/82 p-4 backdrop-blur-sm sm:p-6"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/82 p-3 backdrop-blur-sm sm:p-5"
           role="dialog"
           aria-modal="true"
           aria-label={`Photo from ${selectedPhoto.country}`}
           onClick={() => setSelectedIndex(null)}
         >
           <div
-            className="relative w-full max-w-6xl overflow-hidden rounded-[24px] bg-paper shadow-2xl dark:bg-[#11110f]"
+            className="relative flex h-[calc(100dvh-1.5rem)] w-full max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[24px] bg-paper shadow-2xl dark:bg-[#11110f] sm:h-[calc(100dvh-2.5rem)] sm:max-w-[calc(100vw-2.5rem)] 2xl:max-w-[1800px]"
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setSelectedIndex(null)}
-              className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-sm transition duration-200 hover:bg-signal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-black dark:bg-black dark:text-white"
+              className="absolute right-4 top-4 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-sm transition duration-200 hover:bg-signal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-black dark:bg-black dark:text-white"
               aria-label="Close photo"
             >
               <X size={20} strokeWidth={2} aria-hidden="true" />
@@ -110,7 +110,7 @@ export function PhotographyGrid({ photos }: { photos: TravelPhoto[] }) {
             <button
               type="button"
               onClick={showPreviousPhoto}
-              className="absolute left-4 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/92 text-ink shadow-sm transition duration-200 hover:bg-signal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-black dark:bg-black/80 dark:text-white"
+              className="absolute left-4 top-[42%] z-20 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-white shadow-sm transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-black dark:bg-white dark:text-ink"
               aria-label="Previous photo"
             >
               <ChevronLeft size={24} strokeWidth={2} aria-hidden="true" />
@@ -118,12 +118,12 @@ export function PhotographyGrid({ photos }: { photos: TravelPhoto[] }) {
             <button
               type="button"
               onClick={showNextPhoto}
-              className="absolute right-4 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/92 text-ink shadow-sm transition duration-200 hover:bg-signal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-black dark:bg-black/80 dark:text-white"
+              className="absolute right-4 top-[42%] z-20 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-white shadow-sm transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-black dark:bg-white dark:text-ink"
               aria-label="Next photo"
             >
               <ChevronRight size={24} strokeWidth={2} aria-hidden="true" />
             </button>
-            <div className="relative h-[64vh] max-h-[720px] min-h-[300px] bg-black">
+            <div className="relative min-h-0 flex-1 bg-paper dark:bg-[#11110f]">
               <Image
                 src={cloudinaryImage(selectedPhoto.publicId)}
                 alt={`Travel photography from ${selectedPhoto.country}`}
@@ -133,7 +133,7 @@ export function PhotographyGrid({ photos }: { photos: TravelPhoto[] }) {
                 priority
               />
             </div>
-            <div className="px-5 py-4 sm:px-6">
+            <div className="shrink-0 px-5 py-4 sm:px-6">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-[520] tracking-[-0.015em] text-ink dark:text-white">
                   {selectedPhoto.country}
@@ -147,7 +147,7 @@ export function PhotographyGrid({ photos }: { photos: TravelPhoto[] }) {
                   </span>
                 </div>
               </div>
-              <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+              <div className="mt-4 flex max-w-full gap-2 overflow-x-auto pb-1">
                 {photos.map((photo, index) => {
                   const isSelected = index === selectedIndex;
 

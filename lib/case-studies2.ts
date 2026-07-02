@@ -1,22 +1,10 @@
-export type CaseStudyCallout = {
-  /** Horizontal position as a percentage of the image width (0–100). */
-  x: number;
-  /** Vertical position as a percentage of the image height (0–100). */
-  y: number;
-  /** Short annotation shown beside the numbered pin. */
-  label: string;
-};
-
 export type CaseStudyMedia = {
   type?: "image" | "video";
   src: string;
   alt?: string;
   caption: string;
-  /** When true, this item breaks out to full width instead of sitting in the grid. */
   wide?: boolean;
   portrait?: boolean;
-  /** Optional numbered annotation pins layered over the image. */
-  callouts?: CaseStudyCallout[];
 };
 
 export type CaseStudy = {
@@ -30,10 +18,6 @@ export type CaseStudy = {
   role: string;
   industry: string;
   year: string;
-  /** Team context, e.g. "Sole product designer" or "Design team of 4". */
-  team?: string;
-  /** How long the project ran, e.g. "6 months". */
-  duration?: string;
   intro: {
     challenge: string[];
     outcome: string[];

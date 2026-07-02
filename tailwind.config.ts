@@ -30,6 +30,11 @@ const config: Config = {
       },
       boxShadow: {
         soft: "0 4px 16px rgba(0, 0, 0, 0.06)",
+        lift: "0 10px 30px -8px rgba(0, 0, 0, 0.16)",
+        cta: "0 8px 24px -6px rgba(255, 61, 139, 0.42)",
+      },
+      transitionTimingFunction: {
+        premium: "cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },
