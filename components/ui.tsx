@@ -1,0 +1,413 @@
+import Image from "next/image";
+import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  Compass,
+  Gauge,
+  Handshake,
+  Layers3,
+  Mail,
+  Mountain,
+  Network,
+  Repeat2,
+  Route,
+  Store,
+  TimerReset,
+  Workflow,
+} from "lucide-react";
+import { Reveal } from "./motion";
+import { MountainScene } from "./mountain-scene";
+import { SiteNavigation } from "./site-navigation";
+import { journey, principles, projects, testimonials } from "@/lib/content";
+
+const capabilityItems = [
+  { icon: Network, label: "Complex systems", detail: "Understanding workflows, states, rules and operational complexity." },
+  { icon: Workflow, label: "AI Products", detail: "Designing human-AI workflows that improve decisions rather than replace them." },
+  { icon: Layers3, label: "Design systems", detail: "Building scalable foundations that accelerate teams." },
+  { icon: Gauge, label: "Product Strategy", detail: "Connecting user needs with measurable business outcomes." },
+];
+
+const principleIcons = [Route, Network, Gauge, Handshake, Repeat2];
+const journeyIcons = [Compass, Layers3, Store, Mountain];
+const enduranceItems = [
+  { icon: TimerReset, label: "Patience" },
+  { icon: Repeat2, label: "Iteration" },
+  { icon: Mountain, label: "Resilience" },
+  { icon: Compass, label: "Judgement" },
+];
+
+export function Navigation() {
+  return <SiteNavigation />;
+}
+
+export function Hero() {
+  return (
+    <section className="relative isolate overflow-hidden bg-paper text-ink dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
+      <MountainScene />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[26svh] bg-gradient-to-t from-white via-white/92 to-transparent dark:from-[#0d0d0c] dark:via-[#0d0d0c]/92" />
+      <div className="relative z-10 px-6 pt-[92px] sm:px-8 lg:px-20 xl:px-24">
+        <Reveal className="grid min-h-[calc(76svh-92px)] items-center gap-8 py-10 sm:min-h-[calc(80svh-92px)] sm:gap-10 sm:py-14 lg:min-h-[calc(82svh-92px)] lg:grid-cols-[minmax(0,0.82fr)_minmax(340px,0.56fr)] lg:gap-12 lg:py-20 xl:gap-14">
+          <div className="relative min-w-0">
+            <p className="mb-6 font-mono text-[0.76rem] uppercase tracking-[0.28em] text-ink dark:text-white sm:mb-8 sm:text-[0.84rem] lg:mb-14 lg:text-[clamp(0.8rem,0.92vw,1.15rem)] lg:tracking-[0.36em]">
+              Staff Product Designer
+            </p>
+            <h1 className="max-w-[60rem] text-[clamp(4.35rem,20vw,7rem)] font-[310] leading-[0.92] tracking-[-0.055em] text-ink dark:text-[#f4f3ef] lg:text-[clamp(5.2rem,10.8vw,12rem)]">
+              <span className="block">Complexity</span>
+              <span className="block">
+                solved<span className="text-signal">.</span>
+              </span>
+            </h1>
+          </div>
+          <div className="relative z-20 max-w-[34rem] self-center">
+            <p className="text-[clamp(1.45rem,7vw,2rem)] font-[330] leading-[1.22] tracking-[-0.025em] text-ink dark:text-white lg:text-[clamp(2rem,2.32vw,2.95rem)] lg:leading-[1.24]">
+              Helping teams make complex products feel simple.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3 sm:mt-10 lg:mt-12">
+              <a
+                href="#work"
+                className="inline-flex min-h-12 items-center rounded-full bg-signal px-6 text-base font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:hover:bg-white dark:hover:text-ink sm:min-h-14 sm:px-7 sm:text-lg lg:min-h-[68px] lg:px-9 lg:text-2xl lg:tracking-[-0.02em]"
+              >
+                View Case Studies
+              </a>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+      <div className="relative z-10 bg-ink py-3 text-white">
+        <div className="container-pad flex flex-wrap items-center justify-between gap-3 font-mono text-xs uppercase tracking-[0.16em]">
+          <span>16 years</span>
+          <span>67M+ users</span>
+          <span>$72M measured savings</span>
+          <span>AI | SaaS | Systems</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Button({
+  href,
+  variant,
+  children,
+}: {
+  href: string;
+  variant: "primary" | "secondary";
+  children: React.ReactNode;
+}) {
+  const classes =
+    variant === "primary"
+      ? "bg-ink text-white hover:bg-signal dark:bg-white dark:text-ink dark:hover:bg-signal dark:hover:text-white"
+      : "bg-white text-ink hover:bg-mist dark:bg-white/[0.1] dark:text-white dark:hover:bg-white/[0.16]";
+
+  return (
+    <a
+      href={href}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-[480] tracking-[-0.01em] transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:focus-visible:ring-offset-[#0d0d0c] ${classes}`}
+    >
+      {children}
+    </a>
+  );
+}
+
+export function SectionHeader({
+  eyebrow,
+  title,
+  text,
+  tone = "light",
+}: {
+  eyebrow: string;
+  title: React.ReactNode;
+  text?: string;
+  tone?: "light" | "dark";
+}) {
+  const eyebrowClass = tone === "dark" ? "text-signal" : "text-signal";
+  const textClass = tone === "dark" ? "text-white/62" : "text-black/62 dark:text-white/62";
+
+  return (
+    <Reveal className="mb-10 grid gap-5 md:grid-cols-[0.72fr_1fr] md:items-end">
+      <div>
+        <p className={`mb-4 font-mono text-xs uppercase tracking-[0.16em] ${eyebrowClass}`}>{eyebrow}</p>
+        <h2 className="max-w-3xl text-balance text-4xl font-[340] leading-[1.04] tracking-[-0.025em] sm:text-5xl lg:text-[4rem]">{title}</h2>
+      </div>
+      {text ? <p className={`max-w-xl text-xl font-[330] leading-[1.4] tracking-[-0.01em] ${textClass}`}>{text}</p> : null}
+    </Reveal>
+  );
+}
+
+export function AboutPreview() {
+  return (
+    <section id="about" className="container-pad scroll-mt-28 py-20 sm:py-24 lg:py-32">
+      <Reveal className="grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,1fr)] lg:gap-20">
+        <div>
+          <p className="mb-5 font-mono text-xs uppercase tracking-[0.16em] text-signal">About</p>
+          <h2 className="max-w-3xl text-balance text-5xl font-[340] leading-[1.02] tracking-[-0.035em] text-ink dark:text-white sm:text-6xl lg:text-[5.25rem]">
+            Turning complexity into clarity<span className="text-signal">.</span>
+          </h2>
+        </div>
+        <div className="max-w-3xl space-y-8 pt-1 text-xl font-[330] leading-[1.38] tracking-[-0.015em] text-ink dark:text-white sm:text-2xl lg:text-[1.68rem]">
+          <p>
+            I&apos;m a Staff Product Designer with 16 years of experience designing AI, SaaS and enterprise products from zero to one through to platforms used by more than 67 million people. I specialise in simplifying complex systems, workflows and operational software into products that feel intuitive.
+          </p>
+          <p>
+            My work begins by understanding the business, the technology and the people using the product. By untangling complexity before designing interfaces, I help teams build products that are powerful underneath but simple to use.
+          </p>
+        </div>
+      </Reveal>
+      <Reveal delay={0.08} className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {capabilityItems.map((item) => (
+          <CapabilityItem key={item.label} icon={item.icon} label={item.label} detail={item.detail} />
+        ))}
+      </Reveal>
+    </section>
+  );
+}
+
+export function FeaturedWork() {
+  return (
+    <section id="work" className="scroll-mt-28 border-y border-black/10 bg-paper py-16 text-ink dark:border-white/10 dark:bg-[#0d0d0c] dark:text-[#f4f3ef] sm:py-24">
+      <div className="container-pad">
+        <Reveal className="mb-16 max-w-5xl">
+          <p className="mb-7 font-mono text-xs uppercase tracking-[0.16em] text-signal">Selected work</p>
+          <h2 className="max-w-5xl text-balance text-5xl font-[340] leading-[1.02] tracking-[-0.035em] sm:text-6xl lg:text-[5.25rem]">
+            Complex problems, measurable outcomes<span className="text-signal">.</span>
+          </h2>
+          <p className="mt-8 max-w-4xl text-xl font-[330] leading-[1.4] tracking-[-0.01em] text-black/72 dark:text-white/72 sm:text-2xl">
+            A closer look at the systems, product decisions and measurable outcomes behind the work.
+          </p>
+        </Reveal>
+        <div className="grid gap-12 lg:grid-cols-[220px_minmax(0,1fr)]">
+          <aside className="hidden lg:block">
+            <div className="sticky top-28 space-y-5 pt-2">
+              {projects.map((project, index) => (
+                <a
+                  key={project.title}
+                  href={project.href}
+                  className="block rounded-sm text-sm font-medium text-black/36 transition duration-200 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-paper dark:text-white/36 dark:hover:text-white dark:focus-visible:ring-offset-[#0d0d0c]"
+                >
+                  <span className="mr-3 text-signal">0{index + 1}</span>
+                  {project.title}
+                </a>
+              ))}
+            </div>
+          </aside>
+          <div className="grid gap-16 sm:gap-20">
+            {projects.map((project, index) => (
+              <Reveal key={project.title} delay={index * 0.03}>
+                <article className="grid gap-6 border-t border-hairline pt-8 dark:border-white/10">
+                  <Link
+                    href={project.href}
+                    aria-label={`Read ${project.title} case study`}
+                    className="group relative block overflow-hidden rounded-[24px] bg-mist transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-paper dark:bg-white/6 dark:focus-visible:ring-offset-[#0d0d0c]"
+                  >
+                    <Image
+                      src={project.image}
+                      alt={`${project.title} interface`}
+                      width={1600}
+                      height={1000}
+                      sizes="(min-width: 1024px) 72vw, 100vw"
+                      className="h-auto w-full transition duration-300 group-hover:scale-[1.015]"
+                    />
+                  </Link>
+                  <div className="grid gap-8 rounded-[24px] bg-white p-6 dark:bg-[#151514] lg:grid-cols-[minmax(0,0.42fr)_minmax(360px,0.58fr)] lg:p-8">
+                    <div>
+                      <p className="mb-5 font-mono text-xs uppercase tracking-[0.16em] text-signal">0{index + 1} / {project.industry}</p>
+                      <h3 className="text-balance text-4xl font-[540] leading-[1.02] tracking-[-0.025em] sm:text-5xl">{project.title}</h3>
+                    </div>
+                    <div className="flex flex-col justify-between">
+                      <div>
+                        <p className="mt-6 max-w-2xl text-xl font-[330] leading-[1.42] tracking-[-0.015em] text-ink dark:text-white">
+                          {project.summary}
+                        </p>
+                        <div className="mt-9">
+                          <p className="font-mono text-xs uppercase tracking-[0.16em] text-ink dark:text-white">Key outcomes</p>
+                          <div className="mt-5 grid gap-5 sm:grid-cols-3">
+                            {project.outcomes.map((outcome) => (
+                              <div key={`${project.title}-${outcome.value}`} className="border-t border-black/12 pt-4 dark:border-white/16">
+                                <p className="text-4xl font-[340] leading-none tracking-[-0.025em] text-ink dark:text-white">
+                                  {outcome.value}
+                                </p>
+                                <p className="mt-3 text-sm font-[540] leading-[1.25] tracking-[-0.01em] text-ink dark:text-white">
+                                  {outcome.label}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <Link href={project.href} className="mt-8 inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:bg-white dark:text-ink dark:hover:bg-signal dark:hover:text-white dark:focus-visible:ring-offset-[#151514]">
+                        Read case study <ArrowRight size={16} aria-hidden="true" />
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function DesignPhilosophy() {
+  return (
+    <section id="approach" className="container-pad scroll-mt-28 py-16 sm:py-24">
+      <div className="rounded-[24px] bg-block-lime p-8 text-ink sm:p-12 lg:p-14">
+        <SectionHeader
+          eyebrow="Design philosophy"
+          title="Design born from challenge, driven by heart."
+          text="The accident and recovery are part of my story, but not the whole story. They taught me to move through uncertainty patiently, to keep solving when the easy route disappears and to respect progress that compounds."
+        />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          {principles.map((principle, index) => (
+            <Reveal key={principle.title} delay={index * 0.025} className="rounded-lg bg-white/54 p-6">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs uppercase tracking-[0.16em] text-ink">0{index + 1}</span>
+                <IconBadge icon={principleIcons[index % principleIcons.length]} size="sm" />
+              </div>
+              <h3 className="mt-8 text-balance text-2xl font-[540] tracking-[-0.01em]">{principle.title}</h3>
+              <p className="mt-4 text-base font-[330] leading-[1.45] tracking-[-0.01em] text-ink">{principle.text}</p>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function ExperienceJourney() {
+  return (
+    <section id="journey" className="container-pad scroll-mt-28 py-16 sm:py-24">
+      <div className="rounded-[24px] bg-block-navy p-8 text-white sm:p-12 lg:p-14">
+        <SectionHeader
+          eyebrow="Experience"
+          title="A journey through products, systems and difficult terrain."
+          tone="dark"
+        />
+        <div className="divide-y divide-white/16">
+          {journey.map((item, index) => (
+            <Reveal key={item.title} delay={index * 0.03}>
+              <div className="grid gap-4 py-8 md:grid-cols-[140px_1fr_1fr]">
+                <div className="flex items-center gap-3 md:block">
+                  <IconBadge
+                    icon={journeyIcons[index % journeyIcons.length]}
+                    size="sm"
+                    className="bg-white text-signal ring-1 ring-white/30 md:mb-4"
+                  />
+                  <p className="font-mono text-xs uppercase tracking-[0.16em] text-white">{item.period}</p>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-balance text-2xl font-[540] tracking-[-0.01em]">{item.title}</h3>
+                  <p className="mt-3 text-base font-[330] leading-[1.45] tracking-[-0.01em] text-white">{item.detail}</p>
+                </div>
+                <p className="text-base font-[330] leading-[1.45] tracking-[-0.01em] text-white">{item.impact}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Testimonials() {
+  return (
+    <section className="container-pad py-16 sm:py-24">
+      <SectionHeader eyebrow="Testimonials" title="The kind of collaboration I try to create." />
+      <div className="grid gap-4 md:grid-cols-3">
+        {testimonials.map((testimonial, index) => (
+          <Reveal key={testimonial.name} delay={index * 0.04} className="rounded-lg bg-mist p-7">
+            <blockquote className="text-pretty text-xl font-[540] leading-[1.45] tracking-[-0.01em]">“{testimonial.quote}”</blockquote>
+            <p className="mt-8 text-sm font-[540]">{testimonial.name}</p>
+            <p className="mt-1 font-mono text-xs uppercase tracking-[0.12em] text-ink">{testimonial.role}</p>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function RunningAdventure() {
+  return (
+    <section className="container-pad pt-14 pb-6 sm:pt-20 sm:pb-8">
+      <Reveal className="grid gap-8 rounded-[24px] bg-block-coral p-8 text-ink sm:p-12 lg:grid-cols-[0.72fr_1.05fr_0.55fr] lg:items-center lg:p-14">
+        <div>
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.16em] text-ink">Endurance</p>
+          <h2 className="text-balance text-4xl font-[340] leading-[1.04] tracking-[-0.025em] sm:text-5xl">Long efforts. Better judgment.</h2>
+        </div>
+        <p className="text-2xl font-[340] leading-[1.35] tracking-[-0.01em] text-ink">
+          Solving complex products isn&apos;t a sprint. Like endurance running, it requires patience, resilience and the discipline to keep improving until the simplest solution emerges.
+        </p>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+          {enduranceItems.map((item) => (
+            <div key={item.label} className="flex items-center gap-3 text-sm font-[540] text-ink">
+              <IconBadge icon={item.icon} size="sm" />
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+export function Contact() {
+  return (
+    <section id="contact" className="container-pad scroll-mt-28 pt-6 pb-16 sm:pt-8 sm:pb-24">
+      <Reveal className="rounded-[24px] bg-block-lime p-8 text-ink sm:p-12 lg:p-14">
+        <p className="mb-5 font-mono text-xs uppercase tracking-[0.16em] text-ink">Contact</p>
+        <h2 className="max-w-4xl text-balance text-4xl font-[340] leading-[1.04] tracking-[-0.025em] sm:text-6xl">
+          Complex problems deserve thoughtful design.
+        </h2>
+        <p className="mt-6 max-w-2xl text-xl font-[330] leading-[1.4] tracking-[-0.01em] text-ink">
+          I&apos;m always interested in teams tackling ambitious products, complex systems and meaningful challenges. If that sounds like what you&apos;re building, I&apos;d love to hear from you.
+        </p>
+        <div className="mt-9 flex flex-wrap gap-3">
+          <a href="mailto:sw@shaunwhiting.com" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime">
+            Email Shaun <Mail size={17} aria-hidden="true" />
+          </a>
+          <a href="https://www.linkedin.com/in/shaunwhiting/" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 text-[15px] font-[480] tracking-[-0.01em] text-ink transition duration-200 hover:bg-mist focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime">
+            LinkedIn <ArrowRight size={17} aria-hidden="true" />
+          </a>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+export function Footer() {
+  return (
+    <footer className="container-pad pb-8">
+      <div className="flex flex-col gap-4 border-t hairline pt-8 text-sm text-black/55 dark:text-white/55 sm:flex-row sm:items-center sm:justify-between">
+        <p>© {new Date().getFullYear()} Shaun Whiting</p>
+        <p>Product design, systems thinking and careful execution.</p>
+      </div>
+    </footer>
+  );
+}
+
+function CapabilityItem({ icon, label, detail }: { icon: LucideIcon; label: string; detail: string }) {
+  return (
+    <div className="flex min-h-[14.5rem] flex-col rounded-lg bg-block-lime p-6 text-ink">
+      <IconBadge icon={icon} size="sm" />
+      <div className="mt-12">
+        <p className="text-lg font-[540] tracking-[-0.01em]">{label}</p>
+        <p className="mt-2 text-base font-[330] leading-[1.45] tracking-[-0.01em]">{detail}</p>
+      </div>
+    </div>
+  );
+}
+
+function IconBadge({ icon: Icon, size = "md", className = "" }: { icon: LucideIcon; size?: "sm" | "md"; className?: string }) {
+  const badgeSize = size === "sm" ? "h-9 w-9" : "h-11 w-11";
+  const iconSize = size === "sm" ? 16 : 19;
+
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-white text-ink dark:bg-white/[0.12] dark:text-white ${badgeSize} ${className}`}
+    >
+      <Icon size={iconSize} strokeWidth={1.8} aria-hidden="true" />
+    </span>
+  );
+}

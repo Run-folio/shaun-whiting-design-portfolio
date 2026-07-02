@@ -1,0 +1,16 @@
+.next/
+.next-dev/
+.next-check/
+.next-static/
+.netlify/
+node_modules/
+out/
+output/
+dist/
+tmp/
+.env*
+!.env.example
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
