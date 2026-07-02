@@ -1,7 +1,9 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { ComponentType } from "react";
 import { Camera, Globe2, Route } from "lucide-react";
 import { Footer, Navigation } from "@/components/ui";
+import { cloudinaryImage, featuredTravelPhotos } from "@/lib/photography";
 
 export const metadata = {
   title: "More about me | Shaun Whiting",
@@ -9,23 +11,8 @@ export const metadata = {
     "A more personal look at Shaun Whiting: running, travel, photography and the experiences that shape his product design practice.",
 };
 
-const cloudinaryImage = (publicId: string) =>
-  `https://res.cloudinary.com/dbt3wkwa3/image/upload/f_auto,q_auto/${publicId}`;
-
 const portraitImage = cloudinaryImage("v1744685819/shaun3_horawe.jpg");
 const utmbImage = cloudinaryImage("398417558_1_l1mndf");
-
-const photos = [
-  { country: "Guatemala", publicId: "guatemala_jkuqfl" },
-  { country: "Nepal", publicId: "nepal_pieful" },
-  { country: "Iceland", publicId: "iceland_rmehmy" },
-  { country: "Japan", publicId: "japan_tyklgc" },
-  { country: "Argentina", publicId: "argentina_hyoz4x" },
-  { country: "Namibia", publicId: "namibia_vwfyeb" },
-  { country: "Peru", publicId: "peru_to7dtv" },
-  { country: "Switzerland", publicId: "switzerland_qyppa0" },
-  { country: "Australia", publicId: "australia_simevv" },
-];
 
 export default function MoreAboutMePage() {
   return (
@@ -102,10 +89,17 @@ export default function MoreAboutMePage() {
             <p className="text-xl font-[330] leading-[1.45] tracking-[-0.01em] text-black/72 dark:text-white/72 lg:pt-[98px]">
               Photography slows me down. It helps me notice texture, rhythm, people, weather and the quiet details that are easy to miss.
             </p>
-            <div aria-hidden="true" />
+            <div className="lg:pt-[98px]">
+              <Link
+                href="/photography"
+                className="inline-flex rounded-full border border-ink px-6 py-3 text-base font-[520] tracking-[-0.01em] text-ink transition duration-200 hover:bg-ink hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-paper dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-ink dark:focus-visible:ring-offset-[#0d0d0c]"
+              >
+                See all →
+              </Link>
+            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {photos.map((photo) => (
+            {featuredTravelPhotos.map((photo) => (
               <figure
                 key={photo.publicId}
                 className="overflow-hidden rounded-[24px] bg-mist dark:bg-white/6"
