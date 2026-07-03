@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 import { Navigation, Footer } from "@/components/ui";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion";
 import { CaseStudyHeroMedia } from "@/components/case-study-hero-media";
+import { CaseStudyAnalytics } from "@/components/case-study-analytics";
 import { BeforeAfterSlider } from "@/components/before-after-slider";
 import { CaseStudyRail } from "@/components/case-study-rail";
+import { TrackedLink } from "@/components/tracked-link";
 import type { CaseStudyMedia } from "@/lib/case-studies";
 import { caseStudies, getCaseStudy } from "@/lib/case-studies";
 
@@ -33,6 +35,9 @@ export async function generateMetadata({ params }: PageProps) {
   return {
     title: `${study.title} | Shaun Whiting`,
     description: study.summary,
+    alternates: {
+      canonical: `/case-study/${study.slug}`,
+    },
   };
 }
 
@@ -46,6 +51,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
 
   const currentIndex = caseStudies.findIndex((item) => item.slug === study.slug);
   const nextStudy = caseStudies[(currentIndex + 1) % caseStudies.length];
+  const heroComparison = study.slug === "returns-kiosk" ? study.challengeComparisons?.[0] : undefined;
 
   const railItems = [
     { id: "overview", label: "Overview" },
@@ -58,6 +64,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
 
   return (
     <>
+      <CaseStudyAnalytics slug={study.slug} title={study.shortTitle ?? study.title} />
       <Navigation />
       <CaseStudyRail items={railItems} />
       <main className="bg-paper text-ink dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
@@ -96,7 +103,15 @@ export default async function CaseStudyPage({ params }: PageProps) {
           <section id="proof" className="px-6 pb-10 pt-2 sm:px-8 lg:px-20 lg:pb-16 xl:px-24">
             <div className="mx-auto max-w-[1400px]">
               <Reveal>
-                <CaseStudyHeroMedia image={study.image} imageAlt={study.imageAlt} metrics={study.metrics} />
+                {heroComparison ? (
+                  <BeforeAfterSlider
+                    before={heroComparison.before}
+                    after={heroComparison.after}
+                    label={heroComparison.label}
+                  />
+                ) : (
+                  <CaseStudyHeroMedia image={study.image} imageAlt={study.imageAlt} metrics={study.metrics} />
+                )}
               </Reveal>
             </div>
           </section>
@@ -161,7 +176,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
                   ))}
                 </StaggerGroup>
               </div>
-              {study.challengeComparisons?.length ? (
+              {!heroComparison && study.challengeComparisons?.length ? (
                 <div className="mt-10 grid gap-6">
                   {study.challengeComparisons.map((comparison) => (
                     <Reveal key={comparison.label ?? comparison.before.src}>
@@ -273,12 +288,19 @@ export default async function CaseStudyPage({ params }: PageProps) {
                     {nextStudy.title}
                     <span className="text-signal">.</span>
                   </h2>
-                  <Link
+                  <TrackedLink
                     href={`/case-study/${nextStudy.slug}`}
+                    eventName="case_study_cta_clicked"
+                    eventData={{
+                      case_study_slug: nextStudy.slug,
+                      case_study_title: nextStudy.shortTitle ?? nextStudy.title,
+                      cta_label: "Read next",
+                      location: "next_case_study",
+                    }}
                     className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime"
                   >
                     Read next <ArrowRight size={16} aria-hidden="true" />
-                  </Link>
+                  </TrackedLink>
                 </div>
               </div>
             </Reveal>

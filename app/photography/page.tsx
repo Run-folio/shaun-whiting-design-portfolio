@@ -7,6 +7,9 @@ export const metadata = {
   title: "Photography | Shaun Whiting",
   description:
     "Travel photography from Shaun Whiting: places that made him slow down, look closer and pay attention.",
+  alternates: {
+    canonical: "/photography",
+  },
 };
 
 export default function PhotographyPage() {

@@ -18,6 +18,7 @@ import {
 import { CountUp, Magnetic, Reveal, StaggerGroup, StaggerItem } from "./motion";
 import { MountainScene } from "./mountain-scene";
 import { SiteNavigation } from "./site-navigation";
+import { TrackedAnchor, TrackedLink } from "./tracked-link";
 import { journey, principles, projects, testimonials } from "@/lib/content";
 
 const capabilityItems = [
@@ -73,12 +74,18 @@ export function Hero() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3 sm:mt-10 lg:mt-12">
               <Magnetic strength={0.28}>
-                <a
+                <TrackedAnchor
                   href="#work"
+                  eventName="case_study_cta_clicked"
+                  eventData={{
+                    cta_label: "View Case Studies",
+                    destination_url: "#work",
+                    location: "hero",
+                  }}
                   className="inline-flex min-h-12 items-center rounded-full bg-signal px-6 text-base font-[480] tracking-[-0.01em] text-white transition-[transform,box-shadow,background-color] duration-300 ease-premium hover:-translate-y-[1.5px] hover:bg-ink hover:shadow-cta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:hover:bg-white dark:hover:text-ink sm:min-h-14 sm:px-7 sm:text-lg lg:min-h-[68px] lg:px-9 lg:text-2xl lg:tracking-[-0.02em]"
                 >
                   View Case Studies
-                </a>
+                </TrackedAnchor>
               </Magnetic>
             </div>
           </div>
@@ -206,14 +213,20 @@ export function FeaturedWork() {
           <aside className="hidden lg:block">
             <div className="sticky top-28 space-y-5 pt-2">
               {projects.map((project, index) => (
-                <a
+                <TrackedAnchor
                   key={project.title}
                   href={project.href}
+                  eventName="case_study_cta_clicked"
+                  eventData={{
+                    case_study_slug: project.href.split("/").pop(),
+                    case_study_title: project.title,
+                    cta_label: "Selected work rail",
+                  }}
                   className="block rounded-sm text-sm font-medium text-black/36 transition duration-200 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-paper dark:text-white/36 dark:hover:text-white dark:focus-visible:ring-offset-[#0d0d0c]"
                 >
                   <span className="mr-3 text-signal">0{index + 1}</span>
                   {project.title}
-                </a>
+                </TrackedAnchor>
               ))}
             </div>
           </aside>
@@ -221,8 +234,14 @@ export function FeaturedWork() {
             {projects.map((project, index) => (
               <Reveal key={project.title} delay={index * 0.03}>
                 <article className="grid gap-6 border-t border-hairline pt-8 dark:border-white/10">
-                  <Link
+                  <TrackedLink
                     href={project.href}
+                    eventName="case_study_cta_clicked"
+                    eventData={{
+                      case_study_slug: project.href.split("/").pop(),
+                      case_study_title: project.title,
+                      cta_label: "Project image",
+                    }}
                     aria-label={`Read ${project.title} case study`}
                     className="group relative block overflow-hidden rounded-[24px] bg-mist transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-paper dark:bg-white/6 dark:focus-visible:ring-offset-[#0d0d0c]"
                   >
@@ -234,17 +253,23 @@ export function FeaturedWork() {
                       sizes="(min-width: 1024px) 72vw, 100vw"
                       className="h-auto w-full transition duration-300 group-hover:scale-[1.015]"
                     />
-                  </Link>
+                  </TrackedLink>
                   <div className="grid gap-8 rounded-[24px] bg-white p-6 dark:bg-[#151514] lg:grid-cols-[minmax(0,0.42fr)_minmax(360px,0.58fr)] lg:p-8">
                     <div>
                       <p className="mb-5 font-mono text-xs uppercase tracking-[0.16em] text-signal">0{index + 1} / {project.industry}</p>
                       <h3 className="text-balance text-4xl font-[540] leading-[1.02] tracking-[-0.025em] sm:text-5xl">
-                        <Link
+                        <TrackedLink
                           href={project.href}
+                          eventName="case_study_cta_clicked"
+                          eventData={{
+                            case_study_slug: project.href.split("/").pop(),
+                            case_study_title: project.title,
+                            cta_label: "Project title",
+                          }}
                           className="rounded-sm transition duration-200 hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#151514]"
                         >
                           {project.title}
-                        </Link>
+                        </TrackedLink>
                       </h3>
                     </div>
                     <div className="flex flex-col justify-between">
@@ -268,9 +293,18 @@ export function FeaturedWork() {
                           </div>
                         </div>
                       </div>
-                      <Link href={project.href} className="mt-8 inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:bg-white dark:text-ink dark:hover:bg-signal dark:hover:text-white dark:focus-visible:ring-offset-[#151514]">
+                      <TrackedLink
+                        href={project.href}
+                        eventName="case_study_cta_clicked"
+                        eventData={{
+                          case_study_slug: project.href.split("/").pop(),
+                          case_study_title: project.title,
+                          cta_label: "Read case study",
+                        }}
+                        className="mt-8 inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:bg-white dark:text-ink dark:hover:bg-signal dark:hover:text-white dark:focus-visible:ring-offset-[#151514]"
+                      >
                         Read case study <ArrowRight size={16} aria-hidden="true" />
-                      </Link>
+                      </TrackedLink>
                     </div>
                   </div>
                 </article>
@@ -399,12 +433,30 @@ export function Contact() {
           I&apos;m always interested in teams tackling ambitious products, complex systems and meaningful challenges. If that sounds like what you&apos;re building, I&apos;d love to hear from you.
         </p>
         <div className="mt-9 flex flex-wrap gap-3">
-          <a href="mailto:sw@shaunwhiting.com" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime">
+          <TrackedAnchor
+            href="mailto:sw@shaunwhiting.com"
+            eventName="email_contact_clicked"
+            eventData={{
+              cta_label: "Email Shaun",
+              destination_url: "mailto:sw@shaunwhiting.com",
+              location: "contact_panel",
+            }}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime"
+          >
             Email Shaun <Mail size={17} aria-hidden="true" />
-          </a>
-          <a href="https://www.linkedin.com/in/shaunwhiting/" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 text-[15px] font-[480] tracking-[-0.01em] text-ink transition duration-200 hover:bg-mist focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime">
+          </TrackedAnchor>
+          <TrackedAnchor
+            href="https://www.linkedin.com/in/shaunwhiting/"
+            eventName="linkedin_clicked"
+            eventData={{
+              cta_label: "LinkedIn",
+              destination_url: "https://www.linkedin.com/in/shaunwhiting/",
+              location: "contact_panel",
+            }}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 text-[15px] font-[480] tracking-[-0.01em] text-ink transition duration-200 hover:bg-mist focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime"
+          >
             LinkedIn <ArrowRight size={17} aria-hidden="true" />
-          </a>
+          </TrackedAnchor>
         </div>
       </Reveal>
     </section>

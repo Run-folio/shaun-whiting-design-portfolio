@@ -109,12 +109,12 @@ export const caseStudies: CaseStudy[] = [
     challengeComparisons: [
       {
         before: {
-          src: cloudinaryImage("amazoncase5_iojjuv"),
+          src: cloudinaryImage("amazoncase7_nqcd5t"),
           alt: "Original Amazon returns kiosk home screen before redesign",
           caption: "The original kiosk start state separated scanning from the first action.",
         },
         after: {
-          src: cloudinaryImage("amazoncase7_nqcd5t"),
+          src: cloudinaryImage("amazoncase5_iojjuv"),
           alt: "Redesigned Amazon returns kiosk scan screen",
           caption: "Scanning moved into the home state to remove a step and reduce hesitation.",
         },
@@ -141,6 +141,13 @@ export const caseStudies: CaseStudy[] = [
           "Added tooltips to reduce hesitation",
           "Added a scan-success animation",
         ],
+        media: [
+          {
+            src: cloudinaryImage("amazoncase8_juwrkx.png"),
+            alt: "Amazon returns kiosk scan return QR code screen",
+            caption: "Before: scanning and guidance were split across the journey.",
+          },
+        ],
       },
       {
         eyebrow: "Solution",
@@ -153,16 +160,11 @@ export const caseStudies: CaseStudy[] = [
           "Sped up animations throughout",
         ],
         media: [
-      {
-        src: cloudinaryImage("amazoncase8_juwrkx.png"),
-        alt: "Original multiple returns kiosk flow",
-        caption: "Before: returning multiple parcels meant repeating the journey.",
-      },
-      {
-        src: cloudinaryImage("amazoncase9_jhaw9b.png"),
-        alt: "Redesigned multiple returns kiosk flow",
-        caption: "After: a dedicated multiple-return journey kept high-volume users moving.",
-      },
+          {
+            src: cloudinaryImage("amazoncase9_jhaw9b.png"),
+            alt: "Amazon returns kiosk code accepted screen",
+            caption: "After: clearer scan feedback helped customers move forward with confidence.",
+          },
         ],
       },
       {
@@ -184,15 +186,15 @@ export const caseStudies: CaseStudy[] = [
         ],
         media: [
           {
+            src: cloudinaryImage("amazoncase4_w6zzqt.jpg"),
+            alt: "Amazon returns kiosk prototype testing setup",
+            caption: "Prototype testing and handoff work with product and engineering.",
+          },
+          {
             type: "video",
             src: "https://res.cloudinary.com/dbt3wkwa3/video/upload/v1745499868/kiosk-inwall_ylxpkc.mp4",
             caption: "In-wall kiosk prototype showing the physical return flow in context.",
             portrait: true,
-          },
-          {
-            src: cloudinaryImage("amazoncase4_w6zzqt.jpg"),
-            alt: "Amazon returns kiosk prototype testing setup",
-            caption: "Prototype testing and handoff work with product and engineering.",
           },
         ],
       },

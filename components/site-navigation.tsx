@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { caseStudies } from "@/lib/case-studies";
 
 const primaryLinks = [
@@ -18,6 +19,14 @@ export function SiteNavigation() {
 
   function closeMenu() {
     setMenuOpen(false);
+  }
+
+  function handleCaseStudyClick(slug: string, title: string, ctaLabel: string) {
+    trackEvent("case_study_cta_clicked", {
+      case_study_slug: slug,
+      case_study_title: title,
+      cta_label: ctaLabel,
+    });
   }
 
   return (
@@ -69,6 +78,7 @@ export function SiteNavigation() {
                     <Link
                       key={study.slug}
                       href={`/case-study/${study.slug}`}
+                      onClick={() => handleCaseStudyClick(study.slug, study.shortTitle ?? study.title, "Work dropdown")}
                       className="block rounded-xl px-4 py-3 transition duration-200 hover:bg-mist hover:text-signal dark:hover:bg-white/10"
                     >
                       <span className="block text-sm font-[540] tracking-[-0.01em]">{study.shortTitle ?? study.title}</span>
@@ -95,12 +105,26 @@ export function SiteNavigation() {
         <div className="ml-auto flex items-center justify-end gap-3 sm:gap-5">
           <Link
             href="/resume.pdf"
+            onClick={() =>
+              trackEvent("cv_download_clicked", {
+                cta_label: "Resume",
+                destination_url: "/resume.pdf",
+                location: "desktop_navigation",
+              })
+            }
             className="hidden min-h-11 items-center justify-center rounded-full border border-ink bg-white px-5 text-[15px] font-[480] tracking-[-0.01em] text-ink transition duration-200 hover:bg-mist focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:border-white dark:bg-transparent dark:text-white dark:hover:bg-white/10 sm:inline-flex"
           >
             Resume
           </Link>
           <a
             href="mailto:sw@shaunwhiting.com"
+            onClick={() =>
+              trackEvent("email_contact_clicked", {
+                cta_label: "Contact",
+                destination_url: "mailto:sw@shaunwhiting.com",
+                location: "desktop_navigation",
+              })
+            }
             className="hidden min-h-11 items-center justify-center rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:bg-white dark:text-ink dark:hover:bg-mist dark:focus-visible:ring-offset-[#0d0d0c] sm:inline-flex"
           >
             Contact
@@ -130,7 +154,15 @@ export function SiteNavigation() {
             </MobileLink>
             <div className="grid gap-1 border-l border-black/10 pl-4 dark:border-white/10">
               {caseStudies.map((study) => (
-                <MobileLink key={study.slug} href={`/case-study/${study.slug}`} onClick={closeMenu} small>
+                <MobileLink
+                  key={study.slug}
+                  href={`/case-study/${study.slug}`}
+                  onClick={() => {
+                    handleCaseStudyClick(study.slug, study.shortTitle ?? study.title, "Mobile work menu");
+                    closeMenu();
+                  }}
+                  small
+                >
                   {study.shortTitle ?? study.title}
                 </MobileLink>
               ))}
@@ -143,14 +175,28 @@ export function SiteNavigation() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <Link
                 href="/resume.pdf"
-                onClick={closeMenu}
+                onClick={() => {
+                  trackEvent("cv_download_clicked", {
+                    cta_label: "Resume",
+                    destination_url: "/resume.pdf",
+                    location: "mobile_navigation",
+                  });
+                  closeMenu();
+                }}
                 className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-ink transition duration-200 hover:bg-mist dark:border-white dark:text-white dark:hover:bg-white/10"
               >
                 Resume
               </Link>
               <a
                 href="mailto:sw@shaunwhiting.com"
-                onClick={closeMenu}
+                onClick={() => {
+                  trackEvent("email_contact_clicked", {
+                    cta_label: "Contact",
+                    destination_url: "mailto:sw@shaunwhiting.com",
+                    location: "mobile_navigation",
+                  });
+                  closeMenu();
+                }}
                 className="inline-flex min-h-11 items-center justify-center rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal dark:bg-white dark:text-ink"
               >
                 Contact

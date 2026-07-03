@@ -9,6 +9,9 @@ export const metadata = {
   title: "More about me | Shaun Whiting",
   description:
     "A more personal look at Shaun Whiting: running, travel, photography and the experiences that shape his product design practice.",
+  alternates: {
+    canonical: "/more-about-me",
+  },
 };
 
 const portraitImage = cloudinaryImage("v1744685819/shaun3_horawe.jpg");
