@@ -62,18 +62,22 @@ export function SiteNavigation() {
             </Link>
             <div className="invisible absolute left-1/2 top-full w-[340px] -translate-x-1/2 pt-5 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
               <div className="rounded-2xl border border-black/10 bg-white p-3 shadow-[0_18px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#151514]">
-                {caseStudies.map((study) => (
-                  <Link
-                    key={study.slug}
-                    href={`/case-study/${study.slug}`}
-                    className="block rounded-xl px-4 py-3 transition duration-200 hover:bg-mist hover:text-signal dark:hover:bg-white/10"
-                  >
-                    <span className="block text-sm font-[540] tracking-[-0.01em]">{study.shortTitle ?? study.title}</span>
-                    <span className="mt-1 block font-mono text-[0.64rem] uppercase tracking-[0.14em] text-black/46 dark:text-white/46">
-                      {study.industry}
-                    </span>
-                  </Link>
-                ))}
+                {caseStudies.map((study) => {
+                  const primaryIndustry = study.industry.split("/")[0]?.trim() ?? study.industry;
+
+                  return (
+                    <Link
+                      key={study.slug}
+                      href={`/case-study/${study.slug}`}
+                      className="block rounded-xl px-4 py-3 transition duration-200 hover:bg-mist hover:text-signal dark:hover:bg-white/10"
+                    >
+                      <span className="block text-sm font-[540] tracking-[-0.01em]">{study.shortTitle ?? study.title}</span>
+                      <span className="mt-1 block font-mono text-[0.64rem] uppercase tracking-[0.14em] text-black/46 dark:text-white/46">
+                        {primaryIndustry}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>

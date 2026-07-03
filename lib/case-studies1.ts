@@ -44,8 +44,6 @@ export type CaseStudy = {
   }>;
   overviewMedia?: CaseStudyMedia[];
   challengeMedia?: CaseStudyMedia[];
-  /** Real before/after pairs for the challenge section, rendered as a draggable comparison slider. */
-  challengeComparisons?: Array<{ before: CaseStudyMedia; after: CaseStudyMedia; label?: string }>;
   challenges: string[];
   sections: Array<{
     eyebrow?: string;
@@ -106,19 +104,16 @@ export const caseStudies: CaseStudy[] = [
         caption: "Design exploration across core journey states and edge cases.",
       },
     ],
-    challengeComparisons: [
+    challengeMedia: [
       {
-        before: {
-          src: cloudinaryImage("amazoncase5_iojjuv"),
-          alt: "Original Amazon returns kiosk home screen before redesign",
-          caption: "The original kiosk start state separated scanning from the first action.",
-        },
-        after: {
-          src: cloudinaryImage("amazoncase7_nqcd5t"),
-          alt: "Redesigned Amazon returns kiosk scan screen",
-          caption: "Scanning moved into the home state to remove a step and reduce hesitation.",
-        },
-        label: "Drag to compare the original kiosk flow against the redesign",
+        src: cloudinaryImage("amazoncase5_iojjuv"),
+        alt: "Original Amazon returns kiosk home screen before redesign",
+        caption: "Before: the original kiosk start state separated scanning from the first action.",
+      },
+      {
+        src: cloudinaryImage("amazoncase7_nqcd5t"),
+        alt: "Redesigned Amazon returns kiosk scan screen",
+        caption: "After: scanning moved into the home state to remove a step and reduce hesitation.",
       },
     ],
     challenges: [

@@ -22,7 +22,7 @@ export const projects = [
     outcomes: [
       { value: "$60M", label: "Cost savings" },
       { value: "10x", label: "Increase in unit order value" },
-      { value: "20.6% -> 6.6%", label: "Dropout reduction" },
+      { value: "20.6%", label: "Dropout reduction" },
     ],
     image: "/amazon-returns-kiosk.jpg",
     href: "/case-study/returns-kiosk",

@@ -4,9 +4,6 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Navigation, Footer } from "@/components/ui";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion";
-import { CaseStudyHeroMedia } from "@/components/case-study-hero-media";
-import { BeforeAfterSlider } from "@/components/before-after-slider";
-import { CaseStudyRail } from "@/components/case-study-rail";
 import type { CaseStudyMedia } from "@/lib/case-studies";
 import { caseStudies, getCaseStudy } from "@/lib/case-studies";
 
@@ -47,23 +44,13 @@ export default async function CaseStudyPage({ params }: PageProps) {
   const currentIndex = caseStudies.findIndex((item) => item.slug === study.slug);
   const nextStudy = caseStudies[(currentIndex + 1) % caseStudies.length];
 
-  const railItems = [
-    { id: "overview", label: "Overview" },
-    { id: "context", label: "Context" },
-    { id: "challenge", label: "Challenge" },
-    { id: "process", label: "Process" },
-    { id: "impact", label: "Impact" },
-    ...(study.nextSteps ? [{ id: "next-steps", label: "What's next" }] : []),
-  ];
-
   return (
     <>
       <Navigation />
-      <CaseStudyRail items={railItems} />
       <main className="bg-paper text-ink dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
         <article>
-          <header id="overview" className="px-6 pb-8 pt-28 sm:px-8 sm:pb-10 lg:px-20 lg:pt-32 xl:px-24">
-            <div className="mx-auto max-w-[1400px]">
+          <header className="px-6 pb-8 pt-28 sm:px-8 sm:pb-10 lg:px-20 lg:pt-32 xl:px-24">
+            <Reveal className="mx-auto max-w-[1400px]">
               <Link
                 href="/#work"
                 className="mb-8 inline-flex items-center gap-2 text-sm font-[480] tracking-[-0.01em] text-black/58 transition duration-200 hover:text-signal dark:text-white/58 dark:hover:text-signal lg:mb-10"
@@ -72,14 +59,14 @@ export default async function CaseStudyPage({ params }: PageProps) {
                 Back to selected work
               </Link>
               <div className="grid gap-8 lg:grid-cols-[minmax(0,0.7fr)_minmax(320px,0.42fr)] lg:items-end lg:gap-14">
-                <Reveal>
+                <div>
                   <p className="mb-5 font-mono text-xs uppercase tracking-[0.22em] text-signal">{study.eyebrow}</p>
                   <h1 className="max-w-5xl text-balance text-[clamp(3.15rem,6.6vw,7.1rem)] font-[310] leading-[0.94] tracking-[-0.055em]">
                     {study.title}
                     <span className="text-signal">.</span>
                   </h1>
-                </Reveal>
-                <Reveal delay={0.08} className="max-w-xl">
+                </div>
+                <div className="max-w-xl">
                   <p className="text-[clamp(1.3rem,1.75vw,2rem)] font-[330] leading-[1.23] tracking-[-0.025em]">
                     {study.summary}
                   </p>
@@ -88,66 +75,82 @@ export default async function CaseStudyPage({ params }: PageProps) {
                     <Meta label="Team" value={study.team ?? study.industry} />
                     <Meta label="Duration" value={study.duration ?? study.year} />
                   </dl>
-                </Reveal>
+                </div>
               </div>
-            </div>
+            </Reveal>
           </header>
 
-          <section id="proof" className="px-6 pb-10 pt-2 sm:px-8 lg:px-20 lg:pb-16 xl:px-24">
-            <div className="mx-auto max-w-[1400px]">
-              <Reveal>
-                <CaseStudyHeroMedia image={study.image} imageAlt={study.imageAlt} metrics={study.metrics} />
-              </Reveal>
+          <Reveal as="section" className="px-6 sm:px-8 lg:px-20 xl:px-24">
+            <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[24px] bg-mist dark:bg-white/6">
+              <div className="relative">
+                <Image
+                  src={study.image}
+                  alt={study.imageAlt}
+                  width={1800}
+                  height={1100}
+                  priority
+                  sizes="100vw"
+                  className="h-auto w-full"
+                />
+              </div>
             </div>
-          </section>
+          </Reveal>
 
-          <section id="context" className="px-6 py-12 sm:px-8 sm:py-16 lg:px-20 lg:py-20 xl:px-24">
+          <Reveal as="section" className="px-6 py-12 sm:px-8 sm:py-16 lg:px-20 lg:py-20 xl:px-24">
             <div className="mx-auto grid max-w-[1400px] gap-8 lg:grid-cols-[minmax(0,0.52fr)_minmax(420px,0.48fr)] lg:gap-14">
-              <Reveal>
+              <div>
                 <SectionEyebrow>Project overview</SectionEyebrow>
                 <h2 className="mt-4 max-w-3xl text-balance text-4xl font-[340] leading-[1.06] tracking-[-0.03em] sm:text-5xl lg:text-[3.6rem]">
                   Problem, approach and outcome<span className="text-signal">.</span>
                 </h2>
-              </Reveal>
-              <Reveal delay={0.08} className="space-y-6 text-lg font-[330] leading-[1.48] tracking-[-0.01em] text-black/72 dark:text-white/72">
+              </div>
+              <div className="space-y-6 text-lg font-[330] leading-[1.48] tracking-[-0.01em] text-black/72 dark:text-white/72">
                 {study.intro.challenge.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
                 {study.intro.outcome.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
-              </Reveal>
+              </div>
             </div>
             {study.overviewMedia?.length ? (
-              <Reveal delay={0.1} className="mx-auto mt-10 max-w-[1400px]">
+              <div className="mx-auto mt-10 max-w-[1400px]">
                 <MediaGrid items={study.overviewMedia} />
-              </Reveal>
+              </div>
             ) : null}
+          </Reveal>
+
+          <section className="bg-ink px-6 py-5 text-white sm:px-8 lg:px-20 xl:px-24">
+            <StaggerGroup className="mx-auto grid max-w-[1400px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {study.metrics.map((metric) => (
+                <StaggerItem key={`${metric.value}-${metric.label}`}>
+                  <p className="text-4xl font-[340] tracking-[-0.025em] lg:text-5xl">{metric.value}</p>
+                  <p className="mt-2 max-w-xs text-sm font-[330] leading-[1.4] text-white/70">{metric.label}</p>
+                </StaggerItem>
+              ))}
+            </StaggerGroup>
           </section>
 
-          <section id="challenge" className="px-6 py-16 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
+          <Reveal as="section" className="px-6 py-16 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
             <div className="mx-auto max-w-[1400px]">
               <div className="grid gap-10 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-16">
-                <Reveal>
+                <div>
                   <SectionEyebrow>Challenge</SectionEyebrow>
                   <h2 className="text-3xl font-[340] leading-[1.08] tracking-[-0.025em] sm:text-4xl">
                     What needed to be solved<span className="text-signal">.</span>
                   </h2>
-                </Reveal>
-                <StaggerGroup
-                  className={`grid gap-3 ${study.challengeMedia?.length || study.challengeComparisons?.length ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-2"}`}
-                  staggerDelay={0.05}
-                >
+                </div>
+                <StaggerGroup className={`grid gap-3 ${study.challengeMedia?.length ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-2"}`}>
                   {study.challenges.map((challenge, index) => (
                     <StaggerItem
                       key={challenge}
                       className={
-                        study.challengeMedia?.length || study.challengeComparisons?.length
-                          ? "rounded-lg bg-mist p-5 text-lg font-[330] tracking-[-0.01em] ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5 dark:bg-[#151514]"
+                        study.challengeMedia?.length
+                          ? "rounded-lg bg-mist p-5 text-lg font-[330] tracking-[-0.01em] ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5 dark:bg-[#151514] dark:hover:ring-white/10"
                           : "flex items-start gap-4 rounded-lg bg-mist p-6 text-lg font-[330] tracking-[-0.01em] ring-1 ring-black/5 transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift dark:bg-[#151514] dark:ring-white/10"
                       }
                     >
-                      {study.challengeMedia?.length || study.challengeComparisons?.length ? (
+                      {study.challengeMedia?.length ? (
                         challenge
                       ) : (
                         <>
@@ -161,30 +164,17 @@ export default async function CaseStudyPage({ params }: PageProps) {
                   ))}
                 </StaggerGroup>
               </div>
-              {study.challengeComparisons?.length ? (
-                <div className="mt-10 grid gap-6">
-                  {study.challengeComparisons.map((comparison) => (
-                    <Reveal key={comparison.label ?? comparison.before.src}>
-                      <BeforeAfterSlider before={comparison.before} after={comparison.after} label={comparison.label} />
-                    </Reveal>
-                  ))}
-                </div>
-              ) : study.challengeMedia?.length ? (
-                <Reveal delay={0.05}>
-                  <MediaGrid items={study.challengeMedia} className="mt-10" />
-                </Reveal>
-              ) : null}
+              {study.challengeMedia?.length ? <MediaGrid items={study.challengeMedia} className="mt-10" /> : null}
             </div>
-          </section>
+          </Reveal>
 
-          <section id="process" className="border-y border-black/10 px-6 py-16 dark:border-white/10 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
+          <Reveal as="section" className="border-y border-black/10 px-6 py-16 dark:border-white/10 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
             <div className="mx-auto max-w-[1400px]">
-              <Reveal>
-                <SectionEyebrow>Process and product decisions</SectionEyebrow>
-              </Reveal>
+              <SectionEyebrow>Process and product decisions</SectionEyebrow>
               <div className="mt-8 grid gap-6">
                 {study.sections.map((section, index) => (
                   <Reveal
+                    as="section"
                     key={`${section.title}-${index}`}
                     className="grid gap-8 border-t border-black/10 pt-8 dark:border-white/10 lg:grid-cols-[minmax(0,0.48fr)_minmax(320px,0.52fr)]"
                   >
@@ -230,30 +220,28 @@ export default async function CaseStudyPage({ params }: PageProps) {
                 ))}
               </div>
             </div>
-          </section>
+          </Reveal>
 
-          <section id="impact" className="px-6 py-16 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
-            <div className="mx-auto grid max-w-[1200px] gap-6 lg:grid-cols-2">
-              <Reveal>
+          <section className="px-6 py-16 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
+            <StaggerGroup className="mx-auto grid max-w-[1200px] gap-6 lg:grid-cols-2">
+              <StaggerItem>
                 <ImpactList title="Quantitative impact" items={study.impact.quantitative} />
-              </Reveal>
-              <Reveal delay={0.08}>
+              </StaggerItem>
+              <StaggerItem>
                 <ImpactList title="Qualitative impact" items={study.impact.qualitative} />
-              </Reveal>
-            </div>
+              </StaggerItem>
+            </StaggerGroup>
           </section>
 
           {study.nextSteps ? (
-            <section id="next-steps" className="px-6 pb-16 sm:px-8 sm:pb-20 lg:px-20 lg:pb-28 xl:px-24">
+            <Reveal as="section" className="px-6 pb-16 sm:px-8 sm:pb-20 lg:px-20 lg:pb-28 xl:px-24">
               <div className="mx-auto max-w-[1200px]">
-                <Reveal>
-                  <SectionEyebrow>Future opportunities</SectionEyebrow>
-                </Reveal>
-                <StaggerGroup className="mt-8 grid gap-4 md:grid-cols-3" staggerDelay={0.07}>
+                <SectionEyebrow>Future opportunities</SectionEyebrow>
+                <StaggerGroup className="mt-8 grid gap-4 md:grid-cols-3">
                   {study.nextSteps.map((step) => (
                     <StaggerItem
                       key={step.title}
-                      className="rounded-lg bg-mist p-6 ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5 dark:bg-[#151514]"
+                      className="rounded-lg bg-mist p-6 ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5 dark:bg-[#151514] dark:hover:ring-white/10"
                     >
                       <h3 className="text-xl font-[540] tracking-[-0.015em]">{step.title}</h3>
                       <p className="mt-3 text-base font-[330] leading-[1.45] text-black/64 dark:text-white/64">{step.text}</p>
@@ -261,28 +249,26 @@ export default async function CaseStudyPage({ params }: PageProps) {
                   ))}
                 </StaggerGroup>
               </div>
-            </section>
+            </Reveal>
           ) : null}
 
-          <section className="px-6 pb-20 sm:px-8 lg:px-20 xl:px-24">
-            <Reveal className="mx-auto max-w-[1200px]">
-              <div className="rounded-lg border border-black/5 bg-block-lime/80 p-8 text-ink shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-lg transition-[transform,box-shadow] duration-300 ease-premium hover:-translate-y-1 hover:shadow-[0_28px_80px_rgba(0,0,0,0.12)] dark:border-white/10 sm:p-10 lg:p-14">
-                <p className="font-mono text-xs uppercase tracking-[0.18em]">Next case study</p>
-                <div className="mt-8 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
-                  <h2 className="max-w-3xl text-balance text-4xl font-[340] leading-[1.06] tracking-[-0.03em] sm:text-5xl">
-                    {nextStudy.title}
-                    <span className="text-signal">.</span>
-                  </h2>
-                  <Link
-                    href={`/case-study/${nextStudy.slug}`}
-                    className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime"
-                  >
-                    Read next <ArrowRight size={16} aria-hidden="true" />
-                  </Link>
-                </div>
+          <Reveal as="section" className="px-6 pb-20 sm:px-8 lg:px-20 xl:px-24">
+            <div className="mx-auto rounded-lg bg-block-lime p-8 text-ink sm:p-10 lg:max-w-[1200px] lg:p-14">
+              <p className="font-mono text-xs uppercase tracking-[0.18em]">Next case study</p>
+              <div className="mt-8 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+                <h2 className="max-w-3xl text-balance text-4xl font-[340] leading-[1.06] tracking-[-0.03em] sm:text-5xl">
+                  {nextStudy.title}
+                  <span className="text-signal">.</span>
+                </h2>
+                <Link
+                  href={`/case-study/${nextStudy.slug}`}
+                  className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime"
+                >
+                  Read next <ArrowRight size={16} aria-hidden="true" />
+                </Link>
               </div>
-            </Reveal>
-          </section>
+            </div>
+          </Reveal>
         </article>
       </main>
       <Footer />
@@ -305,7 +291,7 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
 
 function ImpactList({ title, items }: { title: string; items: string[] }) {
   return (
-    <section className="rounded-lg bg-mist p-6 dark:bg-[#151514] sm:p-8">
+    <section className="rounded-lg bg-mist p-6 ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5 dark:bg-[#151514] dark:hover:ring-white/10 sm:p-8">
       <h2 className="text-3xl font-[340] leading-[1.08] tracking-[-0.025em]">{title}</h2>
       <ul className="mt-8 grid gap-4">
         {items.map((item) => (

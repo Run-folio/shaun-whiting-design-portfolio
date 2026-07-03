@@ -13,7 +13,6 @@ import {
   Repeat2,
   Route,
   Store,
-  TimerReset,
   Workflow,
 } from "lucide-react";
 import { CountUp, Magnetic, Reveal, StaggerGroup, StaggerItem } from "./motion";
@@ -45,12 +44,6 @@ const heroStats: HeroStat[] = [
 
 const principleIcons = [Route, Network, Gauge, Handshake, Repeat2];
 const journeyIcons = [Compass, Layers3, Store, Mountain];
-const enduranceItems = [
-  { icon: TimerReset, label: "Patience" },
-  { icon: Repeat2, label: "Iteration" },
-  { icon: Mountain, label: "Resilience" },
-  { icon: Compass, label: "Judgement" },
-];
 
 export function Navigation() {
   return <SiteNavigation />;
@@ -61,13 +54,13 @@ export function Hero() {
     <section className="relative isolate overflow-hidden bg-paper text-ink dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
       <MountainScene />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[30svh] bg-[linear-gradient(to_top,#ffffff_0%,rgba(255,255,255,0.92)_38%,rgba(255,255,255,0.4)_62%,rgba(255,255,255,0)_100%)] dark:bg-[linear-gradient(to_top,#0d0d0c_0%,rgba(13,13,12,0.92)_38%,rgba(13,13,12,0.4)_62%,rgba(13,13,12,0)_100%)]" />
-      <div className="relative z-10 px-6 pt-[92px] sm:px-8 lg:px-20 xl:px-24">
+      <div className="relative z-10 px-6 pt-[92px] sm:px-8 lg:pl-36 lg:pr-20 xl:pr-24">
         <Reveal className="grid min-h-[calc(76svh-92px)] items-center gap-8 py-10 sm:min-h-[calc(80svh-92px)] sm:gap-10 sm:py-14 lg:min-h-[calc(82svh-92px)] lg:grid-cols-[minmax(0,0.82fr)_minmax(340px,0.56fr)] lg:gap-12 lg:py-20 xl:gap-14">
           <div className="relative min-w-0">
             <p className="mb-6 font-mono text-[0.76rem] uppercase tracking-[0.28em] text-ink dark:text-white sm:mb-8 sm:text-[0.84rem] lg:mb-14 lg:text-[clamp(0.8rem,0.92vw,1.15rem)] lg:tracking-[0.36em]">
               Staff Product Designer
             </p>
-            <h1 className="max-w-[60rem] text-[clamp(4.35rem,20vw,7rem)] font-[310] leading-[0.92] tracking-[-0.055em] text-ink dark:text-[#f4f3ef] lg:text-[clamp(5.2rem,10.8vw,12rem)]">
+            <h1 className="max-w-[60rem] text-[clamp(3.95rem,18vw,6.6rem)] font-[310] leading-[0.92] tracking-[-0.055em] text-ink dark:text-[#f4f3ef] lg:text-[clamp(5.2rem,10.8vw,12rem)]">
               <span className="block">Complexity</span>
               <span className="block">
                 solved<span className="text-signal">.</span>
@@ -377,22 +370,18 @@ export function Testimonials() {
 export function RunningAdventure() {
   return (
     <section className="container-pad pt-14 pb-6 sm:pt-20 sm:pb-8">
-      <Reveal className="grid gap-8 rounded-[24px] bg-block-coral p-8 text-ink sm:p-12 lg:grid-cols-[0.72fr_1.05fr_0.55fr] lg:items-center lg:p-14">
-        <div>
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.16em] text-ink">Endurance</p>
-          <h2 className="text-balance text-4xl font-[340] leading-[1.04] tracking-[-0.025em] sm:text-5xl">Long efforts. Better judgment.</h2>
-        </div>
-        <p className="text-2xl font-[340] leading-[1.35] tracking-[-0.01em] text-ink">
-          Solving complex products isn&apos;t a sprint. Like endurance running, it requires patience, resilience and the discipline to keep improving until the simplest solution emerges.
-        </p>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-          {enduranceItems.map((item) => (
-            <div key={item.label} className="flex items-center gap-3 text-sm font-[540] text-ink">
-              <IconBadge icon={item.icon} size="sm" />
-              <span>{item.label}</span>
-            </div>
-          ))}
-        </div>
+      <Reveal className="rounded-[24px] bg-mist p-8 text-ink dark:bg-white/[0.06] dark:text-white sm:p-10 lg:p-12">
+        <Link
+          href="/more-about-me"
+          className="group flex flex-col gap-6 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-4 focus-visible:ring-offset-mist dark:focus-visible:ring-offset-[#151514] sm:flex-row sm:items-center sm:justify-between"
+        >
+          <h2 className="text-balance text-3xl font-[340] leading-[1.08] tracking-[-0.025em] sm:text-4xl">
+            Beyond design, movement keeps me curious.
+          </h2>
+          <span className="inline-flex shrink-0 items-center gap-2 text-base font-[540] tracking-[-0.01em] text-ink transition duration-200 group-hover:text-signal dark:text-white">
+            More about me <ArrowRight size={17} aria-hidden="true" />
+          </span>
+        </Link>
       </Reveal>
     </section>
   );
