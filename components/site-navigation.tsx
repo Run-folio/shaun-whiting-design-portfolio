@@ -72,7 +72,7 @@ export function SiteNavigation() {
             <div className="invisible absolute left-1/2 top-full w-[340px] -translate-x-1/2 pt-5 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
               <div className="rounded-2xl border border-black/10 bg-white p-3 shadow-[0_18px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#151514]">
                 {caseStudies.map((study) => {
-                  const primaryIndustry = study.industry.split("/")[0]?.trim() ?? study.industry;
+                  const primaryIndustry = study.slug === "rio" ? "AI Workflows | Energy" : study.industry.split("/")[0]?.trim() ?? study.industry;
 
                   return (
                     <Link

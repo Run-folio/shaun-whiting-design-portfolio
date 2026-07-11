@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { BeforeAfterSlider } from "@/components/before-after-slider";
 import { CaseStudyAnalytics } from "@/components/case-study-analytics";
+import { CaseStudyImage } from "@/components/case-study-image";
 import { CaseStudyRail } from "@/components/case-study-rail";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion";
 import { Footer, Navigation } from "@/components/ui";
@@ -62,6 +62,16 @@ export default async function CaseStudyPage({ params }: PageProps) {
     return eyebrow.includes("tradeoff") || eyebrow.includes("foundation");
   });
   const processSection = study.sections.find((section) => section.eyebrow?.toLowerCase() === "process");
+  const imageGallery = [
+    ...(study.overviewMedia ?? []),
+    ...(study.challengeMedia ?? []),
+    ...(study.challengeComparisons?.flatMap((comparison) => [comparison.before, comparison.after]) ?? []),
+    ...study.sections.flatMap((section) => section.media ?? []),
+    ...(study.postDecisionsShowcase ? [study.postDecisionsShowcase.media] : []),
+  ].filter(
+    (media, index, allMedia) =>
+      (media.type === undefined || media.type === "image") && allMedia.findIndex((candidate) => candidate.src === media.src) === index,
+  );
 
   const railItems = [
     { id: "overview", label: "Overview" },
@@ -132,7 +142,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
                       label="One screen where there were three: scanning moved into the start state so customers could begin with confidence."
                     />
                   ) : heroArtifact ? (
-                    <MediaFigure item={{ ...heroArtifact, wide: true }} />
+                    <MediaFigure item={{ ...heroArtifact, wide: true }} gallery={imageGallery} />
                   ) : null}
                 </div>
               </Reveal>
@@ -143,7 +153,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
             <section id="decisions" className="px-6 py-16 sm:px-8 sm:py-20 lg:px-20 lg:py-28 xl:px-24">
               <div className="mx-auto max-w-[1200px] space-y-20">
                 {decisions.slice(0, 3).map((section, index) => (
-                  <DecisionSection key={section.title} section={section} index={index} />
+                  <DecisionSection key={section.title} section={section} index={index} gallery={imageGallery} />
                 ))}
               </div>
             </section>
@@ -154,7 +164,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
               <Reveal className="mx-auto max-w-[1100px]">
                 <SectionEyebrow>{study.postDecisionsShowcase.eyebrow}</SectionEyebrow>
                 <div className="mt-6">
-                  <MediaFigure item={{ ...study.postDecisionsShowcase.media, wide: true }} />
+                  <MediaFigure item={{ ...study.postDecisionsShowcase.media, wide: true }} gallery={imageGallery} />
                 </div>
               </Reveal>
             </section>
@@ -208,7 +218,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
                       </p>
                     ) : null}
                     {processSection.media?.length ? (
-                      <MediaGrid items={processSection.media.slice(0, 3)} className="mt-8" compact />
+                      <MediaGrid items={processSection.media.slice(0, 3)} gallery={imageGallery} className="mt-8" compact />
                     ) : null}
                   </div>
                 </div>
@@ -314,6 +324,7 @@ function TldrColumn({ title, paragraphs }: { title: string; paragraphs: string[]
 function DecisionSection({
   section,
   index,
+  gallery,
 }: {
   section: {
     eyebrow?: string;
@@ -324,6 +335,7 @@ function DecisionSection({
     comparison?: { before: CaseStudyMedia; after: CaseStudyMedia; label?: string };
   };
   index: number;
+  gallery: CaseStudyMedia[];
 }) {
   const media = section.media;
   const text = (
@@ -350,7 +362,7 @@ function DecisionSection({
   const visual = section.comparison ? (
     <BeforeAfterSlider before={section.comparison.before} after={section.comparison.after} label={section.comparison.label} />
   ) : media?.length ? (
-    <MediaGrid items={media} />
+    <MediaGrid items={media} gallery={gallery} />
   ) : null;
 
   return (
@@ -397,7 +409,7 @@ function ImpactTable({ items }: { items: string[] }) {
   );
 }
 
-function MediaFigure({ item }: { item: CaseStudyMedia }) {
+function MediaFigure({ item, gallery = [item] }: { item: CaseStudyMedia; gallery?: CaseStudyMedia[] }) {
   return (
     <figure className="overflow-hidden rounded-lg bg-mist dark:bg-white/6">
       <div
@@ -422,7 +434,7 @@ function MediaFigure({ item }: { item: CaseStudyMedia }) {
             loading="lazy"
           />
         ) : (
-          <Image src={item.src} alt={item.alt ?? item.caption} width={1800} height={1100} sizes="100vw" className="h-auto w-full" />
+          <CaseStudyImage item={item} gallery={gallery} />
         )}
         {item.callouts?.length
           ? item.callouts.map((callout, index) => (
@@ -448,7 +460,17 @@ function MediaFigure({ item }: { item: CaseStudyMedia }) {
   );
 }
 
-function MediaGrid({ items, className = "", compact = false }: { items: CaseStudyMedia[]; className?: string; compact?: boolean }) {
+function MediaGrid({
+  items,
+  gallery,
+  className = "",
+  compact = false,
+}: {
+  items: CaseStudyMedia[];
+  gallery: CaseStudyMedia[];
+  className?: string;
+  compact?: boolean;
+}) {
   const wideItems = items.filter((item) => item.wide);
   const gridItems = items.filter((item) => !item.wide);
   const hasPortrait = gridItems.some((item) => item.portrait);
@@ -456,7 +478,7 @@ function MediaGrid({ items, className = "", compact = false }: { items: CaseStud
   return (
     <div className={`space-y-5 ${className}`}>
       {wideItems.map((item) => (
-        <MediaFigure key={`${item.src}-${item.caption}`} item={item} />
+        <MediaFigure key={`${item.src}-${item.caption}`} item={item} gallery={gallery} />
       ))}
       {gridItems.length ? (
         <div
@@ -471,7 +493,7 @@ function MediaGrid({ items, className = "", compact = false }: { items: CaseStud
           }`}
         >
           {gridItems.map((item) => (
-            <MediaFigure key={`${item.src}-${item.caption}`} item={item} />
+            <MediaFigure key={`${item.src}-${item.caption}`} item={item} gallery={gallery} />
           ))}
         </div>
       ) : null}

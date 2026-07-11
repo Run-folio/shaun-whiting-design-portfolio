@@ -177,19 +177,16 @@ export const caseStudies: CaseStudy[] = [
         body: "Stakeholder and field-team interviews, legacy ticket and SAP audit, end-to-end workflow mapping across roles and statuses, SAP Fiori alignment, high-fidelity flows and prototypes, and iteration with operations and back-office users.",
         media: [
           {
-            src: "/rio/rio-field-ticket.png",
-            alt: "A complex paper field ticket before Rio extraction",
-            caption: "The paper source material Rio had to understand and structure.",
-          },
-          {
-            src: "/rio/rio-workflow-map.jpg",
-            alt: "End-to-end Rio workflow map",
-            caption: "Mapping intake, extraction, exceptions, approvals and SAP posting.",
+            src: "/Approvals.jpg",
+            alt: "Rio approvals workflow and task states",
+            caption: "A single approval workflow, from exception review through to SAP posting.",
+            wide: true,
           },
           {
             src: "/rio/rio-approval-stages.jpg",
             alt: "Rio approval stages and task flow",
             caption: "Approval stages and role-based task flow.",
+            wide: true,
           },
         ],
       },
