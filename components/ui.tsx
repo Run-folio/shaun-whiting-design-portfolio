@@ -180,10 +180,7 @@ export function AboutPreview() {
         </div>
         <div className="max-w-3xl space-y-8 pt-1 text-xl font-[330] leading-[1.38] tracking-[-0.015em] text-ink dark:text-white sm:text-2xl lg:text-[1.68rem]">
           <p>
-            I&apos;m a Staff Product Designer with 16 years of experience designing AI, SaaS and enterprise products from zero to one through to platforms used by more than 67 million people. I specialise in simplifying complex systems, workflows and operational software into products that feel intuitive.
-          </p>
-          <p>
-            My work begins by understanding the business, the technology and the people using the product. By untangling complexity before designing interfaces, I help teams build products that are powerful underneath but simple to use.
+            I&apos;m a Staff Product Designer with 16 years&apos; experience designing AI, SaaS and enterprise products, from zero-to-one concepts to platforms used by more than 67 million people. I specialise in untangling complex systems, workflows and operational software so teams can build products that feel simple, capable and intuitive.
           </p>
         </div>
       </Reveal>

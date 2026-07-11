@@ -8,7 +8,7 @@ export type CaseStudyCallout = {
 };
 
 export type CaseStudyMedia = {
-  type?: "image" | "video";
+  type?: "image" | "video" | "embed";
   src: string;
   alt?: string;
   caption: string;
@@ -17,6 +17,8 @@ export type CaseStudyMedia = {
   portrait?: boolean;
   /** Optional numbered annotation pins layered over the image. */
   callouts?: CaseStudyCallout[];
+  /** When true, muted video begins playback once it enters the viewport. */
+  autoplayOnView?: boolean;
 };
 
 export type CaseStudy = {
@@ -36,6 +38,7 @@ export type CaseStudy = {
   duration?: string;
   intro: {
     challenge: string[];
+    approach?: string[];
     outcome: string[];
   };
   metrics: Array<{
@@ -46,13 +49,20 @@ export type CaseStudy = {
   challengeMedia?: CaseStudyMedia[];
   /** Real before/after pairs for the challenge section, rendered as a draggable comparison slider. */
   challengeComparisons?: Array<{ before: CaseStudyMedia; after: CaseStudyMedia; label?: string }>;
+  /** Optional full-width artifact shown immediately after the three decision sections. */
+  postDecisionsShowcase?: {
+    eyebrow: string;
+    media: CaseStudyMedia;
+  };
   challenges: string[];
   sections: Array<{
     eyebrow?: string;
     title: string;
     body?: string;
     bullets?: string[];
+    resultChip?: string;
     media?: CaseStudyMedia[];
+    comparison?: { before: CaseStudyMedia; after: CaseStudyMedia; label?: string };
   }>;
   impact: {
     quantitative: string[];
@@ -68,6 +78,138 @@ const cloudinaryImage = (publicId: string) => `https://res.cloudinary.com/dbt3wk
 
 export const caseStudies: CaseStudy[] = [
   {
+    slug: "rio",
+    shortTitle: "Rio",
+    eyebrow: "Convergent IS / Energy / AI Workflows",
+    title: "87% fewer manual touch-points in field ticketing with Rio",
+    summary:
+      "Rio turns hydrocarbon field tickets into approved SAP service entry sheets through AI extraction, exception handling and orchestrated approvals.",
+    image: "/rio/rio-field-ticket.png",
+    imageAlt: "A complex paper field ticket processed by Rio",
+    role: "Staff Product Designer, end-to-end UX",
+    industry: "Energy / AI Workflows",
+    year: "Convergent IS",
+    team: "North American energy operator",
+    intro: {
+      challenge: [
+        "Contractor labour, equipment and materials sheets arrived as paper tickets, duplicated, error-prone and re-keyed by hand into SAP through multiple touch-points.",
+      ],
+      approach: [
+        "Led the design of an AI-powered workflow for automated ticket extraction, purchase-order validation, exception-first review and orchestrated approvals.",
+      ],
+      outcome: [
+        "Rio cut manual touch-points by 87%, replacing manual re-keying with one connected system across field and back-office operations.",
+      ],
+    },
+    metrics: [
+      { value: "87%", label: "Fewer manual touch-points" },
+      { value: "Zero", label: "Re-keying into SAP" },
+      { value: "One", label: "Connected operational workflow" },
+      { value: "SAP", label: "Automated service-entry posting" },
+    ],
+    overviewMedia: [
+      {
+        type: "video",
+        src: "/rio/ses-flow-video.mp4",
+        caption: "SES flow prototype showing how Rio moves field tickets through extraction, review, approval and SAP posting.",
+        wide: true,
+        autoplayOnView: true,
+      },
+    ],
+    challenges: [
+      "Paper tickets duplicated across teams",
+      "Manual data entry into SAP",
+      "Rates and quantities drifting between systems",
+      "Approvals managed through inboxes",
+      "No shared view of status or ownership",
+      "Errors discovered late in the process",
+    ],
+    sections: [
+      {
+        eyebrow: "Decision 01 / 03",
+        title: "Let extraction do the typing",
+        body: "Field tickets carry dozens of labour, equipment and materials lines. Rio extracts them into structured draft sheets automatically, shifting the reviewer's job from data entry to verification while keeping every value traceable to its source.",
+        resultChip: "Result → manual touch-points down 87%",
+        media: [
+          {
+            src: "/Rio.png",
+            alt: "Rio field-ticket extraction interface",
+            caption: "Rio extracts field-ticket data into a structured draft ready for verification.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Decision 02 / 03",
+        title: "Review only what needs reviewing",
+        body: "Every extracted line is validated against the purchase order. Clean sheets flow through untouched; only mismatches ask for human attention, with a reason captured for every accepted exception or rejected line.",
+        resultChip: "Result → errors caught before they reach SAP",
+        media: [
+          {
+            src: "/Exceptions.png",
+            alt: "Rio exception-review interface",
+            caption: "Exception handling focuses attention on mismatches that need human judgment.",
+            wide: true,
+          },
+        ],
+      },
+      {
+        eyebrow: "Decision 03 / 03",
+        title: "Approvals as a workflow, not an inbox",
+        body: "Construction managers, coordinators and back-office roles see the sheets waiting on them as sequenced tasks with clear statuses. When the final approval lands, Rio posts the service entry sheet into SAP automatically.",
+        resultChip: "Result → zero re-keying into SAP",
+        media: [
+          {
+            src: "/Approve.png",
+            alt: "Rio approval workflow interface",
+            caption: "Role-based approvals are sequenced and tracked through to SAP posting.",
+            wide: true,
+          },
+        ],
+      },
+      {
+        eyebrow: "The tradeoff",
+        title: "Automate the work, not the judgment",
+        body: "Full automation was technically possible, but these sheets move real money against contracts. Rio keeps people exactly where judgment matters: exceptions, rate disputes and final approval. Everything routine is automated; everything consequential is reviewed.",
+      },
+      {
+        eyebrow: "Process",
+        title: "Mapping Rio's flow before designing the screens",
+        body: "Stakeholder and field-team interviews, legacy ticket and SAP audit, end-to-end workflow mapping across roles and statuses, SAP Fiori alignment, high-fidelity flows and prototypes, and iteration with operations and back-office users.",
+        media: [
+          {
+            src: "/rio/rio-field-ticket.png",
+            alt: "A complex paper field ticket before Rio extraction",
+            caption: "The paper source material Rio had to understand and structure.",
+          },
+          {
+            src: "/rio/rio-workflow-map.jpg",
+            alt: "End-to-end Rio workflow map",
+            caption: "Mapping intake, extraction, exceptions, approvals and SAP posting.",
+          },
+          {
+            src: "/rio/rio-approval-stages.jpg",
+            alt: "Rio approval stages and task flow",
+            caption: "Approval stages and role-based task flow.",
+          },
+        ],
+      },
+    ],
+    impact: {
+      quantitative: [
+        "Manual touch-points|-87%",
+        "SAP entry|Re-keying → automated posting",
+        "Ticket intake|Paper → extracted drafts",
+        "Systems in the flow|Many → one connected workflow",
+      ],
+      qualitative: [
+        "Errors and duplicates|Caught before posting",
+        "Operational visibility|A shared queue replaced the paper pile",
+        "Human review|Focused on consequential exceptions",
+        "Status model|Shared across field and back-office teams",
+      ],
+    },
+  },
+  {
     slug: "returns-kiosk",
     shortTitle: "Amazon Returns Kiosk",
     eyebrow: "Amazon / Logistics / Retail",
@@ -80,25 +222,27 @@ export const caseStudies: CaseStudy[] = [
     year: "Doddle / Blue Yonder",
     intro: {
       challenge: [
-        "Queues were building up in stores, staff were turning kiosks off or asking for more. The data pointed to major issues in high volume stores: high drop-out rates, offline kiosks, scanning friction and low CSAT.",
-        "Onsite research showed customers struggled to find the scanner, started the flow before finding their QR code, tried to return parcels that did not fit, and sometimes processed up to 20 orders in one visit.",
+        "Queues were building in high-volume stores and staff were turning kiosks off. Customers could not find the scanner, started the flow before finding their QR code and often dropped out before completing a return.",
+      ],
+      approach: [
+        "I led end-to-end UX from field research to handoff, combining the home and scan states, adding clearer parcel constraints and designing a multiple-return path for customers processing several orders.",
       ],
       outcome: [
-        "A redesigned consumer journey achieved significant improvements across journey time, drop-out, CSAT and kiosk uptime.",
-        "The work helped secure a 10x unit order worth $22.5 million and supported more than 40 million returns over three years.",
+        "The redesigned journey cut completion time from 90 seconds to 56 seconds, reduced drop-out from 20.59% to 6.58% and helped secure a 10x unit order worth $22.5 million.",
       ],
     },
     metrics: [
-      { value: "+69%", label: "Dropout rate improved from 20.59% to 6.58%." },
-      { value: "+28%", label: "Journey time improved from 89.94 to 64.47 seconds." },
-      { value: "+6%", label: "CSAT improved from 80.2 to 85.1." },
-      { value: "1500+", label: "New kiosks ordered in a 10x expansion worth $22.5M." },
+      { value: "$60M", label: "Operational cost savings" },
+      { value: "40M+", label: "Returns in three years" },
+      { value: "56 sec", label: "Journey time, down from 90 sec" },
+      { value: "$22.5M", label: "10x follow-on kiosk order" },
     ],
     overviewMedia: [
       {
-        src: cloudinaryImage("amazoncase2_tgcmw0.png"),
-        alt: "Research synthesis and opportunity mapping for Amazon returns kiosk",
-        caption: "Research synthesis from data, stakeholder interviews and onsite observation.",
+        src: "/Multi-Kiosk.png",
+        alt: "Amazon Returns Kiosk multiple-return redesign screens",
+        caption: "The redesigned kiosk flow brought scanning, constraints and multiple returns into a clearer customer journey.",
+        wide: true,
       },
       {
         src: cloudinaryImage("amazoncase3_wmo0i6.png"),
@@ -132,15 +276,10 @@ export const caseStudies: CaseStudy[] = [
     ],
     sections: [
       {
-        eyebrow: "Solution",
-        title: "Improving scanning, journey time, drop-outs and uptime",
-        body: "The home and scan screens were combined, removing a step and ensuring customers were ready with their QR code before entering the flow.",
-        bullets: [
-          "Removed a step by enabling scanning from the home screen",
-          "Added warning messaging for unsuitable items",
-          "Added tooltips to reduce hesitation",
-          "Added a scan-success animation",
-        ],
+        eyebrow: "Decision 01 / 03",
+        title: "Scan from the very first screen",
+        body: "Onsite research showed customers spent up to 45 seconds looking for their QR code mid-flow, or for the scanner itself. Combining the home and scan screens removed a full step and made the scanner location explicit. Warning messaging kept oversized, sharp and fragile items out of the kiosk before they could jam it, while a scan-success animation confirmed progress the moment customers needed reassurance.",
+        resultChip: "Result → 25 fewer steps in 450 journeys",
         media: [
           {
             src: cloudinaryImage("amazoncase8_juwrkx.png"),
@@ -150,67 +289,85 @@ export const caseStudies: CaseStudy[] = [
         ],
       },
       {
-        eyebrow: "Solution",
-        title: "Supporting multiple returns without slowing everyone down",
-        body: "Multiple returns were added for users with more than one QR code, reducing repeat journeys and improving queue flow in high-volume stores.",
-        bullets: [
-          "Added multiple returns to the decision screen",
-          "Designed a dedicated multiple-return journey",
-          "Used a dark theme to signal the user was still in-flow",
-          "Sped up animations throughout",
-        ],
+        eyebrow: "Decision 02 / 03",
+        title: "Multiple returns, without slowing the queue",
+        body: "Some customers processed up to 20 orders in a single visit, restarting the journey each time while the queue grew. A dedicated multiple-return path let them chain QR codes in one session. A dark theme signalled they were still in-flow, and animations were sped up throughout to keep the line moving.",
+        resultChip: "Result → fewer repeat journeys, faster queues",
         media: [
           {
-            src: cloudinaryImage("amazoncase9_jhaw9b.png"),
-            alt: "Amazon returns kiosk code accepted screen",
-            caption: "After: clearer scan feedback helped customers move forward with confidence.",
+            type: "embed",
+            src: "https://embed.figma.com/proto/UsS0AkbvzdqwtZ54w4v1sw/AMAZON-Kiosk-V2?node-id=6168-1473&embed-host=share&scaling=scale-down&content-scaling=fixed",
+            caption: "Interactive Figma prototype showing the multiple-return flow in motion.",
+            portrait: true,
           },
         ],
       },
       {
-        eyebrow: "Tradeoffs",
-        title: "Balancing revenue pressure with the happy path",
-        body: "One stakeholder group wanted to add a screensaver to drive revenue, while another wanted to protect the core journey. The compromise was a QR code on the final screen that linked to a discount voucher in the customer’s Amazon account wallet. It increased sales without affecting happy-path completion.",
-      },
-      {
-        eyebrow: "Process",
-        title: "Research, design, prototyping and testing",
-        bullets: [
-          "Opportunity solution tree",
-          "Data analysis",
-          "Stakeholder interviews and staff survey",
-          "User interviews and onsite field research",
-          "Affinity mapping and value / effort matrix",
-          "Sketched wireframes, flows, UI design and interaction design",
-          "High-fidelity prototypes, usability testing, development handover and QA",
-        ],
+        eyebrow: "Decision 03 / 03",
+        title: "Designed in the store, not the studio",
+        body: "Drop-out data pointed at the screens, but the failures were physical: hidden scanners, jammed hatch doors, parcels that did not fit and staff workarounds. I validated against real kiosk hardware, observed handover with engineering and used store context to protect uptime as much as screen completion.",
+        resultChip: "Result → increased kiosk uptime",
+        comparison: {
+          before: {
+            src: cloudinaryImage("amazoncase7_nqcd5t"),
+            alt: "Original Amazon returns kiosk home screen before redesign",
+            caption: "Before: the original kiosk start state separated scanning from the first action.",
+          },
+          after: {
+            src: cloudinaryImage("amazoncase5_iojjuv"),
+            alt: "Redesigned Amazon returns kiosk scan screen",
+            caption: "After: scanning moved into the home state to remove a step and reduce hesitation.",
+          },
+          label: "Before and after: scanning moved into the start state so customers could begin with confidence.",
+        },
         media: [
           {
             src: cloudinaryImage("amazoncase4_w6zzqt.jpg"),
             alt: "Amazon returns kiosk prototype testing setup",
             caption: "Prototype testing and handoff work with product and engineering.",
           },
+        ],
+      },
+      {
+        eyebrow: "The tradeoff",
+        title: "Balancing revenue pressure with the happy path",
+        body: "One stakeholder group wanted a screensaver to drive revenue; another wanted to protect the core journey. The compromise was a QR code on the final screen linking to a discount voucher in the customer’s Amazon account wallet, increasing sales without touching happy-path completion.",
+      },
+      {
+        eyebrow: "Process",
+        title: "Research, design, prototyping and testing",
+        body: "Opportunity solution tree, data analysis, stakeholder interviews and staff surveys, user interviews and onsite field research, affinity mapping and value / effort matrix, flows, UI design, usability testing, development handoff and QA.",
+        media: [
           {
-            type: "video",
-            src: "https://res.cloudinary.com/dbt3wkwa3/video/upload/v1745499868/kiosk-inwall_ylxpkc.mp4",
-            caption: "In-wall kiosk prototype showing the physical return flow in context.",
-            portrait: true,
+            src: cloudinaryImage("amazoncase2_tgcmw0.png"),
+            alt: "Research synthesis and opportunity mapping for Amazon returns kiosk",
+            caption: "Research synthesis: data, interviews and onsite observation.",
+          },
+          {
+            src: cloudinaryImage("amazoncase3_wmo0i6.png"),
+            alt: "Amazon returns kiosk design exploration",
+            caption: "Journey states and edge-case exploration.",
+          },
+          {
+            src: cloudinaryImage("amazoncase4_w6zzqt.jpg"),
+            alt: "Amazon returns kiosk prototype testing setup",
+            caption: "Onsite prototype testing in context.",
           },
         ],
       },
     ],
     impact: {
       quantitative: [
-        "40 million returns taken in three years",
-        "Journey time improved to under a minute",
-        "High CSAT in high-volume stores",
-        "10x order worth $22.5 million",
+        "Journey time|90s → 56s",
+        "Drop-out rate|20.59% → 6.58%",
+        "Returns processed|40M in 3 years",
+        "Follow-on unit order|10x, $22.5M",
       ],
       qualitative: [
-        "Significantly improved customer experience",
-        "Reduced store staff intervention",
-        "Improved queues",
-        "Increased kiosk uptime",
+        "Kiosk uptime|Increased",
+        "Store intervention|Reduced",
+        "Queue flow|Improved",
+        "Scanner confidence|Improved",
       ],
     },
   },
@@ -228,25 +385,26 @@ export const caseStudies: CaseStudy[] = [
     year: "Doddle / Blue Yonder",
     intro: {
       challenge: [
-        "Returns are broken: paper returns are unsustainable, staff time can be saved and logistics can be optimized to reduce waste. The platform needed to support merchants, consumers and carriers across a complex reverse-logistics model.",
-        "We needed to assess single and multi-item return flows, store tote closure and dispatch flows, task success, time on task, user satisfaction and qualitative feedback from return processing.",
+        "Returns are broken: paper labels are unsustainable, staff time leaks away and routing decisions waste money. The platform had to serve merchants, consumers and carriers across one complex reverse-logistics model.",
+      ],
+      approach: [
+        "I owned product strategy and UX architecture across the suite: consumer initiation, merchant rules and branding, orchestration and the store staff app, validated through usability testing and UAT on real flows.",
       ],
       outcome: [
-        "A unified platform helped merchants customize reverse logistics, manage policies, track returns, process items and connect existing systems in one place.",
-        "Testing showed high satisfaction, high completion rates and faster multiple-return processing as users became familiar with the flow.",
+        "A unified platform helped merchants run returns across five continents, with 32% more efficient processing, 88.2% user satisfaction and $12 million saved through smarter routing and store handling.",
       ],
     },
     metrics: [
-      { value: "32%", label: "Efficiency increase." },
-      { value: "$12M", label: "Cost savings." },
-      { value: "88.2%", label: "User satisfaction." },
-      { value: "53 sec", label: "Time to process two items." },
+      { value: "$12M", label: "Saved through optimized logistics" },
+      { value: "+32%", label: "Processing efficiency" },
+      { value: "88.2%", label: "User satisfaction" },
+      { value: "53 sec", label: "To process two items" },
     ],
     overviewMedia: [
       {
-        src: cloudinaryImage("portal5_v2acug.png"),
-        alt: "Returns platform merchant configuration screen",
-        caption: "Merchant configuration for rules, branding and return windows.",
+        src: "/RP1.png",
+        alt: "Returns platform overview interface",
+        caption: "Returns platform overview showing the redesigned product experience.",
       },
       {
         src: cloudinaryImage("portal6_fv7tts.png"),
@@ -255,61 +413,95 @@ export const caseStudies: CaseStudy[] = [
       },
     ],
     challenges: ["Sustainability", "Multi-user workflows", "Optimal reverse logistics", "Cost savings"],
+    postDecisionsShowcase: {
+      eyebrow: "The grading experience at a glance",
+      media: {
+        src: "/Grading.png",
+        alt: "Returns platform item-grading experience",
+        caption: "Grading decisions captured at the point of return, before warehouse routing.",
+        wide: true,
+      },
+    },
     sections: [
       {
-        eyebrow: "Discovery",
-        title: "Understanding the system before designing the interface",
-        body: "The work started with comprehensive research into existing systems and operational requirements.",
-        bullets: ["Stakeholder interviews and workshops", "Competitor research", "Hypothesis development", "Client requirements"],
-      },
-      {
-        eyebrow: "Design",
-        title: "A platform for rules, branding, routing and processing",
-        body: "The design work covered merchant setup, consumer initiation, rules configuration, returns tracking, store processing and carrier handoff.",
-        bullets: ["Sketches", "Wireframes", "Lo-fi visuals", "User flows", "Prototype", "Hi-fi designs", "Usability testing and UAT"],
-      },
-      {
-        eyebrow: "Store processing",
-        title: "Helping staff process and grade returns",
-        body: "Store staff can process and grade returns in a way that optimizes reverse logistics and supports downstream routing decisions.",
-        bullets: ["Return acceptance", "Item grading", "Optimized logistics", "Tote management", "Carrier shipping"],
+        eyebrow: "Decision 01 / 03",
+        title: "Returns start in the merchant's brand",
+        body: "Customers initiate a paperless return inside the retailer's own look and feel, then get a reason, pick the best drop-off point nearby and continue with a choice shaped by the merchant's rules. The product had to feel simple for shoppers while still respecting the policies, branding and routing logic behind the scenes.",
+        resultChip: "Result → paper labels removed from the flow",
         media: [
           {
-            src: cloudinaryImage("store2_oi4zh0.png"),
-            alt: "Store processing return acceptance interface",
-            caption: "Store processing flow for accepting and identifying returned items.",
-          },
-          {
-            src: cloudinaryImage("store3_g7fkzg.png"),
-            alt: "Store processing grading interface",
-            caption: "Grading interface to help staff make consistent routing decisions.",
-          },
-          {
-            src: cloudinaryImage("store4_en3nyf.png"),
-            alt: "Store processing dispatch interface",
-            caption: "Dispatch and tote-management states for carrier handoff.",
+            src: "/Returns.png",
+            alt: "Merchant-branded returns experience",
+            caption: "Consumer initiation, label-less and merchant branded.",
           },
         ],
       },
       {
-        eyebrow: "Features",
-        title: "Real-time inventory and customizable orchestration",
-        body: "The platform supports live monitoring of reverse logistics, inventory levels and shipments, alongside rules and recommendations based on historical data and market trends.",
-        bullets: ["Real-time returns inventory", "Customizable returns orchestration", "Policy windows", "Branding and rules", "Logistics optimization"],
+        eyebrow: "Decision 02 / 03",
+        title: "Rules merchants can read",
+        body: "Reverse logistics is really a policy problem. Instead of vendor tickets and config files, merchants write plain-language if/then rules for carrier selection, return windows, warehouse routing, non-resellable items and re-order them by priority. The same grammar covers branding, policies and routing, so one mental model runs the whole platform.",
+        resultChip: "Result → merchants configure routing without tickets",
+        media: [
+          {
+            src: "/rules.png",
+            alt: "Returns platform rules interface",
+            caption: "Merchant configuration: rules, branding and return windows.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Decision 03 / 03",
+        title: "Grade at the counter, not the warehouse",
+        body: "Store staff answer two plain questions about each item's condition. That early grade decides the item's route: resale, repair or warehouse, before it is ever shipped. The flow was measured on task success, time on task and satisfaction, and became sharper as staff learned it.",
+        resultChip: "Result → two items processed in 53 seconds",
+        media: [
+          {
+            src: "/Carrier.png",
+            alt: "Carrier routing and store processing interface",
+            caption: "Grading decisions captured before warehouse routing.",
+          },
+        ],
+      },
+      {
+        eyebrow: "The foundation",
+        title: "Built as a platform, not a feature",
+        body: "The same orchestration layer now extends beyond stores: warehouse processing with optimized grading, IoT integrations with kiosks hardware, and machine-learning recommendations built on live returns data and market trends.",
+      },
+      {
+        eyebrow: "Process",
+        title: "Understanding the system before designing the interface",
+        body: "Stakeholder interviews and workshops, competitor research, hypothesis development, client requirements, sketches, wireframes and user flows, lo-fi and hi-fi design, prototypes, usability testing and UAT.",
+        media: [
+          {
+            src: cloudinaryImage("portal5_v2acug.png"),
+            alt: "Returns platform merchant configuration screen",
+            caption: "Rules, assumptions and open questions.",
+          },
+          {
+            src: cloudinaryImage("portal6_fv7tts.png"),
+            alt: "Returns platform orchestration screen",
+            caption: "Service rooms and decisions.",
+          },
+          {
+            src: cloudinaryImage("store4_en3nyf.png"),
+            alt: "Store processing dispatch interface",
+            caption: "Service rooms and decisions.",
+          },
+        ],
       },
     ],
     impact: {
       quantitative: [
-        "$12M saved through optimized reverse logistics",
-        "32% efficiency increase",
-        "88.2% user satisfaction",
-        "53 seconds to complete processing two items",
+        "Logistics cost savings|$12M",
+        "Processing efficiency|+32%",
+        "User satisfaction|88.2%",
+        "Two-item processing|53 sec",
       ],
       qualitative: [
-        "More sustainable returns flows",
-        "Clearer control for merchants",
-        "Better store-processing experience",
-        "A foundation for warehouse processing, IoT expansion and machine-learning recommendations",
+        "Merchant control|Clearer",
+        "Paper-free focus|Increased",
+        "Store-processing confidence|Improved",
+        "Platform scope|Expanded",
       ],
     },
     nextSteps: [
@@ -347,7 +539,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     overviewMedia: [
       {
-        src: cloudinaryImage("v1744679353/ff3_qw3ra4.png"),
+        src: "/farfetch-mobile.png",
         alt: "Farfetch Store of the Future concept",
         caption: "Store of the Future concept connecting digital and physical retail.",
       },
@@ -369,6 +561,15 @@ export const caseStudies: CaseStudy[] = [
         caption: "Luxury product detail and shopping interactions.",
       },
     ],
+    postDecisionsShowcase: {
+      eyebrow: "The mobile experience at a glance",
+      media: {
+        src: "/ff.png",
+        alt: "Farfetch mobile app screens showing the redesigned shopping experience",
+        caption: "A broader view of the Farfetch mobile shopping experience across discovery, product detail and checkout moments.",
+        wide: true,
+      },
+    },
     challenges: [
       "Complex product catalog with multiple boutiques",
       "High-end user expectations",

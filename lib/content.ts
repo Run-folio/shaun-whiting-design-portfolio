@@ -13,6 +13,21 @@ export const metrics = [
 
 export const projects = [
   {
+    title: "Rio: AI field ticketing",
+    industry: "Energy / AI Workflows",
+    role: "Staff Product Designer, end-to-end UX",
+    outcome: "87% fewer manual touch-points with automated extraction, exception handling and SAP posting.",
+    summary:
+      "Designed an AI-powered workflow that turns complex hydrocarbon field tickets into validated, approved service entry sheets.",
+    outcomes: [
+      { value: "87%", label: "Fewer manual touch-points" },
+      { value: "Zero", label: "Re-keying into SAP" },
+      { value: "One", label: "Connected workflow" },
+    ],
+    image: "/Rio.png",
+    href: "/case-study/rio",
+  },
+  {
     title: "Amazon Returns Kiosk",
     industry: "Logistics / Retail",
     role: "Founding / Sr Staff Product Designer, end-to-end UX",
@@ -24,7 +39,7 @@ export const projects = [
       { value: "10x", label: "Increase in unit order value" },
       { value: "20.6%", label: "Dropout reduction" },
     ],
-    image: "/amazon-returns-kiosk.jpg",
+    image: "/kiosk.jpg",
     href: "/case-study/returns-kiosk",
   },
   {
@@ -39,7 +54,7 @@ export const projects = [
       { value: "5", label: "Continents supported" },
       { value: "B2B", label: "Returns orchestration platform" },
     ],
-    image: "/returns-platform.png",
+    image: "/Carrier.png",
     href: "/case-study/returns-platform",
   },
   {
