@@ -93,7 +93,7 @@ export function ImageLightbox({ images, selectedIndex, onClose, onSelect }: Imag
           </>
         ) : null}
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-[24px] bg-black">
-          <Image src={selectedImage.src} alt={selectedImage.alt} fill sizes="100vw" className="object-cover" priority />
+          <Image src={selectedImage.src} alt={selectedImage.alt} fill sizes="100vw" className="object-contain" priority />
         </div>
         <div className="shrink-0 px-5 py-4 sm:px-6">
           <div className="flex items-center justify-between gap-4">

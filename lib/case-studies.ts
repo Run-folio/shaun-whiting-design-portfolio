@@ -46,6 +46,11 @@ export type CaseStudy = {
     label: string;
   }>;
   overviewMedia?: CaseStudyMedia[];
+  /** Optional art-directed assets for the case-study hero test treatment. */
+  heroTestMedia?: {
+    desktop: CaseStudyMedia;
+    mobile: CaseStudyMedia;
+  };
   challengeMedia?: CaseStudyMedia[];
   /** Real before/after pairs for the challenge section, rendered as a draggable comparison slider. */
   challengeComparisons?: Array<{ before: CaseStudyMedia; after: CaseStudyMedia; label?: string }>;
@@ -116,6 +121,18 @@ export const caseStudies: CaseStudy[] = [
         autoplayOnView: true,
       },
     ],
+    heroTestMedia: {
+      desktop: {
+        src: "/rio/rio-hero-desktop.png",
+        alt: "Rio service-entry workspace shown in the case-study hero",
+        caption: "Rio hero artwork for desktop layouts.",
+      },
+      mobile: {
+        src: "/rio/rio-hero-mobile.png",
+        alt: "Rio service-entry workspace shown in the case-study hero",
+        caption: "Rio hero artwork for mobile layouts.",
+      },
+    },
     challenges: [
       "Paper tickets duplicated across teams",
       "Manual data entry into SAP",

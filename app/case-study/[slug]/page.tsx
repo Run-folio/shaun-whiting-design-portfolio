@@ -16,6 +16,9 @@ type PageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{
+    layout?: string;
+  }>;
 };
 
 export function generateStaticParams() {
@@ -41,8 +44,9 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-export default async function CaseStudyPage({ params }: PageProps) {
+export default async function CaseStudyPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const study = getCaseStudy(slug);
 
   if (!study) {
@@ -62,7 +66,12 @@ export default async function CaseStudyPage({ params }: PageProps) {
     return eyebrow.includes("tradeoff") || eyebrow.includes("foundation");
   });
   const processSection = study.sections.find((section) => section.eyebrow?.toLowerCase() === "process");
+  const isHeroArtifactTest = slug === "rio" && (resolvedSearchParams?.layout === "hero-artifact" || resolvedSearchParams?.layout === "hero-artifact-labeled");
+  const showHeroArtifactLabel = resolvedSearchParams?.layout === "hero-artifact-labeled";
+  const heroTestArtifact = slug === "rio" ? study.sections[0]?.media?.[0] ?? heroArtifact : heroArtifact;
+  const heroTestMedia = study.heroTestMedia ?? (heroTestArtifact ? { desktop: heroTestArtifact, mobile: heroTestArtifact } : undefined);
   const imageGallery = [
+    ...(study.heroTestMedia ? [study.heroTestMedia.desktop, study.heroTestMedia.mobile] : []),
     ...(study.overviewMedia ?? []),
     ...(study.challengeMedia ?? []),
     ...(study.challengeComparisons?.flatMap((comparison) => [comparison.before, comparison.after]) ?? []),
@@ -89,7 +98,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
       <CaseStudyRail items={railItems} />
       <main className="bg-paper text-ink dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
         <article>
-          <header id="overview" className="px-6 pb-12 pt-28 sm:px-8 lg:px-20 lg:pt-32 xl:px-24">
+          <header id="overview" className={`px-6 ${isHeroArtifactTest ? "pb-0" : "pb-12"} pt-28 sm:px-8 lg:px-20 lg:pt-32 xl:px-24`}>
             <div className="mx-auto max-w-[1400px]">
               <Link
                 href="/#work"
@@ -117,6 +126,14 @@ export default async function CaseStudyPage({ params }: PageProps) {
                   </dl>
                 </Reveal>
               </div>
+              {isHeroArtifactTest && heroTestMedia ? (
+                <div className="mt-12 sm:mt-14">
+                  {showHeroArtifactLabel ? <SectionEyebrow>The redesign at a glance</SectionEyebrow> : null}
+                  <div className={`${showHeroArtifactLabel ? "mt-5" : ""} mx-auto max-w-[1100px]`}>
+                    <HeroArtifact desktop={heroTestMedia.desktop} mobile={heroTestMedia.mobile} gallery={imageGallery} />
+                  </div>
+                </div>
+              ) : null}
             </div>
           </header>
 
@@ -457,6 +474,19 @@ function MediaFigure({ item, gallery = [item] }: { item: CaseStudyMedia; gallery
         {item.caption}
       </figcaption>
     </figure>
+  );
+}
+
+function HeroArtifact({ desktop, mobile, gallery }: { desktop: CaseStudyMedia; mobile: CaseStudyMedia; gallery: CaseStudyMedia[] }) {
+  return (
+    <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg sm:aspect-[16/5]">
+      <div className="absolute inset-0 sm:hidden">
+        <CaseStudyImage item={mobile} gallery={gallery} />
+      </div>
+      <div className="absolute inset-0 hidden sm:block">
+        <CaseStudyImage item={desktop} gallery={gallery} />
+      </div>
+    </div>
   );
 }
 
