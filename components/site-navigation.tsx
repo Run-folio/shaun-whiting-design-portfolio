@@ -14,6 +14,12 @@ const primaryLinks = [
   { label: "Contact", href: "/#contact" },
 ];
 
+const journeyPrototype = {
+  label: "Tokyo Marathon+",
+  detail: "Interactive prototype · travel companion",
+  href: "/journey",
+};
+
 export function SiteNavigation() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -26,6 +32,13 @@ export function SiteNavigation() {
       case_study_slug: slug,
       case_study_title: title,
       cta_label: ctaLabel,
+    });
+  }
+
+  function handleJourneyPrototypeClick(location: string) {
+    trackEvent("journey_prototype_clicked", {
+      cta_label: journeyPrototype.label,
+      location,
     });
   }
 
@@ -88,6 +101,16 @@ export function SiteNavigation() {
                     </Link>
                   );
                 })}
+                <Link
+                  href={journeyPrototype.href}
+                  onClick={() => handleJourneyPrototypeClick("Work dropdown")}
+                  className="group mt-2 block rounded-xl border border-signal/25 bg-signal/[0.045] px-4 py-3 transition duration-200 hover:bg-signal hover:text-white dark:border-signal/40 dark:bg-signal/10"
+                >
+                  <span className="block text-sm font-[540] tracking-[-0.01em]">{journeyPrototype.label}</span>
+                  <span className="mt-1 block font-mono text-[0.64rem] uppercase tracking-[0.14em] text-signal transition-colors group-hover:text-white">
+                    {journeyPrototype.detail}
+                  </span>
+                </Link>
               </div>
             </div>
           </div>
@@ -166,6 +189,16 @@ export function SiteNavigation() {
                   {study.shortTitle ?? study.title}
                 </MobileLink>
               ))}
+              <MobileLink
+                href={journeyPrototype.href}
+                onClick={() => {
+                  handleJourneyPrototypeClick("Mobile work menu");
+                  closeMenu();
+                }}
+                small
+              >
+                {journeyPrototype.label} <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-signal">· Prototype</span>
+              </MobileLink>
             </div>
             {primaryLinks.slice(2).map((item) => (
               <MobileLink key={item.href} href={item.href} onClick={closeMenu}>

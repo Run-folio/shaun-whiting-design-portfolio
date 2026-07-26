@@ -25,6 +25,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    {
+      url: `${siteUrl}/journey`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
     ...caseStudies.map((study) => ({
       url: `${siteUrl}/case-study/${study.slug}`,
       lastModified: now,
@@ -33,4 +39,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   ];
 }
-

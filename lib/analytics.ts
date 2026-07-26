@@ -4,6 +4,7 @@ export type AnalyticsEventName =
   | "linkedin_clicked"
   | "case_study_opened"
   | "case_study_cta_clicked"
+  | "journey_prototype_clicked"
   | "scroll_depth_reached"
   | "copy_email_clicked"
   | "book_call_clicked";
@@ -70,4 +71,3 @@ export function trackEvent(eventName: AnalyticsEventName, properties: AnalyticsE
     // Analytics should never affect portfolio UX.
   }
 }
-
