@@ -13,7 +13,6 @@ import {
   Repeat2,
   Route,
   Store,
-  Workflow,
 } from "lucide-react";
 import { CountUp, Magnetic, Reveal, StaggerGroup, StaggerItem } from "./motion";
 import { MountainScene } from "./mountain-scene";
@@ -21,12 +20,7 @@ import { SiteNavigation } from "./site-navigation";
 import { TrackedAnchor, TrackedLink } from "./tracked-link";
 import { journey, principles, projects, testimonials } from "@/lib/content";
 
-const capabilityItems = [
-  { icon: Network, label: "Complex systems", detail: "Understanding workflows, states, rules and operational complexity." },
-  { icon: Workflow, label: "AI Products", detail: "Designing human-AI workflows that improve decisions rather than replace them." },
-  { icon: Layers3, label: "Design systems", detail: "Building scalable foundations that accelerate teams." },
-  { icon: Gauge, label: "Product Strategy", detail: "Connecting user needs with measurable business outcomes." },
-];
+const capabilityTags = ["AI", "B2B SaaS", "Logistics", "Ecommerce", "Design systems", "UX strategy"];
 
 type HeroStat = {
   label: string;
@@ -170,7 +164,7 @@ export function SectionHeader({
 
 export function AboutPreview() {
   return (
-    <section id="about" className="container-pad scroll-mt-28 py-20 sm:py-24 lg:py-32">
+    <section id="about" className="container-pad scroll-mt-28 py-16 sm:py-20 lg:py-24">
       <Reveal className="grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,1fr)] lg:gap-20">
         <div>
           <p className="mb-5 font-mono text-xs uppercase tracking-[0.16em] text-signal">About</p>
@@ -184,9 +178,11 @@ export function AboutPreview() {
           </p>
         </div>
       </Reveal>
-      <Reveal delay={0.08} className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {capabilityItems.map((item) => (
-          <CapabilityItem key={item.label} icon={item.icon} label={item.label} detail={item.detail} />
+      <Reveal delay={0.08} className="mt-10 flex flex-wrap gap-2.5 sm:mt-12">
+        {capabilityTags.map((tag) => (
+          <span key={tag} className="rounded-full bg-mist px-3.5 py-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink dark:bg-white/[0.08] dark:text-white">
+            {tag}
+          </span>
         ))}
       </Reveal>
     </section>
@@ -468,18 +464,6 @@ export function Footer() {
         <p>Product design, systems thinking and careful execution.</p>
       </div>
     </footer>
-  );
-}
-
-function CapabilityItem({ icon, label, detail }: { icon: LucideIcon; label: string; detail: string }) {
-  return (
-    <div className="group flex min-h-[14.5rem] flex-col rounded-lg bg-block-lime p-6 text-ink shadow-none ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5">
-      <IconBadge icon={icon} size="sm" accentOnHover />
-      <div className="mt-12">
-        <p className="text-lg font-[540] tracking-[-0.01em]">{label}</p>
-        <p className="mt-2 text-base font-[330] leading-[1.45] tracking-[-0.01em]">{detail}</p>
-      </div>
-    </div>
   );
 }
 

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, CalendarDays, Check, ChevronLeft, ChevronRight, MapPin, Mountain, Plane, Plus, Sparkles, TrainFront, Users, X } from "lucide-react";
-import { KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, CalendarDays, CalendarRange, Check, ChevronLeft, ChevronRight, FileText, GripVertical, LoaderCircle, MapPin, Mountain, Plane, Plus, Sparkles, TrainFront, Upload, Users, X } from "lucide-react";
+import { DragEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
 import { featuredAttractions, rankedCountryPlaces } from "@/lib/world-discovery";
+import { MountainScene } from "@/components/mountain-scene";
 import styles from "./new-trip.module.css";
 
 const interests = ["Food", "Nature", "Cities", "Beach"];
@@ -33,6 +34,16 @@ type ResearchPlan = {
   researchNext: string[];
 };
 type ResearchState = "idle" | "loading" | "ready" | "configuration" | "error";
+type ImportedPlan = {
+  sourceName: string;
+  origin?: string;
+  startDate?: string;
+  endDate?: string;
+  travellers?: string;
+  stops: string[];
+  mustDos: string[];
+  notes: string[];
+};
 
 const defaultBrief: Brief = {
   origin: "Guatemala City",
@@ -40,7 +51,7 @@ const defaultBrief: Brief = {
   startDate: "2027-03-01",
   endDate: "2027-03-16",
   duration: "16",
-  travellers: "Two adults",
+  travellers: "2 travellers",
   anchor: "",
   interests: ["Food", "Nature", "Cities"],
   constraints: ["Slow pace", "Fewer hotel changes"],
@@ -126,6 +137,63 @@ function dateAfter(startDate: string, duration: number) {
   return date.toISOString().slice(0, 10);
 }
 
+function uniqueValues(values: string[]) {
+  return [...new Set(values.map((value) => value.replace(/\s+/g, " ").trim()).filter(Boolean).map((value) => value.toLowerCase()))]
+    .map((value) => values.find((candidate) => candidate.replace(/\s+/g, " ").trim().toLowerCase() === value)?.replace(/\s+/g, " ").trim() ?? value);
+}
+
+function normaliseImportedDate(value: string) {
+  const iso = value.match(/\b(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})\b/);
+  if (iso) return `${iso[1]}-${iso[2].padStart(2, "0")}-${iso[3].padStart(2, "0")}`;
+  const written = value.match(/\b([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(20\d{2}))?\b/);
+  if (!written) return undefined;
+  const parsed = new Date(`${written[1]} ${written[2]}, ${written[3] ?? new Date().getFullYear()}`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString().slice(0, 10);
+}
+
+function cleanImportedPlace(value: string) {
+  return value
+    .replace(/^\s*(?:day\s*\d+|\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?|\d+)[\s:|—–-]*/i, "")
+    .replace(/\b(?:hotel|check-?in|flight|train|airport|booking|reservation|notes?)\b.*$/i, "")
+    .replace(/[•·]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isPlausibleImportedPlace(value: string) {
+  const candidate = cleanImportedPlace(value);
+  if (candidate.length < 3 || candidate.length > 64) return false;
+  if (/\b(?:arrival|departure|free day|travel day|flight|train|hotel|breakfast|lunch|dinner|transfer|check in|check-in)\b/i.test(candidate)) return false;
+  return /^[\p{L}\p{N}][\p{L}\p{N}\s'’.,&()-]*$/u.test(candidate);
+}
+
+function extractImportPlan(rawText: string, sourceName: string): ImportedPlan {
+  const lines = rawText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const dates = uniqueValues(lines.flatMap((line) => line.match(/\b20\d{2}[-/.]\d{1,2}[-/.]\d{1,2}\b|\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+20\d{2})?\b/gi) ?? []).map(normaliseImportedDate).filter((date): date is string => Boolean(date))).sort();
+  const labelled = (label: string) => lines.map((line) => line.match(new RegExp(`^\\s*${label}\\s*[:—–-]\\s*(.+)$`, "i"))?.[1]).filter((value): value is string => Boolean(value));
+  const routePieces = lines.flatMap((line) => line.includes("→") || line.includes("->") ? line.split(/(?:→|->)/) : []);
+  const tabularCandidates = lines.flatMap((line) => {
+    const cells = line.split(/\t|\||;/).map(cleanImportedPlace).filter(Boolean);
+    if (cells.length >= 2) return cells.slice(0, 3);
+    const commaCells = line.split(",").map(cleanImportedPlace).filter(Boolean);
+    return commaCells.length >= 2 ? commaCells.slice(0, 2) : [];
+  });
+  const explicitStops = [...labelled("destination"), ...labelled("stop"), ...labelled("place"), ...labelled("city"), ...routePieces, ...tabularCandidates];
+  const fallbackStops = lines.filter((line) => /^(?:day\s*\d+|\d{1,2}[./-]\d{1,2})/i.test(line)).map((line) => cleanImportedPlace(line.split(/[:|—–-]/).at(-1) ?? line));
+  const stops = uniqueValues([...explicitStops, ...fallbackStops].map(cleanImportedPlace).filter(isPlausibleImportedPlace)).slice(0, 12);
+  const mustDos = uniqueValues([...labelled("must[- ]?do"), ...labelled("highlight"), ...labelled("non[- ]?negotiable")].map(cleanImportedPlace).filter(isPlausibleImportedPlace)).slice(0, 4);
+  return {
+    sourceName,
+    origin: labelled("from|origin|starting from")[0],
+    startDate: dates[0],
+    endDate: dates.at(-1),
+    travellers: labelled("travellers?|travelers?|who is going")[0],
+    stops,
+    mustDos,
+    notes: lines.filter((line) => /\b(?:booked|reservation|hotel|flight|train|confirm)\b/i.test(line)).slice(0, 4),
+  };
+}
+
 function buildDraftDays(destinations: Destination[], totalDays: number, startDate: string, anchor: string, selectedInterests: string[], picks: Record<string, string[]>, pickDetails: Record<string, DiscoveryPlace[]>, pace: "fewer" | "more"): DraftDay[] {
   if (!destinations.length) return [];
   const allocations = destinations.map(() => Math.max(2, Math.floor(totalDays / destinations.length)));
@@ -185,6 +253,7 @@ export default function NewTripPage() {
   const [step, setStep] = useState(0);
   const [brief, setBrief] = useState<Brief>(defaultBrief);
   const [destinationInput, setDestinationInput] = useState("");
+  const [draggedDestinationId, setDraggedDestinationId] = useState<string | null>(null);
   const [locationMessage, setLocationMessage] = useState("");
   const [isValidatingLocation, setIsValidatingLocation] = useState(false);
   const [mustDoInput, setMustDoInput] = useState(defaultBrief.anchor);
@@ -197,6 +266,10 @@ export default function NewTripPage() {
   const [researchState, setResearchState] = useState<ResearchState>("idle");
   const [researchPlan, setResearchPlan] = useState<ResearchPlan | null>(null);
   const [researchMessage, setResearchMessage] = useState("");
+  const [importText, setImportText] = useState("");
+  const [importedPlan, setImportedPlan] = useState<ImportedPlan | null>(null);
+  const [importMessage, setImportMessage] = useState("");
+  const [isReadingImport, setIsReadingImport] = useState(false);
   const duration = Math.max(1, Number.parseInt(brief.duration, 10) || tripLength(brief.startDate, brief.endDate, 12));
   const scopedSelections = useMemo(() => scopeSelectionData(brief.destinations, brief.picks, brief.pickDetails), [brief.destinations, brief.picks, brief.pickDetails]);
   const itineraryPace = brief.constraints.includes("Slow pace") ? "fewer" : "more";
@@ -277,12 +350,28 @@ export default function NewTripPage() {
     const destinations = current.destinations.filter((destination) => destination.id !== id);
     return { ...current, destinations, ...scopeSelectionData(destinations, current.picks, current.pickDetails) };
   });
-  const moveDestination = (index: number, direction: -1 | 1) => {
-    const nextIndex = index + direction;
-    if (nextIndex < 0 || nextIndex >= brief.destinations.length) return;
-    const next = [...brief.destinations];
-    [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
-    update("destinations", next);
+  const moveDestination = (sourceId: string, targetId: string) => {
+    if (sourceId === targetId) return;
+    setBrief((current) => {
+      const sourceIndex = current.destinations.findIndex((destination) => destination.id === sourceId);
+      const targetIndex = current.destinations.findIndex((destination) => destination.id === targetId);
+      if (sourceIndex < 0 || targetIndex < 0) return current;
+      const destinations = [...current.destinations];
+      const [moving] = destinations.splice(sourceIndex, 1);
+      destinations.splice(targetIndex, 0, moving);
+      return { ...current, destinations };
+    });
+  };
+  const destinationDragStart = (event: DragEvent<HTMLDivElement>, id: string) => {
+    setDraggedDestinationId(id);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", id);
+  };
+  const destinationDrop = (event: DragEvent<HTMLDivElement>, targetId: string) => {
+    event.preventDefault();
+    const sourceId = draggedDestinationId ?? event.dataTransfer.getData("text/plain");
+    if (sourceId) moveDestination(sourceId, targetId);
+    setDraggedDestinationId(null);
   };
   const destinationKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") { event.preventDefault(); addDestination(); }
@@ -328,6 +417,85 @@ export default function NewTripPage() {
     const nextDuration = Math.max(1, Number.parseInt(value, 10) || 1);
     return { ...current, duration: String(nextDuration), endDate: dateAfter(current.startDate, nextDuration) };
   });
+  const reviewImportedPlan = (rawText: string, sourceName: string) => {
+    if (!rawText.trim()) { setImportMessage("Paste a few itinerary lines or choose a file first."); return; }
+    const plan = extractImportPlan(rawText, sourceName);
+    setImportedPlan(plan);
+    setImportMessage(plan.stops.length || plan.mustDos.length || plan.startDate ? "Review what EasyT found, then apply only the verified details you want." : "No clear dates or places found yet. Try a more structured itinerary, with one place per line.");
+  };
+  const readImportedFile = async (file: File) => {
+    setIsReadingImport(true);
+    setImportMessage("");
+    try {
+      let text = "";
+      const name = file.name.toLowerCase();
+      if (name.endsWith(".csv") || name.endsWith(".txt")) {
+        text = await file.text();
+      } else if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+        const XLSX = await import("xlsx");
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+        text = workbook.SheetNames.map((sheetName) => XLSX.utils.sheet_to_csv(workbook.Sheets[sheetName])).join("\n");
+      } else if (name.endsWith(".docx")) {
+        const mammoth = await import("mammoth");
+        const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+        text = result.value;
+      } else {
+        setImportMessage("Use a CSV, XLSX, DOCX or plain-text file for now.");
+        return;
+      }
+      setImportText(text);
+      reviewImportedPlan(text, file.name);
+    } catch {
+      setImportMessage("EasyT couldn’t read that file. Try exporting it as CSV or DOCX.");
+    } finally {
+      setIsReadingImport(false);
+    }
+  };
+  const applyImportedPlan = async () => {
+    if (!importedPlan) return;
+    setIsReadingImport(true);
+    setImportMessage("Checking imported places against the map…");
+    try {
+      const outcomes = await Promise.all(importedPlan.stops.map(async (place) => {
+        const response = await fetch(`/api/journey-geocode?place=${encodeURIComponent(place)}`);
+        const data = await response.json() as { result?: { name?: string; country?: string; coordinates?: [number, number]; kind?: string } | null };
+        return data.result?.name && data.result.country && data.result.coordinates ? data.result : null;
+      }));
+      const importedMustDo = importedPlan.mustDos[0];
+      const mustDoResponse = importedMustDo ? await fetch(`/api/journey-geocode?place=${encodeURIComponent(importedMustDo)}`) : null;
+      const mustDoData = mustDoResponse ? await mustDoResponse.json() as { result?: { name?: string; country?: string; coordinates?: [number, number] } | null } : null;
+      const verifiedMustDo = mustDoData?.result?.name && mustDoData.result.country && mustDoData.result.coordinates ? mustDoData.result.name : undefined;
+      const verified = outcomes.filter((result): result is { name: string; country: string; coordinates: [number, number]; kind?: string } => Boolean(result))
+        .filter((result, index, list) => list.findIndex((candidate) => candidate.name.toLowerCase() === result.name.toLowerCase() && candidate.country.toLowerCase() === result.country.toLowerCase()) === index)
+        .map((result, index) => ({ id: `import-${result.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${index}`, ...result }));
+      setBrief((current) => {
+        const startDate = importedPlan.startDate ?? current.startDate;
+        const endDate = importedPlan.endDate ?? current.endDate;
+        const destinations = verified.length ? verified : current.destinations;
+        return {
+          ...current,
+          origin: importedPlan.origin ?? current.origin,
+          travellers: importedPlan.travellers ?? current.travellers,
+          startDate,
+          endDate,
+          duration: String(tripLength(startDate, endDate, Number.parseInt(current.duration, 10) || 1)),
+          anchor: verifiedMustDo ?? current.anchor,
+          destinations,
+          ...scopeSelectionData(destinations, {}, {}),
+        };
+      });
+      if (importedMustDo) setMustDoInput(verifiedMustDo ?? importedMustDo);
+      if (verified.length) {
+        setImportMessage(`Applied ${verified.length} verified stop${verified.length === 1 ? "" : "s"}${verifiedMustDo ? " and your verified must-do" : ""}. You can refine them below.`);
+      } else {
+        setImportMessage("Dates and notes were applied, but no imported places could be verified. Add them manually below.");
+      }
+    } catch {
+      setImportMessage("EasyT couldn’t verify the imported places. You can still add them individually.");
+    } finally {
+      setIsReadingImport(false);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -383,6 +551,7 @@ export default function NewTripPage() {
 
   return (
     <main className={styles.page}>
+      <MountainScene />
       <header className={styles.header}>
         <Link href="/journey" className={styles.back}><ArrowLeft /> EasyT · Travel companion prototype</Link>
         <div className={styles.easyT} aria-label="EasyT"><span>Easy</span><b>T</b></div>
@@ -390,7 +559,7 @@ export default function NewTripPage() {
       </header>
 
       <section className={styles.intro}>
-        <p className={styles.eyebrow}>EasyT</p>
+        <p className={styles.eyebrow}>EASYT · MAKE THE BUCKET LIST REAL</p>
         <h1>{generated ? "Your first plan." : ["Build your trip.", "Pick your places.", "Set the pace.", "Review your plan."][step]}</h1>
         {generated ? <p className={styles.lede}>Edit the route before turning it into your map-led itinerary.</p> : null}
       </section>
@@ -402,16 +571,41 @@ export default function NewTripPage() {
           </nav>
           <div className={styles.formArea}>
             {step === 0 ? <>
-              <div className={styles.formHeading}><span>01</span><div><h2>Trip basics</h2><p>Destinations, dates, travellers.</p></div></div>
-              <div className={styles.fieldGrid}><label>Starting from<input value={brief.origin} onChange={(event) => update("origin", event.target.value)} placeholder="City or airport" /></label><label>Who is going?<input value={brief.travellers} onChange={(event) => update("travellers", event.target.value)} placeholder="Two adults" /></label></div>
+              <section className={styles.planImport} aria-labelledby="plan-import-title">
+                <div className={styles.planImportHead}>
+                  <div>
+                    <small>ALREADY HAVE A PLAN?</small>
+                    <h3 id="plan-import-title">Start from what you have.</h3>
+                  </div>
+                  <label className={styles.uploadPlan}>
+                    {isReadingImport ? <LoaderCircle className={styles.spinner} /> : <Upload />}
+                    <span>{isReadingImport ? "Reading…" : "Upload plan"}</span>
+                    <input type="file" accept=".csv,.txt,.xlsx,.xls,.docx" onChange={(event) => {
+                      const file = event.currentTarget.files?.[0];
+                      if (file) void readImportedFile(file);
+                      event.currentTarget.value = "";
+                    }} />
+                  </label>
+                </div>
+                {importedPlan ? <div className={styles.importReview}>
+                  <div><small>{importedPlan.sourceName}</small><strong>Found {importedPlan.stops.length} possible stop{importedPlan.stops.length === 1 ? "" : "s"}</strong></div>
+                  {importedPlan.startDate || importedPlan.endDate ? <p>{importedPlan.startDate ?? "Date?"} → {importedPlan.endDate ?? "Date?"}</p> : null}
+                  {importedPlan.stops.length ? <div className={styles.importChips}>{importedPlan.stops.map((place) => <span key={place}><MapPin /> {place}</span>)}</div> : null}
+                  {importedPlan.mustDos.length ? <div className={styles.importMustDos}><Mountain /> Must-do: {importedPlan.mustDos.join(" · ")}</div> : null}
+                  {importedPlan.notes.length ? <div className={styles.importNotes}><FileText /><div><small>BOOKING CUES</small>{importedPlan.notes.slice(0, 3).map((note) => <span key={note}>{note}</span>)}</div></div> : null}
+                  <button type="button" className={styles.applyImportButton} onClick={() => void applyImportedPlan()} disabled={isReadingImport}><Check /> Apply verified details</button>
+                </div> : null}
+                {importMessage ? <p className={styles.importMessage} role="status">{importMessage}</p> : null}
+              </section>
+              <div className={styles.dateGrid}><label><span className={styles.dateLabel}><CalendarDays /> Start date</span><input type="date" value={brief.startDate} onChange={(event) => setStartDate(event.target.value)} onInput={(event) => setStartDate(event.currentTarget.value)} /></label><label><span className={styles.dateLabel}><CalendarDays /> End date</span><input type="date" value={brief.endDate} min={brief.startDate} onChange={(event) => setEndDate(event.target.value)} onInput={(event) => setEndDate(event.currentTarget.value)} /></label><label><span className={styles.dateLabel}><CalendarRange /> Trip length</span><input type="number" min="1" value={brief.duration} onChange={(event) => setDuration(event.target.value)} /></label></div>
+              <div className={styles.fieldGrid}><label>Starting from<input value={brief.origin} onChange={(event) => update("origin", event.target.value)} placeholder="City or airport" /></label><label>How many are going?<select value={brief.travellers} onChange={(event) => update("travellers", event.target.value)} aria-label="How many are going?"><option value="" disabled>Select travellers</option>{[1, 2, 3, 4, 5, 6, 7, 8].map((count) => <option key={count} value={`${count} traveller${count === 1 ? "" : "s"}`}>{count} traveller{count === 1 ? "" : "s"}</option>)}</select></label></div>
               <div className={styles.destinationBuilder}>
-                <div className={styles.destinationBuilderHead}><label>Where are you going?</label><small>{brief.destinations.length} stop{brief.destinations.length === 1 ? "" : "s"} · reorder any time</small></div>
-                <div className={styles.destinationList}>{brief.destinations.map((destination, index) => <div className={styles.destinationChip} key={destination.id}><b>{String(index + 1).padStart(2, "0")}</b><MapPin /><div><strong>{destination.name}</strong><small>{destination.country}</small></div><span className={styles.destinationChipActions}><button type="button" aria-label={`Move ${destination.name} earlier`} disabled={index === 0} onClick={() => moveDestination(index, -1)}><ArrowUp /></button><button type="button" aria-label={`Move ${destination.name} later`} disabled={index === brief.destinations.length - 1} onClick={() => moveDestination(index, 1)}><ArrowDown /></button><button type="button" aria-label={`Remove ${destination.name}`} onClick={() => removeDestination(destination.id)}><X /></button></span></div>)}</div>
+                <div className={styles.destinationBuilderHead}><label>Where are you going?</label><small>Drag to reorder</small></div>
                 <div className={styles.addDestination}><input value={destinationInput} onChange={(event) => { setDestinationInput(event.target.value); setLocationMessage(""); }} onKeyDown={destinationKeyDown} placeholder="Add a city, region or landmark" aria-label="Add a verified stop" /><button type="button" disabled={isValidatingLocation} onClick={addDestination}><Plus /> {isValidatingLocation ? "Checking…" : "Add stop"}</button></div>
                 <p className={styles.coverageNote}><Sparkles /> Every stop is checked against a real map before it joins the route.</p>
                 {locationMessage ? <p className={styles.locationMessage} role="status">{locationMessage}</p> : null}
+                <div className={styles.destinationList}>{brief.destinations.map((destination, index) => <div className={`${styles.destinationChip} ${draggedDestinationId === destination.id ? styles.draggingDestination : ""}`} key={destination.id} draggable onDragStart={(event) => destinationDragStart(event, destination.id)} onDragOver={(event) => event.preventDefault()} onDrop={(event) => destinationDrop(event, destination.id)} onDragEnd={() => setDraggedDestinationId(null)}><b>{String(index + 1).padStart(2, "0")}</b><GripVertical className={styles.dragHandle} aria-hidden="true" /><MapPin /><div><strong>{destination.name}</strong><small>{destination.country}</small></div><span className={styles.destinationChipActions}><button type="button" aria-label={`Remove ${destination.name}`} onClick={() => removeDestination(destination.id)}><X /></button></span></div>)}</div>
               </div>
-              <div className={styles.dateGrid}><label><CalendarDays /> Start date<input type="date" value={brief.startDate} onChange={(event) => setStartDate(event.target.value)} onInput={(event) => setStartDate(event.currentTarget.value)} /></label><label><CalendarDays /> End date<input type="date" value={brief.endDate} min={brief.startDate} onChange={(event) => setEndDate(event.target.value)} onInput={(event) => setEndDate(event.currentTarget.value)} /></label><label><span className={styles.durationIcon}>{duration}</span> Trip length<input type="number" min="1" value={brief.duration} onChange={(event) => setDuration(event.target.value)} /><small>Days · updates your end date</small></label></div>
             </> : null}
             {step === 1 ? <>
               <div className={styles.formHeading}><span>02</span><div><h2>Pick places</h2><p>Only real places. Pick what matters.</p></div></div>

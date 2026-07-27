@@ -76,3 +76,66 @@
 .destinationChipActions button{border-radius:999px}
 .choiceGrid button,.placeGrid button,.placeList button{font-family:var(--font-geist-sans,Geist,Inter,sans-serif)}
 .dayActions button{border-radius:999px;font-family:var(--font-geist-sans,Geist,Inter,sans-serif);font-size:13px;font-weight:500;letter-spacing:-.01em}
+
+/* Import stays optional: it turns an existing rough plan into a reviewable
+   starting point without replacing the editable brief until the user applies it. */
+.planImport{margin:0 0 28px;padding:18px;border:1px solid var(--line);background:linear-gradient(130deg,#fff4f8 0,#fff 46%);box-shadow:inset 3px 0 0 var(--signal)}
+.planImportHead{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.planImportHead small,.importReview small{color:var(--signal);font:800 8px var(--font-geist-mono,monospace);letter-spacing:.12em}
+.planImportHead h3{margin:6px 0 5px;font-size:20px;line-height:1;letter-spacing:-.05em}
+.planImportHead p{max-width:515px;margin:0;color:#625e6b;font-size:12px;line-height:1.45}
+.uploadPlan,.importReadButton,.applyImportButton{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;white-space:nowrap;cursor:pointer}
+.uploadPlan{position:relative;overflow:hidden;flex:0 0 auto;border:1px solid var(--ink);background:#fff;color:var(--ink);padding:0 12px;font:650 11px var(--font-geist-sans,Geist,Inter,sans-serif)}
+.uploadPlan:hover{border-color:var(--signal);color:var(--signal)}
+.uploadPlan svg,.importReadButton svg,.applyImportButton svg{width:14px;height:14px}
+.uploadPlan input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.spinner{animation:import-spin .8s linear infinite}
+.importPaste{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:16px}
+.importPaste textarea{min-height:78px;resize:vertical;border:1px solid #d8d5db;background:#fff;padding:10px 11px;color:var(--ink);outline:0;font:500 12px/1.45 var(--font-geist-sans,Geist,Inter,sans-serif)}
+.importPaste textarea:focus{border-color:var(--signal);box-shadow:0 0 0 3px rgba(255,61,139,.08)}
+.importReadButton{align-self:end;border:1px solid var(--ink);background:var(--ink);color:#fff;padding:0 13px;font:650 11px var(--font-geist-sans,Geist,Inter,sans-serif)}
+.importReadButton:hover:not(:disabled),.applyImportButton:hover:not(:disabled){background:var(--signal);border-color:var(--signal)}
+.importReadButton:disabled,.applyImportButton:disabled{opacity:.5;cursor:wait}
+.importFormats{display:flex;align-items:center;gap:5px;margin:9px 0 0;color:#817d88;font:650 9px var(--font-geist-mono,monospace)}
+.importFormats svg{width:12px;height:12px;color:var(--signal)}
+.importReview{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px 14px;align-items:center;margin-top:14px;padding:12px;border:1px solid #fac9df;background:#fff}
+.importReview>div:first-child{display:grid;gap:3px}.importReview strong{font-size:12px}.importReview>p{margin:0;color:#716c78;font:650 9px var(--font-geist-mono,monospace)}
+.importChips{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.importChips span{display:inline-flex;align-items:center;gap:4px;max-width:100%;padding:5px 7px;background:#f7f7f5;color:#403c4a;font:650 9px var(--font-geist-mono,monospace)}
+.importChips svg,.importMustDos svg{width:11px;height:11px;color:var(--signal);flex:0 0 auto}
+.importMustDos{grid-column:1/-1;display:flex;align-items:center;gap:5px;color:#625d69;font-size:11px}
+.importNotes{grid-column:1/-1;display:flex;align-items:flex-start;gap:6px;padding:8px 9px;border-left:2px solid var(--signal);background:#fff7fa;color:#625d69;font-size:10px;line-height:1.4}.importNotes>svg{width:12px;height:12px;flex:0 0 auto;margin-top:2px;color:var(--signal)}.importNotes>div{display:grid;gap:2px}.importNotes small{font:800 8px var(--font-geist-mono,monospace);letter-spacing:.1em;color:var(--signal)}.importNotes span{display:block}
+
+/* First-step refinement: the imported plan is an optional compact banner, while
+   the route remains the primary editable object. */
+.fieldGrid select{width:100%;border:0;border-bottom:1px solid #c9c7cc;border-radius:0;padding:9px 20px 9px 0;background:transparent;color:var(--ink);outline:0;font:500 17px var(--font-geist-sans,Geist,sans-serif);appearance:none;background-image:linear-gradient(45deg,transparent 50%,#585461 50%),linear-gradient(135deg,#585461 50%,transparent 50%);background-position:calc(100% - 12px) 50%,calc(100% - 8px) 50%;background-size:4px 4px,4px 4px;background-repeat:no-repeat;cursor:pointer}.fieldGrid select:focus{border-color:var(--signal)}
+.destinationChip{cursor:grab;transition:border-color .16s,opacity .16s,transform .16s}.destinationChip:active{cursor:grabbing}.destinationChip:hover{border-color:#aaa5b1}.destinationChip .dragHandle{width:15px;height:15px;color:#a8a4ae}.draggingDestination{opacity:.42;transform:scale(.985)}
+.dateLabel{display:inline-flex;align-items:center;gap:8px;color:#3f3c4a;font:700 10px var(--font-geist-mono,monospace);letter-spacing:.07em;text-transform:uppercase}.dateLabel>svg{width:16px;height:16px;color:var(--signal)}
+
+/* Keep optional imports available but intentionally quieter than the trip brief. */
+.formArea>.planImport{margin:-42px -48px 28px;padding:14px 24px;border:0;border-bottom:1px solid var(--line);box-shadow:none;background:#fbfafb}.planImportHead{align-items:center}.planImportHead h3{margin:3px 0 0;font-size:16px;letter-spacing:-.04em}.planImportHead small{font-size:7px;letter-spacing:.11em}.uploadPlan{min-height:34px;padding:0 11px;font-size:10px}.dateGrid + .fieldGrid{margin-top:27px}.destinationBuilder .destinationList{margin-top:14px}.dateGrid .dateLabel>svg{width:16px;height:16px}
+@media(max-width:720px){.formArea>.planImport{margin:-28px -20px 23px;padding:13px 20px}.dateGrid + .fieldGrid{margin-top:20px}}
+.applyImportButton{border:1px solid var(--ink);background:var(--ink);color:#fff;padding:0 12px;font:650 10px var(--font-geist-sans,Geist,Inter,sans-serif)}
+.importMessage{margin:10px 0 0;color:#746e7b;font:650 9px/1.45 var(--font-geist-mono,monospace)}
+@keyframes import-spin{to{transform:rotate(360deg)}}
+@media(max-width:720px){.planImport{padding:15px;margin-bottom:23px}.planImportHead{flex-direction:column}.uploadPlan{width:100%}.importPaste{grid-template-columns:1fr}.importReadButton{min-height:40px}.importReview{grid-template-columns:1fr}.importReview>p{margin-top:-5px}.applyImportButton{width:100%}.importFormats{flex-wrap:wrap}}
+
+/* Reuse the portfolio hero's live Three.js point field underneath the builder.
+   The form stays clean and tactile; the scene only appears in the surrounding
+   breathing room, so it adds depth without competing with input work. */
+.page>div[aria-hidden="true"]{opacity:.18}
+.header,.intro,.builder,.footer{z-index:2}
+.builder{border-radius:28px;overflow:hidden;box-shadow:0 18px 55px rgba(17,16,31,.055)}
+.builder.generated{border-radius:28px}
+
+/* Match the portfolio's pill actions and gently rounded, physical controls. */
+.uploadPlan,.importReadButton,.applyImportButton,.mustDo button{border-radius:999px}
+.destinationChip,.dateGrid label,.choiceGrid button,.mustDo,.anchor,.note,.placeGrid button,.placeList button,.worldBrowser,.discoveryTabs button,.destinationSelect select,.countrySignal,.importReview{border-radius:14px}
+.destinationList,.placeList{gap:8px;border-top:0}
+.placeList button{border-top:1px solid var(--line)}
+.dateGrid label{overflow:hidden}
+.primaryButton,.addDestination button,.researchAction button,.dayActions button:last-child,.uploadPlan,.importReadButton,.applyImportButton,.mustDo button{transition:transform .22s ease,background-color .22s ease,border-color .22s ease,box-shadow .22s ease}
+.primaryButton:hover:not(:disabled),.addDestination button:hover:not(:disabled),.researchAction button:hover:not(:disabled),.dayActions button:last-child:hover:not(:disabled),.uploadPlan:hover,.importReadButton:hover:not(:disabled),.applyImportButton:hover:not(:disabled),.mustDo button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 22px rgba(17,16,31,.13)}
+.textButton{border-radius:999px;padding:9px 13px}
+.textButton:hover:not(:disabled){background:#f7f7f7;color:#000}
+@media(max-width:720px){.builder,.builder.generated{border-radius:22px}.page>div[aria-hidden="true"]{opacity:.12}}

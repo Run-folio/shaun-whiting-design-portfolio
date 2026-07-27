@@ -299,7 +299,7 @@ export default function JourneyPage() {
         <div className={styles.headerRow}>
           {isPlanningPreview ? <button type="button" className={styles.back} onClick={() => router.back()}>← Back to builder</button> : <Link href="/" className={styles.back}>← Shaun Whiting</Link>}
           <div className={styles.titleLockup}><span>{journey.title}</span><small>{journey.dateRange}</small></div>
-          <Link href="/journey/new" className={styles.createTripLink}><Plus /> <span>Create new trip</span></Link>
+          <Link href="/journey/new" className={styles.createTripLink}><Plus /> <span>New trip</span></Link>
         </div>
         <nav className={styles.timeline} aria-label="Trip itinerary">
           <div className={styles.track} ref={trackRef} style={{ gridTemplateColumns: `repeat(${journey.calendar.length}, minmax(74px, 1fr))` }}>
