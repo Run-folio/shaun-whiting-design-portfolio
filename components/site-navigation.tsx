@@ -15,8 +15,8 @@ const primaryLinks = [
 ];
 
 const journeyPrototype = {
-  label: "Tokyo Marathon+",
-  detail: "Interactive prototype · travel companion",
+  label: "EasyT",
+  detail: "Travel companion prototype",
   href: "/journey",
 };
 
@@ -104,10 +104,10 @@ export function SiteNavigation() {
                 <Link
                   href={journeyPrototype.href}
                   onClick={() => handleJourneyPrototypeClick("Work dropdown")}
-                  className="group mt-2 block rounded-xl border border-signal/25 bg-signal/[0.045] px-4 py-3 transition duration-200 hover:bg-signal hover:text-white dark:border-signal/40 dark:bg-signal/10"
+                  className="block rounded-xl px-4 py-3 transition duration-200 hover:bg-mist hover:text-signal dark:hover:bg-white/10"
                 >
                   <span className="block text-sm font-[540] tracking-[-0.01em]">{journeyPrototype.label}</span>
-                  <span className="mt-1 block font-mono text-[0.64rem] uppercase tracking-[0.14em] text-signal transition-colors group-hover:text-white">
+                  <span className="mt-1 block font-mono text-[0.64rem] uppercase tracking-[0.14em] text-black/46 dark:text-white/46">
                     {journeyPrototype.detail}
                   </span>
                 </Link>
@@ -197,7 +197,7 @@ export function SiteNavigation() {
                 }}
                 small
               >
-                {journeyPrototype.label} <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-signal">· Prototype</span>
+                {journeyPrototype.label} <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-black/46 dark:text-white/46">· {journeyPrototype.detail}</span>
               </MobileLink>
             </div>
             {primaryLinks.slice(2).map((item) => (

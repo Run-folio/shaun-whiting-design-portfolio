@@ -39,6 +39,7 @@ export interface JourneyCalendarDay extends JourneyDay {
   date: string;
   stopId: string;
   city: string;
+  travel?: { mode: JourneyLeg["mode"]; from?: string; detail: string; duration: string };
 }
 
 export interface JourneyImage {

@@ -120,13 +120,11 @@ export function JourneyRestaurantFinder({ stopId, city, dayId, onSelectRestauran
     ? ranked[resultIndex % ranked.length]
     : undefined);
   const question = restaurants.length && activeMeal && !savedRecommendation ? questions[questionIndex] : undefined;
+  const isSavedForDay = Boolean(savedRecommendation);
 
-  useEffect(() => onSelectRestaurant(recommendation, activeMeal), [activeMeal, onSelectRestaurant, recommendation]);
-
-  useEffect(() => {
-    if (!storageReady || !recommendation || !activeMeal || savedSelection?.name === recommendation.name) return;
-    setSavedSelections((current) => ({ ...current, [dayId]: { name: recommendation.name, meal: activeMeal } }));
-  }, [activeMeal, dayId, recommendation, savedSelection?.name, storageReady]);
+  // A suggestion should not become part of another day's itinerary merely because
+  // the user moved through the timeline. Only explicitly saved choices reach the map.
+  useEffect(() => onSelectRestaurant(savedRecommendation, savedSelection?.meal), [onSelectRestaurant, savedRecommendation, savedSelection?.meal]);
 
   if (!restaurants.length && !dayNote) return null;
 
@@ -141,6 +139,10 @@ export function JourneyRestaurantFinder({ stopId, city, dayId, onSelectRestauran
   };
   const choose = (key: keyof Answers, value: RestaurantAnswer) => saveAnswers({ ...answers, [key]: value });
   const chooseMeal = (meal: RestaurantMeal) => saveAnswers({ ...answers, meal, dish: undefined });
+  const saveRecommendation = () => {
+    if (!recommendation || !activeMeal) return;
+    setSavedSelections((current) => ({ ...current, [dayId]: { name: recommendation.name, meal: activeMeal } }));
+  };
 
   return <section className={styles.restaurantFinder} aria-label={`Restaurant finder for ${city}`}>
     <header><span><Utensils /></span><div><small>Taste finder</small><strong>{city}</strong></div></header>
@@ -163,7 +165,7 @@ export function JourneyRestaurantFinder({ stopId, city, dayId, onSelectRestauran
       <div className={styles.dishOptions}>{dishOptions.map((dish) => <button key={dish} type="button" onClick={() => choose("dish", dish)}>{dishLabels[dish]}</button>)}</div>
     </div> : null}
     {recommendation ? <article className={styles.restaurantResult}>
-      <p><span>Your {activeMeal} pick</span><b>Saved to today ↑</b></p>
+      <p><span>{isSavedForDay ? `Your ${activeMeal} pick` : `Suggested ${activeMeal} pick`}</span><b>{isSavedForDay ? "In today’s itinerary ↑" : "Not saved yet"}</b></p>
       <h3>{recommendation.name}</h3>
       <span>{recommendation.area}</span>
       <p className={styles.restaurantFit}>{recommendation.fit}</p>
@@ -171,7 +173,8 @@ export function JourneyRestaurantFinder({ stopId, city, dayId, onSelectRestauran
       <dl><dt>Order</dt><dd>{recommendation.order}</dd></dl>
       <div className={styles.restaurantActions}>
         <a href={recommendation.mapsUrl} target="_blank" rel="noreferrer">Open in Maps <ArrowUpRight /></a>
-        {ranked.length > 1 ? <button type="button" onClick={() => { setSavedSelections((current) => { const updated = { ...current }; delete updated[dayId]; return updated; }); setResultIndex((index) => index + 1); }}>Try another</button> : null}
+        <button type="button" className={styles.restaurantSave} onClick={saveRecommendation} disabled={isSavedForDay}>{isSavedForDay ? "Saved to itinerary" : "Add to today"}</button>
+        {ranked.length > 1 ? <button type="button" onClick={() => { setSavedSelections((current) => { const updated = { ...current }; delete updated[dayId]; return updated; }); setResultIndex((index) => index + 1); }}>{isSavedForDay ? "Change pick" : "Try another"}</button> : null}
         <button type="button" aria-label="Change restaurant preferences" onClick={() => saveAnswers({ meal: activeMeal })}><RotateCcw /></button>
       </div>
       <small>Shortlist for March 2027 — confirm hours closer to travel.</small>

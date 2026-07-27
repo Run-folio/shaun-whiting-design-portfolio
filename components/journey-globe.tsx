@@ -12,11 +12,11 @@ const height = 760;
 const minZoom = 1.08;
 const maxZoom = 72;
 const topology = worldTopology as unknown as { objects: { countries: object } };
-const countries = feature(topology as never, topology.objects.countries as never) as unknown as { features: Array<{ id?: string | number }> };
+const countries = feature(topology as never, topology.objects.countries as never) as unknown as { features: Array<{ id?: string | number; properties?: { name?: string } }> };
 const land = countries as never;
 
 type View = { x: number; y: number; scale: number };
-type Place = {
+export type JourneyMapPlace = {
   name: string;
   coordinates: [number, number];
   address?: string;
@@ -28,6 +28,7 @@ type Place = {
   imageOffset?: [number, number];
   summary?: string;
 };
+type Place = JourneyMapPlace;
 
 const places: Record<string, Place[]> = {
   guatemala: [{ name: "Guatemala City", coordinates: [-90.5069, 14.6349], kind: "stay" }],
@@ -89,7 +90,8 @@ function countryCode(stop: JourneyStop) {
   if (stop.country === "United States") return "840";
   if (stop.country === "Japan") return "392";
   if (stop.country === "China") return "156";
-  return "344";
+  if (stop.country === "Hong Kong") return "344";
+  return undefined;
 }
 
 function countryZoom(stop: JourneyStop) {
@@ -102,6 +104,7 @@ function countryZoom(stop: JourneyStop) {
   if (stop.id === "wulingyuan") return 17;
   if (stop.id === "zhangjiajie") return 19;
   if (stop.country === "Hong Kong") return 22;
+  if (stop.id.startsWith("custom-")) return 16;
   return 8;
 }
 
@@ -131,19 +134,22 @@ function placeMapUrl(place: Place, stop: JourneyStop) {
 
 function TransportGlyph({ mode }: { mode: JourneyLeg["mode"] }) {
   const props = { x: -9, y: -9, width: 18, height: 18, strokeWidth: 1.6, vectorEffect: "non-scaling-stroke" as const };
+  // Lucide's plane already faces the visual direction used by the route badge.
+  // Rotating it here inverted every flight icon.
   if (mode === "flight") return <Plane {...props} />;
   if (mode === "rail") return <TrainFront {...props} />;
   return <BusFront {...props} />;
 }
 
-export function JourneyGlobe({ stops, legs, selectedId, activeItems, previewImage, detailImageSrc, restaurant, onSelect }: { stops: JourneyStop[]; legs: JourneyLeg[]; selectedId: string; activeItems: string[]; previewImage?: JourneyImage; detailImageSrc?: string; restaurant?: { restaurant: JourneyRestaurant; meal?: RestaurantMeal }; onSelect: (id: string) => void }) {
+export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeItems, previewImage, detailImageSrc, dayPlace, restaurant, onSelect }: { stops: JourneyStop[]; legs: JourneyLeg[]; selectedId: string; selectedDayId: string; activeItems: string[]; previewImage?: JourneyImage; detailImageSrc?: string; dayPlace?: JourneyMapPlace; restaurant?: { restaurant: JourneyRestaurant; meal?: RestaurantMeal }; onSelect: (id: string) => void }) {
   const [routeOpen, setRouteOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [restaurantOpen, setRestaurantOpen] = useState(false);
   const selected = stops.find((stop) => stop.id === selectedId) ?? stops[0];
   const projection = useMemo(() => geoNaturalEarth1().rotate([-180, 0]).fitExtent([[22, 112], [width - 22, height - 22]], land), []);
   const path = useMemo(() => geoPath(projection), [projection]);
   const selectedPoint = projection(selected.coordinates) ?? [width / 2, height / 2];
-  const selectedCountry = countries.features.find((country) => String(country.id) === countryCode(selected));
+  const selectedCountry = countries.features.find((country) => String(country.id) === countryCode(selected) || normalized(country.properties?.name ?? "") === normalized(selected.country));
   // The selected geography sits in the clear stage between the two side panels.
   const focusPoint: [number, number] = [width * 0.5, height * 0.52];
   const targetView = useMemo(() => {
@@ -187,12 +193,12 @@ export function JourneyGlobe({ stops, legs, selectedId, activeItems, previewImag
   const activeRoutePoint: [number, number] | null = routeMidpoint
     ? [Number(routeMidpoint[0].toFixed(6)), Number(routeMidpoint[1].toFixed(6))]
     : null;
-  const currentPlaces = places[selected.id] ?? [];
+  const currentPlaces = dayPlace ? [dayPlace] : (places[selected.id] ?? []);
   const dayCopy = normalized(activeItems.join(" "));
-  const picturedPlaces = currentPlaces.filter((place) => place.image && place.image.src !== detailImageSrc && [place.name, ...(place.aliases ?? [])].some((term) => dayCopy.includes(normalized(term))));
+  const picturedPlaces = currentPlaces.filter((place) => place.image && (Boolean(dayPlace) || (place.image.src !== detailImageSrc && [place.name, ...(place.aliases ?? [])].some((term) => dayCopy.includes(normalized(term))))));
   const restaurantPoint = restaurant ? projection(restaurant.restaurant.coordinates) : null;
 
-  useEffect(() => { setRouteOpen(false); setSelectedPlace(null); }, [selectedId]);
+  useEffect(() => { setRouteOpen(false); setSelectedPlace(null); setRestaurantOpen(false); }, [selectedDayId, selectedId]);
 
   function writeView(next: View) {
     viewRef.current = next;
@@ -361,16 +367,22 @@ export function JourneyGlobe({ stops, legs, selectedId, activeItems, previewImag
             </g>
           </g>
         </g> : null}
-        {restaurant && restaurantPoint ? <g key={`${selectedId}-${restaurant.restaurant.name}`} className="journey-map__restaurant" transform={`translate(${restaurantPoint[0]} ${restaurantPoint[1]})`}>
+        {restaurant && restaurantPoint ? <g key={`${selectedDayId}-${restaurant.restaurant.name}`} className={`journey-map__restaurant ${restaurantOpen ? "is-open" : ""}`} transform={`translate(${restaurantPoint[0]} ${restaurantPoint[1]})`}>
           <g className="journey-map__screen-scale" transform={`scale(${liveScreenScale})`}>
-            <path d="M0 0 L22 -22" />
-            <g className="journey-map__restaurant-card" transform="translate(22 -51)" role="link" tabIndex={0} aria-label={`Open ${restaurant.restaurant.name} in maps`} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); window.open(restaurant.restaurant.mapsUrl, "_blank", "noopener,noreferrer"); }} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); window.open(restaurant.restaurant.mapsUrl, "_blank", "noopener,noreferrer"); } }}>
-              <rect width="184" height="42" />
-              <circle cx="20" cy="21" r="12" />
-              <Utensils x="13" y="14" width="14" height="14" />
-              <text className="journey-map__restaurant-eyebrow" x="39" y="15">{restaurant.meal ?? "meal"} pick</text>
-              <text className="journey-map__restaurant-name" x="39" y="30">{restaurant.restaurant.name.length > 24 ? `${restaurant.restaurant.name.slice(0, 24)}…` : restaurant.restaurant.name}</text>
+            <g className="journey-map__restaurant-trigger" role="button" tabIndex={0} aria-label={`${restaurantOpen ? "Hide" : "Show"} ${restaurant.meal ?? "meal"} pick: ${restaurant.restaurant.name}`} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); setRestaurantOpen((open) => !open); }} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setRestaurantOpen((open) => !open); } }}>
+              <circle r="7" />
+              <Utensils x="-4" y="-4" width="8" height="8" />
             </g>
+            {restaurantOpen ? <>
+              <path className="journey-map__restaurant-leader" d="M5 -5 L19 -19" />
+              <g className="journey-map__restaurant-card" transform="translate(19 -48)" role="link" tabIndex={0} aria-label={`Open ${restaurant.restaurant.name} in maps`} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); window.open(restaurant.restaurant.mapsUrl, "_blank", "noopener,noreferrer"); }} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); window.open(restaurant.restaurant.mapsUrl, "_blank", "noopener,noreferrer"); } }}>
+                <rect width="184" height="42" />
+                <circle cx="20" cy="21" r="12" />
+                <Utensils x="13" y="14" width="14" height="14" />
+                <text className="journey-map__restaurant-eyebrow" x="39" y="15">{restaurant.meal ?? "meal"} pick</text>
+                <text className="journey-map__restaurant-name" x="39" y="30">{restaurant.restaurant.name.length > 24 ? `${restaurant.restaurant.name.slice(0, 24)}…` : restaurant.restaurant.name}</text>
+              </g>
+            </> : null}
           </g>
         </g> : null}
         {activeRoute && activeRoutePoint ? <g key={`route-info-${activeRoute.leg.from}-${activeRoute.leg.to}-${selectedId}`} className={`journey-map__route-info ${routeOpen ? "is-open" : ""}`} transform={`translate(${activeRoutePoint[0].toFixed(3)} ${activeRoutePoint[1].toFixed(3)})`}>
