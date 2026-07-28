@@ -10,6 +10,10 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "My trips · EasyT" };
 
 export default async function EasyTDashboardPage() {
+  if (!process.env.DATABASE_URL || !process.env.BETTER_AUTH_SECRET) {
+    redirect("/journey/login?setup=required");
+  }
+
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/journey/login?next=/journey/dashboard");
   const trips = await listTripsForOwner(session.user.id);
