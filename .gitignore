@@ -2,6 +2,7 @@
 .next-dev/
 .next-check/
 .next-static/
+tsconfig.tsbuildinfo
 .netlify/
 node_modules/
 out/

@@ -1,2 +1,2 @@
 import "server-only";
-export { auth } from "@/auth.config";
+export { getAuth } from "@/auth.config";

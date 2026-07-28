@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { listTripsForOwner } from "@/lib/easyt/repository";
 import EasyTNavigation from "../easyt-navigation";
 import DashboardClient from "./dashboard-client";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "My trips · EasyT" };
 
 export default async function EasyTDashboardPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/journey/login?next=/journey/dashboard");
   const trips = await listTripsForOwner(session.user.id);
   return <main className={styles.page}>

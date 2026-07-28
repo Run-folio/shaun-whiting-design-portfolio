@@ -1,7 +1,7 @@
 import "server-only";
 
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { ensureEasyTUser } from "./repository";
 
 export type EasyTOwner = {
@@ -11,7 +11,7 @@ export type EasyTOwner = {
 };
 
 export async function requireEasyTOwner(): Promise<EasyTOwner> {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user?.id || !session.user.email) throw new Error("Unauthorized");
   const owner = { id: session.user.id, email: session.user.email, name: session.user.name ?? null };
   await ensureEasyTUser(owner.id, owner.email, owner.name);
