@@ -115,6 +115,7 @@
 /* Keep optional imports available but intentionally quieter than the trip brief. */
 .formArea>.planImport{margin:-42px -48px 28px;padding:14px 24px;border:0;border-bottom:1px solid var(--line);box-shadow:none;background:#fbfafb}.planImportHead{align-items:center}.planImportHead h3{margin:3px 0 0;font-size:16px;letter-spacing:-.04em}.planImportHead small{font-size:7px;letter-spacing:.11em}.uploadPlan{min-height:34px;padding:0 11px;font-size:10px}.dateGrid + .fieldGrid{margin-top:27px}.destinationBuilder .destinationList{margin-top:14px}.dateGrid .dateLabel>svg{width:16px;height:16px}
 @media(max-width:720px){.formArea>.planImport{margin:-28px -20px 23px;padding:13px 20px}.dateGrid + .fieldGrid{margin-top:20px}}
+.accountLink{justify-self:end;border:1px solid #000;border-radius:999px;padding:8px 14px;color:#000;text-decoration:none;font:500 14px var(--font-geist-sans,Geist,Inter,sans-serif);transition:background .18s,color .18s,border-color .18s}.accountLink:hover{border-color:var(--signal);background:var(--signal);color:#fff}@media(max-width:720px){.accountLink{padding:7px 11px;font-size:12px}.back{max-width:112px}.back{font-size:0}.back svg{width:18px;height:18px}}
 .applyImportButton{border:1px solid var(--ink);background:var(--ink);color:#fff;padding:0 12px;font:650 10px var(--font-geist-sans,Geist,Inter,sans-serif)}
 .importMessage{margin:10px 0 0;color:#746e7b;font:650 9px/1.45 var(--font-geist-mono,monospace)}
 @keyframes import-spin{to{transform:rotate(360deg)}}

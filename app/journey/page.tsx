@@ -12,6 +12,8 @@ import { JourneyLocalFinder } from "@/components/journey-local-finder";
 import { JourneyWeather } from "@/components/journey-weather";
 import { journeyCalendar, journeyDayMedia, journeyDetails, journeyMedia, march2027Journey, type JourneyCalendarDay, type JourneyLeg, type JourneyRestaurant, type JourneyStop, type RestaurantMeal } from "@/lib/journey";
 import { getCountryIntelligence } from "@/lib/country-intelligence";
+import { loadActiveTrip } from "@/lib/easyt/storage";
+import type { EasyTTrip } from "@/lib/easyt/trip";
 import styles from "./journey.module.css";
 
 const destinationIcons: Record<string, LucideIcon> = {
@@ -31,6 +33,41 @@ const destinationIcons: Record<string, LucideIcon> = {
 type CustomPick = { id: string; title: string; area: string; type: string; duration: string; description: string; image?: string; country?: string };
 type CustomDestination = { id: string; name: string; country?: string; coordinates?: [number, number]; kind?: string };
 type CustomBrief = { origin: string; destinations: CustomDestination[]; startDate: string; duration: string; travellers: string; interests: string[]; picks: Record<string, string[]>; pickDetails?: Record<string, CustomPick[]> };
+
+function customBriefFromEasyT(trip: EasyTTrip): CustomBrief {
+  const duration = Math.max(1, Math.round((+new Date(`${trip.endDate}T00:00:00`) - +new Date(`${trip.startDate}T00:00:00`)) / 86400000) + 1);
+  const pickDetails = Object.fromEntries(trip.stops.map((stop) => [
+    stop.id,
+    trip.planItems
+      .filter((item) => item.stopId === stop.id && item.type === "activity")
+      .map((item) => ({
+        id: item.id,
+        title: item.title,
+        area: stop.name,
+        type: "Activity",
+        duration: "Flexible",
+        description: item.reason,
+        country: stop.country,
+      } satisfies CustomPick)),
+  ]));
+
+  return {
+    origin: trip.brief.origin,
+    destinations: trip.stops.map((stop) => ({
+      id: stop.id,
+      name: stop.name,
+      country: stop.country,
+      coordinates: stop.longitude !== null && stop.latitude !== null ? [stop.longitude, stop.latitude] : undefined,
+      kind: "place",
+    })),
+    startDate: trip.startDate,
+    duration: String(duration),
+    travellers: String(trip.travellers),
+    interests: [],
+    picks: trip.brief.selectedPlaces,
+    pickDetails,
+  };
+}
 
 const customCoordinates: Record<string, [number, number]> = {
   "guatemala city": [-90.5069, 14.6349], london: [-0.1276, 51.5072], japan: [139.6917, 35.6895], tokyo: [139.6917, 35.6895], "hong kong": [114.1694, 22.3193], france: [2.3522, 48.8566], spain: [2.1734, 41.3851], italy: [12.4964, 41.9028], china: [104.1954, 35.8617], thailand: [100.5018, 13.7563], mexico: [-99.1332, 19.4326], "united states": [-74.006, 40.7128], "united kingdom": [-0.1276, 51.5072], "south korea": [126.978, 37.5665], germany: [13.405, 52.52], portugal: [-9.1393, 38.7223], greece: [23.7275, 37.9838], turkey: [28.9784, 41.0082], vietnam: [105.8342, 21.0278], indonesia: [115.1889, -8.4095], australia: [151.2093, -33.8688], brazil: [-43.1729, -22.9068], morocco: [-7.9811, 31.6295], canada: [-79.3832, 43.6532], india: [77.209, 28.6139], singapore: [103.8198, 1.3521], "united arab emirates": [55.2708, 25.2048], egypt: [31.2357, 30.0444], croatia: [18.0944, 42.6507], switzerland: [8.5417, 47.3769], argentina: [-58.3816, -34.6037], peru: [-77.0428, -12.0464], cusco: [-71.9785, -13.517], "sacred valley": [-72.115, -13.308], "machu picchu": [-72.5451, -13.1631], colombia: [-74.0721, 4.711], "bogotá": [-74.0721, 4.711], bogota: [-74.0721, 4.711], medellín: [-75.5812, 6.2442], medellin: [-75.5812, 6.2442], iceland: [-21.9426, 64.1466], "new zealand": [174.7633, -36.8485], "south africa": [18.4241, -33.9249], "costa rica": [-84.0907, 9.9281], philippines: [120.9842, 14.5995], malaysia: [101.6869, 3.139], austria: [16.3738, 48.2082], netherlands: [4.9041, 52.3676], czechia: [14.4378, 50.0755], "czech republic": [14.4378, 50.0755], ireland: [-6.2603, 53.3498], norway: [10.7522, 59.9139], denmark: [12.5683, 55.6761], sweden: [18.0686, 59.3293], poland: [19.945, 50.0647], chile: [-70.6693, -33.4489], kenya: [36.8219, -1.2921], tanzania: [39.2083, -6.7924], maldives: [73.5093, 4.1755], guatemala: [-90.5069, 14.6349],
@@ -92,7 +129,9 @@ function makeCustomJourney(brief: CustomBrief) {
     for (let localDay = 0; localDay < allocations[destinationIndex]; localDay += 1) {
       dayNumber += 1;
       const isArrival = localDay === 0;
-      const picked = !isArrival && picks.length ? picks[(localDay - 1) % picks.length] : undefined;
+      // A selected place is a finite commitment, not filler to repeat until the
+      // city allocation is exhausted. Remaining days stay at the selected base.
+      const picked = !isArrival && localDay - 1 < picks.length ? picks[localDay - 1] : undefined;
       const pick = picked ? pickDetails.find((entry) => entry.title === picked) : undefined;
       // Existing drafts can contain old, globally ambiguous discovery results.
       // Keep those safely at the country base rather than putting the trip on a
@@ -164,6 +203,11 @@ export default function JourneyPage() {
     hasMounted.current = true;
     try {
       if (!isPlanningPreview) return;
+      const activeTrip = loadActiveTrip();
+      if (activeTrip) {
+        setCustomBrief(customBriefFromEasyT(activeTrip));
+        return;
+      }
       const stored = window.localStorage.getItem("journey:planned-trip");
       const parsed = stored ? JSON.parse(stored) : null;
       if (parsed?.brief?.destinations?.length) setCustomBrief(parsed.brief as CustomBrief);
@@ -299,7 +343,10 @@ export default function JourneyPage() {
         <div className={styles.headerRow}>
           {isPlanningPreview ? <button type="button" className={styles.back} onClick={() => router.back()}>← Back to builder</button> : <Link href="/" className={styles.back}>← Shaun Whiting</Link>}
           <div className={styles.titleLockup}><span>{journey.title}</span><small>{journey.dateRange}</small></div>
-          <Link href="/journey/new" className={styles.createTripLink}><Plus /> <span>New trip</span></Link>
+          <nav className={styles.headerActions} aria-label="EasyT account navigation">
+            <Link href="/journey/dashboard" className={styles.myTripsLink}>My trips</Link>
+            <Link href="/journey/new" className={styles.createTripLink}><Plus /> <span>New trip</span></Link>
+          </nav>
         </div>
         <nav className={styles.timeline} aria-label="Trip itinerary">
           <div className={styles.track} ref={trackRef} style={{ gridTemplateColumns: `repeat(${journey.calendar.length}, minmax(74px, 1fr))` }}>
