@@ -2,6 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import {
+  EasyTButton,
+  EasyTField,
+  EasyTSegmentedControl,
+} from "@/components/easyt/easyt-controls";
 import styles from "../account.module.css";
 
 export default function LoginForm({
@@ -37,17 +42,23 @@ export default function LoginForm({
     <h2>{mode === "sign-in" ? "Welcome back." : "Start travelling."}</h2>
     <p className={styles.muted}>{mode === "sign-in" ? "Open your saved plans and pick up where you left off." : "Save your first plan and keep every trip in one place."}</p>
     {(!configured || showSetupNotice) && <p className={styles.setupNotice}>Accounts are being connected to the live site. The Tokyo Marathon+ prototype and trip builder are still available.</p>}
-    <div className={styles.tabs} role="tablist">
-      <button className={mode === "sign-in" ? styles.active : ""} type="button" onClick={() => { setMode("sign-in"); setError(""); }}>Sign in</button>
-      <button className={mode === "sign-up" ? styles.active : ""} type="button" onClick={() => { setMode("sign-up"); setError(""); }}>Create account</button>
-    </div>
+    <EasyTSegmentedControl
+      ariaLabel="Account action"
+      className={styles.tabs}
+      value={mode}
+      onChange={(next) => { setMode(next); setError(""); }}
+      options={[
+        { label: "Sign in", value: "sign-in" },
+        { label: "Create account", value: "sign-up" },
+      ]}
+    />
     <form className={styles.form} onSubmit={submit}>
-      {mode === "sign-up" && <label className={styles.field}><span>Your name</span><input name="name" autoComplete="name" required placeholder="Shaun" /></label>}
-      <label className={styles.field}><span>Email</span><input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></label>
-      <label className={styles.field}><span>Password</span><input name="password" type="password" minLength={8} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} required placeholder="At least 8 characters" /></label>
+      {mode === "sign-up" && <EasyTField label="Your name" name="name" autoComplete="name" required placeholder="Shaun" />}
+      <EasyTField label="Email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
+      <EasyTField label="Password" name="password" type="password" minLength={8} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} required placeholder="At least 8 characters" />
       {error && <p className={styles.error}>{error}</p>}
-      <button className={styles.button} disabled={busy || !configured}>{busy ? "Working…" : configured ? mode === "sign-in" ? "Sign in →" : "Create account →" : "Accounts coming online"}</button>
+      <EasyTButton type="submit" fullWidth loading={busy} disabled={!configured}>{configured ? mode === "sign-in" ? "Sign in →" : "Create account →" : "Accounts coming online"}</EasyTButton>
     </form>
-    {googleEnabled && <><div className={styles.divider}>or</div><button className={styles.secondary} type="button" onClick={() => authClient.signIn.social({ provider: "google", callbackURL })}>Continue with Google</button></>}
+    {googleEnabled && <><div className={styles.divider}>or</div><EasyTButton variant="secondary" fullWidth onClick={() => authClient.signIn.social({ provider: "google", callbackURL })}>Continue with Google</EasyTButton></>}
   </section>;
 }

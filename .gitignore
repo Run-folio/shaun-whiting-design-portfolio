@@ -8,6 +8,7 @@ node_modules/
 out/
 output/
 dist/
+storybook-static/
 tmp/
 .env*
 !.env.example

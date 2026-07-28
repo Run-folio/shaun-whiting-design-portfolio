@@ -1,11 +1,18 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+
 import { getEasyTDatabase } from "./database";
 import { EasyTTrip, isEasyTTrip } from "./trip";
 
 type TripDocumentRow = { document: unknown };
+export type EasyTUserPreferences = { language: "en" | "es" };
 
-export async function ensureEasyTUser(ownerId: string, email: string, name?: string | null) {
+export async function ensureEasyTUser(
+  ownerId: string,
+  email: string,
+  name?: string | null,
+) {
   const sql = getEasyTDatabase();
   await sql`
     insert into easyt_users (id, email, name)
@@ -17,34 +24,71 @@ export async function ensureEasyTUser(ownerId: string, email: string, name?: str
   `;
 }
 
+export async function getEasyTUserPreferences(
+  ownerId: string,
+): Promise<EasyTUserPreferences> {
+  const sql = getEasyTDatabase();
+  const rows = (await sql`
+    select preferences from easyt_users where id = ${ownerId} limit 1
+  `) as Array<{ preferences: Record<string, unknown> }>;
+  return { language: rows[0]?.preferences?.language === "es" ? "es" : "en" };
+}
+
+export async function updateEasyTUserPreferences(
+  ownerId: string,
+  preferences: EasyTUserPreferences,
+) {
+  const sql = getEasyTDatabase();
+  await sql`
+    update easyt_users
+    set preferences = preferences || ${JSON.stringify(preferences)}::jsonb,
+      updated_at = now()
+    where id = ${ownerId}
+  `;
+}
+
 export async function listTripsForOwner(ownerId: string): Promise<EasyTTrip[]> {
   const sql = getEasyTDatabase();
-  const rows = await sql`
+  const rows = (await sql`
     select document
     from easyt_trips
     where owner_id = ${ownerId} and deleted_at is null
     order by updated_at desc
-  ` as TripDocumentRow[];
+  `) as TripDocumentRow[];
   return rows.map((row) => row.document).filter(isEasyTTrip);
 }
 
-export async function getTripForOwner(ownerId: string, tripId: string): Promise<EasyTTrip | null> {
+export async function getTripForOwner(
+  ownerId: string,
+  tripId: string,
+): Promise<EasyTTrip | null> {
   const sql = getEasyTDatabase();
-  const rows = await sql`
+  const rows = (await sql`
     select document
     from easyt_trips
     where id = ${tripId} and owner_id = ${ownerId} and deleted_at is null
     limit 1
-  ` as TripDocumentRow[];
+  `) as TripDocumentRow[];
   return rows[0] && isEasyTTrip(rows[0].document) ? rows[0].document : null;
 }
 
-export async function saveTripForOwner(ownerId: string, trip: EasyTTrip): Promise<EasyTTrip> {
+export async function saveTripForOwner(
+  ownerId: string,
+  trip: EasyTTrip,
+): Promise<EasyTTrip> {
   const sql = getEasyTDatabase();
-  const ownership = await sql`select owner_id from easyt_trips where id = ${trip.id} limit 1` as Array<{ owner_id: string }>;
-  if (ownership[0] && ownership[0].owner_id !== ownerId) throw new Error("Trip ownership mismatch.");
+  const ownership =
+    (await sql`select owner_id from easyt_trips where id = ${trip.id} limit 1`) as Array<{
+      owner_id: string;
+    }>;
+  if (ownership[0] && ownership[0].owner_id !== ownerId)
+    throw new Error("Trip ownership mismatch.");
 
-  const document: EasyTTrip = { ...trip, ownerId, updatedAt: new Date().toISOString() };
+  const document: EasyTTrip = {
+    ...trip,
+    ownerId,
+    updatedAt: new Date().toISOString(),
+  };
   await sql.transaction((tx) => [
     tx`
       insert into easyt_trips (
@@ -75,7 +119,8 @@ export async function saveTripForOwner(ownerId: string, trip: EasyTTrip): Promis
     tx`delete from easyt_plan_items where trip_id = ${document.id}`,
     tx`delete from easyt_legs where trip_id = ${document.id}`,
     tx`delete from easyt_stops where trip_id = ${document.id}`,
-    ...document.stops.map((stop) => tx`
+    ...document.stops.map(
+      (stop) => tx`
       insert into easyt_stops (
         id, trip_id, stop_order, name, country, latitude, longitude,
         arrival_date, departure_date, nights
@@ -83,8 +128,10 @@ export async function saveTripForOwner(ownerId: string, trip: EasyTTrip): Promis
         ${stop.id}, ${document.id}, ${stop.order}, ${stop.name}, ${stop.country},
         ${stop.latitude}, ${stop.longitude}, ${stop.arrivalDate}, ${stop.departureDate}, ${stop.nights}
       )
-    `),
-    ...document.legs.map((leg) => tx`
+    `,
+    ),
+    ...document.legs.map(
+      (leg) => tx`
       insert into easyt_legs (
         id, trip_id, from_stop_id, to_stop_id, mode, distance_km,
         duration_minutes, provider, route_metadata
@@ -92,8 +139,10 @@ export async function saveTripForOwner(ownerId: string, trip: EasyTTrip): Promis
         ${leg.id}, ${document.id}, ${leg.fromStopId}, ${leg.toStopId}, ${leg.mode},
         ${leg.distanceKm}, ${leg.durationMinutes}, ${leg.provider}, ${JSON.stringify(leg.routeMetadata)}
       )
-    `),
-    ...document.planItems.map((item) => tx`
+    `,
+    ),
+    ...document.planItems.map(
+      (item) => tx`
       insert into easyt_plan_items (
         id, trip_id, stop_id, day_number, plan_date, item_type, title,
         reason, notes, starts_at, ends_at, booking_url, latitude, longitude
@@ -102,15 +151,18 @@ export async function saveTripForOwner(ownerId: string, trip: EasyTTrip): Promis
         ${item.type}, ${item.title}, ${item.reason}, ${JSON.stringify(item.notes)},
         ${item.startsAt}, ${item.endsAt}, ${item.bookingUrl}, ${item.latitude}, ${item.longitude}
       )
-    `),
-    ...document.recommendations.map((recommendation) => tx`
+    `,
+    ),
+    ...document.recommendations.map(
+      (recommendation) => tx`
       insert into easyt_recommendations (
         id, trip_id, rule, severity, message, proposed_change, status
       ) values (
         ${recommendation.id}, ${document.id}, ${recommendation.rule}, ${recommendation.severity},
         ${recommendation.message}, ${JSON.stringify(recommendation.proposedChange)}, ${recommendation.status}
       )
-    `),
+    `,
+    ),
   ]);
   return document;
 }
@@ -120,9 +172,71 @@ export async function archiveTripForOwner(ownerId: string, tripId: string) {
   await sql`
     update easyt_trips
     set status = 'archived', updated_at = now(),
-      document = jsonb_set(document, '{status}', '"archived"'::jsonb, true)
+      document = jsonb_set(
+        jsonb_set(document, '{status}', '"archived"'::jsonb, true),
+        '{updatedAt}', to_jsonb(now()::text), true
+      )
     where id = ${tripId} and owner_id = ${ownerId} and deleted_at is null
   `;
+}
+
+export async function restoreTripForOwner(ownerId: string, tripId: string) {
+  const sql = getEasyTDatabase();
+  await sql`
+    update easyt_trips
+    set status = 'draft', updated_at = now(),
+      document = jsonb_set(
+        jsonb_set(document, '{status}', '"draft"'::jsonb, true),
+        '{updatedAt}', to_jsonb(now()::text), true
+      )
+    where id = ${tripId} and owner_id = ${ownerId} and deleted_at is null
+  `;
+}
+
+export async function duplicateTripForOwner(
+  ownerId: string,
+  tripId: string,
+): Promise<EasyTTrip | null> {
+  const source = await getTripForOwner(ownerId, tripId);
+  if (!source) return null;
+
+  const now = new Date().toISOString();
+  const id = randomUUID();
+  const stopIds = new Map(
+    source.stops.map((stop) => [stop.id, `${id}-stop-${randomUUID()}`]),
+  );
+  const stops = source.stops.map((stop) => ({
+    ...stop,
+    id: stopIds.get(stop.id)!,
+  }));
+  const duplicate: EasyTTrip = {
+    ...source,
+    id,
+    ownerId,
+    title: `${source.title} copy`,
+    status: "draft",
+    stops,
+    legs: source.legs.map((leg) => ({
+      ...leg,
+      id: `${id}-leg-${randomUUID()}`,
+      fromStopId: stopIds.get(leg.fromStopId) ?? leg.fromStopId,
+      toStopId: stopIds.get(leg.toStopId) ?? leg.toStopId,
+    })),
+    planItems: source.planItems.map((item) => ({
+      ...item,
+      id: `${id}-item-${randomUUID()}`,
+      stopId: stopIds.get(item.stopId) ?? item.stopId,
+    })),
+    recommendations: source.recommendations.map((recommendation) => ({
+      ...recommendation,
+      id: `${id}-recommendation-${randomUUID()}`,
+      status: "open",
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  return saveTripForOwner(ownerId, duplicate);
 }
 
 export async function deleteTripForOwner(ownerId: string, tripId: string) {
