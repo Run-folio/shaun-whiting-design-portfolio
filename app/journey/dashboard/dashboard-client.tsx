@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { Archive, Copy, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { EasyTTrip } from "@/lib/easyt/trip";
+import { loadActiveTrip, saveActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
 import { EasyTSegmentedControl } from "@/components/easyt/easyt-controls";
 import styles from "../account.module.css";
 
@@ -12,6 +13,29 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
   const router = useRouter();
   const [view, setView] = useState<"active" | "archived">("active");
   const [working, setWorking] = useState<string | null>(null);
+  const [localSync, setLocalSync] = useState<"idle" | "saving" | "error">("idle");
+  const [localSyncError, setLocalSyncError] = useState("");
+
+  useEffect(() => {
+    const localTrip = loadActiveTrip();
+    if (!localTrip || trips.some((trip) => trip.id === localTrip.id)) return;
+
+    let active = true;
+    setLocalSync("saving");
+    void saveTripToEasyT(localTrip)
+      .then((saved) => {
+        if (!active) return;
+        saveActiveTrip(saved);
+        router.refresh();
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setLocalSyncError(error instanceof Error ? error.message : "We couldn't add this device's plan to your account.");
+        setLocalSync("error");
+      });
+
+    return () => { active = false; };
+  }, [router, trips]);
 
   const runAction = async (
     id: string,
@@ -43,6 +67,12 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
 
   return (
     <>
+      {localSync === "saving" && (
+        <p className={styles.syncMessage}>Adding this device's latest plan to your account…</p>
+      )}
+      {localSync === "error" && (
+        <p className={styles.syncError}>Your plan is safe on this device, but it could not be added to your account: {localSyncError}</p>
+      )}
       <EasyTSegmentedControl
         ariaLabel="Trip status"
         className={styles.tripViews}

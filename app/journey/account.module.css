@@ -271,6 +271,25 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+.syncMessage,
+.syncError {
+  max-width: 760px;
+  margin: 0 0 20px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.syncMessage {
+  border: 1px solid rgba(255, 61, 139, 0.28);
+  background: #fff4f8;
+  color: #17152f;
+}
+.syncError {
+  border: 1px solid rgba(178, 19, 81, 0.3);
+  background: #fff4f6;
+  color: #8d103e;
+}
 .tripViews {
   display: inline-flex;
   gap: 5px;

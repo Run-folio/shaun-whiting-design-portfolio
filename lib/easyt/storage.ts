@@ -26,7 +26,10 @@ export async function saveTripToEasyT(trip: EasyTTrip): Promise<EasyTTrip> {
     headers: { "content-type": "application/json" },
     body: JSON.stringify(trip),
   });
-  if (!response.ok) throw new Error("EasyT cloud save failed.");
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(payload?.error || "EasyT cloud save failed.");
+  }
   const payload = await response.json() as { trip: EasyTTrip };
   return payload.trip;
 }
