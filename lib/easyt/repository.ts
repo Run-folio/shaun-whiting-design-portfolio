@@ -84,9 +84,41 @@ export async function saveTripForOwner(
   if (ownership[0] && ownership[0].owner_id !== ownerId)
     throw new Error("Trip ownership mismatch.");
 
+  // Stop IDs originate in the builder (for example `tokyo`) and are only
+  // unique inside one trip. The database stores stops in a shared table, so
+  // namespace them before persistence and update every relation atomically.
+  const stopPrefix = `${trip.id}-stop-`;
+  const stopIds = new Map(
+    trip.stops.map((stop) => [
+      stop.id,
+      stop.id.startsWith(stopPrefix) ? stop.id : `${stopPrefix}${stop.id}`,
+    ]),
+  );
   const document: EasyTTrip = {
     ...trip,
     ownerId,
+    brief: {
+      ...trip.brief,
+      selectedPlaces: Object.fromEntries(
+        Object.entries(trip.brief.selectedPlaces).map(([stopId, places]) => [
+          stopIds.get(stopId) ?? stopId,
+          places,
+        ]),
+      ),
+    },
+    stops: trip.stops.map((stop) => ({
+      ...stop,
+      id: stopIds.get(stop.id) ?? stop.id,
+    })),
+    legs: trip.legs.map((leg) => ({
+      ...leg,
+      fromStopId: stopIds.get(leg.fromStopId) ?? leg.fromStopId,
+      toStopId: stopIds.get(leg.toStopId) ?? leg.toStopId,
+    })),
+    planItems: trip.planItems.map((item) => ({
+      ...item,
+      stopId: stopIds.get(item.stopId) ?? item.stopId,
+    })),
     updatedAt: new Date().toISOString(),
   };
   await sql.transaction((tx) => [
