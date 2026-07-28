@@ -24,8 +24,9 @@ import styles from "./trip-builder.module.css";
 export type Place = {
   title: string; area: string; type: string;
   cost: number; tags: string[]; description: string;
+  image?: string; sourceUrl?: string; coordinates?: [number, number];
 };
-export type Stop = { id: string; name: string; country: string };
+export type Stop = { id: string; name: string; country: string; coordinates?: [number, number] };
 
 // TODO: replace with the live discovery API response.
 const CATALOG: Record<string, Place[]> = {
@@ -45,7 +46,7 @@ const CATALOG: Record<string, Place[]> = {
   ],
 };
 
-const SUGGESTIONS = ["Kyoto", "Kanazawa", "Taipei", "Seoul", "Osaka"];
+const SUGGESTIONS = ["Paris", "Mexico City", "Bangkok", "Cape Town", "Rome"];
 const FILTERS = ["All", "Food", "Nature", "Cities", "Beach"];
 const STEPS = [
   { label: "Where", note: "Route first" },
@@ -77,8 +78,8 @@ const parseTyped = (text: string) => {
   const d = new Date(text);
   return Number.isNaN(d.getTime()) ? null : iso(d);
 };
-const placesFor = (stop: Stop): Place[] =>
-  CATALOG[stop.name.trim().toLowerCase()] ?? [{ title: stop.name, area: stop.country || stop.name, type: "Verified stop", cost: 1, tags: [], description: "A verified place to use as a base or route anchor." }];
+const placesFor = (stop: Stop, discovered: Record<string, Place[]>): Place[] =>
+  discovered[stop.id] ?? CATALOG[stop.name.trim().toLowerCase()] ?? [];
 
 const MEDIA_KEYS: Record<string, string> = {
   "hong kong": "hong-kong",
@@ -109,6 +110,7 @@ const normalizeMediaText = (value: string) =>
   value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
 const placeImageFor = (place: Place, stop: Stop): JourneyImage | null => {
+  if (place.image) return { src: place.image, alt: place.title, caption: place.title, sourceUrl: place.sourceUrl ?? place.image };
   const images = mediaImagesFor(stop.name);
   const filename = PLACE_IMAGE_HINTS[place.title.toLowerCase()];
   if (filename) return images.find((image) => image.src.endsWith(`/${filename}`)) ?? null;
@@ -205,24 +207,27 @@ export default function TripBuilder() {
   const [generated, setGenerated] = useState(false);
   const [activeDay, setActiveDay] = useState(0);
 
-  const [origin, setOrigin] = useState("Guatemala City");
+  const today = useMemo(() => iso(new Date()), []);
+  const oneWeekLater = useMemo(() => { const date = new Date(); date.setDate(date.getDate() + 6); return iso(date); }, []);
+  const [origin, setOrigin] = useState("");
+  const [originCoordinates, setOriginCoordinates] = useState<[number, number] | undefined>();
   const [originTouched, setOriginTouched] = useState(false);
-  const [stops, setStops] = useState<Stop[]>([
-    { id: "tokyo", name: "Tokyo", country: "Japan" },
-    { id: "hong-kong", name: "Hong Kong", country: "Hong Kong" },
-  ]);
+  const [originError, setOriginError] = useState("");
+  const [stops, setStops] = useState<Stop[]>([]);
   const [stopInput, setStopInput] = useState("");
   const [stopError, setStopError] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
 
-  const [startDate, setStartDate] = useState("2027-03-01");
-  const [endDate, setEndDate] = useState("2027-03-16");
+  const [startDate, setStartDate] = useState(today);
+  const [endDate, setEndDate] = useState(oneWeekLater);
   const [picker, setPicker] = useState<"start" | "end" | null>(null);
 
   const [filter, setFilter] = useState("All");
-  const [picks, setPicks] = useState<Record<string, string[]>>({ tokyo: ["Mt. Takao", "Tokyo Marathon"] });
+  const [picks, setPicks] = useState<Record<string, string[]>>({});
+  const [discoveredPlaces, setDiscoveredPlaces] = useState<Record<string, Place[]>>({});
+  const [discovering, setDiscovering] = useState<Record<string, boolean>>({});
 
-  const [mustDo, setMustDo] = useState("Tokyo Marathon");
+  const [mustDo, setMustDo] = useState("");
   const [mustDoTouched, setMustDoTouched] = useState(false);
   const [pace, setPace] = useState<"slow" | "full">("slow");
   const [hotels, setHotels] = useState<"few" | "some">("few");
@@ -237,7 +242,8 @@ export default function TripBuilder() {
       setTripId(saved.id);
       setCreatedAt(saved.createdAt);
       setOrigin(saved.brief.origin);
-      setStops(saved.stops.map(({ id, name, country }) => ({ id, name, country })));
+      setOriginCoordinates(saved.brief.originCoordinates);
+      setStops(saved.stops.map(({ id, name, country, longitude, latitude }) => ({ id, name, country, coordinates: longitude !== null && latitude !== null ? [longitude, latitude] : undefined })));
       setStartDate(saved.startDate);
       setEndDate(saved.endDate);
       setPicks(saved.brief.selectedPlaces);
@@ -254,16 +260,33 @@ export default function TripBuilder() {
           if (cloudTrip) {
             applySaved(cloudTrip);
             saveActiveTrip(cloudTrip);
-          } else applySaved(loadActiveTrip());
+          } else {
+            const localTrip = loadActiveTrip();
+            if (localTrip?.id === tripIdFromUrl) applySaved(localTrip);
+          }
         } catch {
-          applySaved(loadActiveTrip());
+          const localTrip = loadActiveTrip();
+          if (localTrip?.id === tripIdFromUrl) applySaved(localTrip);
         }
-      } else applySaved(loadActiveTrip());
+      }
       if (active) setHydrated(true);
     };
     void hydrate();
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    stops.forEach((stop) => {
+      if (!stop.coordinates || discoveredPlaces[stop.id] || discovering[stop.id]) return;
+      setDiscovering((current) => ({ ...current, [stop.id]: true }));
+      const [lon, lat] = stop.coordinates;
+      fetch(`/api/journey-discover?destination=${encodeURIComponent(stop.name)}&country=${encodeURIComponent(stop.country)}&lat=${lat}&lon=${lon}`)
+        .then((response) => response.json())
+        .then((payload: { places?: Place[] }) => setDiscoveredPlaces((current) => ({ ...current, [stop.id]: payload.places ?? [] })))
+        .catch(() => setDiscoveredPlaces((current) => ({ ...current, [stop.id]: [] })))
+        .finally(() => setDiscovering((current) => ({ ...current, [stop.id]: false })));
+    });
+  }, [stops, discoveredPlaces, discovering]);
 
   const totalDays = useMemo(() => {
     const d = Math.round((+new Date(`${endDate}T00:00:00`) - +new Date(`${startDate}T00:00:00`)) / 86400000) + 1;
@@ -272,22 +295,46 @@ export default function TripBuilder() {
 
   const committed = useMemo(() => stops.length + stops.reduce((sum, stop) => {
     const titles = picks[stop.id] ?? [];
-    return sum + placesFor(stop).filter((p) => titles.includes(p.title)).reduce((a, p) => a + p.cost, 0);
-  }, 0), [stops, picks]);
+    return sum + placesFor(stop, discoveredPlaces).filter((p) => titles.includes(p.title)).reduce((a, p) => a + p.cost, 0);
+  }, 0), [stops, picks, discoveredPlaces]);
 
   const openDays = Math.max(0, totalDays - committed);
   const over = committed > totalDays;
   const selected = stops.flatMap((stop) => (picks[stop.id] ?? []).map((title) => ({ stopId: stop.id, title })));
-  const originMissing = originTouched && !origin.trim();
-  const gate = step === 0 && !stops.length ? "Add at least one stop to continue" : "";
+  const originMissing = originTouched && (!origin.trim() || Boolean(originError));
+  const gate = step === 0 ? (!origin.trim() ? "Add where you're starting from" : !stops.length ? "Add at least one stop to continue" : "") : "";
 
-  const addStop = (name?: string) => {
+  const addStop = async (name?: string) => {
     const value = (name ?? stopInput).trim();
     if (!value) return setStopError("Type a city, region or landmark first.");
     if (stops.some((s) => s.name.toLowerCase() === value.toLowerCase())) return setStopError(`${value} is already in your route.`);
-    // TODO: geocode-validate here before committing the stop.
-    setStops([...stops, { id: `${value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`, name: value, country: "Verified stop" }]);
-    setStopInput(""); setStopError("");
+    setStopError("Checking this place…");
+    try {
+      const response = await fetch(`/api/journey-geocode?place=${encodeURIComponent(value)}`);
+      const payload = await response.json() as { result?: { name?: string; country?: string; coordinates?: [number, number] } | null };
+      if (!payload.result?.coordinates || !payload.result.country) return setStopError(`We couldn't verify “${value}”. Try a city, region or landmark with its country.`);
+      const resolvedName = payload.result.name?.split(",")[0]?.trim() || value;
+      const id = `${resolvedName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
+      setStops((current) => [...current, { id, name: resolvedName, country: payload.result!.country!, coordinates: payload.result!.coordinates }]);
+      setStopInput(""); setStopError("");
+    } catch {
+      setStopError("We couldn't check that place just now. Please try again.");
+    }
+  };
+
+  const validateOrigin = async () => {
+    if (!origin.trim()) { setOriginTouched(true); setOriginError("Add the city or airport you're leaving from."); return false; }
+    try {
+      const response = await fetch(`/api/journey-geocode?place=${encodeURIComponent(origin.trim())}`);
+      const payload = await response.json() as { result?: { name?: string; coordinates?: [number, number] } | null };
+      if (!payload.result?.coordinates) { setOriginTouched(true); setOriginError("We couldn't verify that starting point."); return false; }
+      setOriginCoordinates(payload.result.coordinates);
+      setOriginError("");
+      return true;
+    } catch {
+      setOriginError("We couldn't check that starting point just now.");
+      return false;
+    }
   };
   const move = (index: number, delta: number) => {
     const target = index + delta;
@@ -311,7 +358,7 @@ export default function TripBuilder() {
     let cursor = 0;
     return stops.flatMap((stop, si) => {
       const titles = picks[stop.id] ?? [];
-      const chosen = placesFor(stop).filter((p) => titles.includes(p.title));
+      const chosen = placesFor(stop, discoveredPlaces).filter((p) => titles.includes(p.title));
       const queue = pace === "slow" ? chosen.slice(0, Math.max(1, Math.ceil(chosen.length / 2))) : [...chosen];
       let openIndex = 0;
       return Array.from({ length: alloc[si] }, (_, i) => {
@@ -342,7 +389,7 @@ export default function TripBuilder() {
         };
       });
     });
-  }, [stops, picks, totalDays, startDate, mustDo, pace]);
+  }, [stops, picks, totalDays, startDate, mustDo, pace, discoveredPlaces]);
 
   const activeTripDocument = useMemo(() => tripFromBuilder({
     id: tripId,
@@ -356,11 +403,13 @@ export default function TripBuilder() {
     hotels,
     budget,
     draft,
+    placeDetails: discoveredPlaces,
+    originCoordinates,
     createdAt,
-  }), [tripId, origin, stops, startDate, endDate, picks, mustDo, pace, hotels, budget, draft, createdAt]);
+  }), [tripId, origin, stops, startDate, endDate, picks, mustDo, pace, hotels, budget, draft, discoveredPlaces, originCoordinates, createdAt]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !origin.trim() || !stops.length) return;
     setSaveState("saving");
     const timer = window.setTimeout(async () => {
       saveActiveTrip(activeTripDocument);
@@ -481,9 +530,10 @@ export default function TripBuilder() {
               <div className={`${styles.card} ${originMissing ? styles.cardError : ""}`}>
                 <span className={styles.cardLabel}><Plane /> Starting from</span>
                 <input value={origin} placeholder="City or airport" aria-label="Starting from"
-                  onChange={(e) => { setOrigin(e.target.value); setOriginTouched(true); }} />
+                  onChange={(e) => { setOrigin(e.target.value); setOriginTouched(true); setOriginCoordinates(undefined); setOriginError(""); }}
+                  onBlur={() => { if (origin.trim() && !originCoordinates) void validateOrigin(); }} />
                 <small className={originMissing ? styles.hintError : styles.hint}>
-                  {originMissing ? "Add the city or airport you're leaving from." : "City or airport"}
+                  {originError || (originMissing ? "Add the city or airport you're leaving from." : originCoordinates ? "Verified on the map" : "City or airport")}
                 </small>
               </div>
 
@@ -583,7 +633,7 @@ export default function TripBuilder() {
               <div className={styles.panels}>
                 {stops.map((stop, si) => {
                   const titles = picks[stop.id] ?? [];
-                  const list = placesFor(stop).filter((p) => filter === "All" || p.tags.includes(filter));
+                  const list = placesFor(stop, discoveredPlaces).filter((p) => filter === "All" || p.tags.includes(filter));
                   return (
                     <section key={stop.id}>
                       <div className={styles.panelHead}>
@@ -594,6 +644,8 @@ export default function TripBuilder() {
                         <small className={titles.length ? styles.countOn : ""}>{titles.length} selected</small>
                       </div>
                       <div className={styles.placeList}>
+                        {discovering[stop.id] && <p className={styles.railEmptyText}>Finding real places, landmarks and activities around {stop.name}…</p>}
+                        {!discovering[stop.id] && !list.length && <p className={styles.railEmptyText}>No reliable suggestions loaded yet. Check the location or try again shortly.</p>}
                         {list.map((place) => {
                           const on = titles.includes(place.title);
                           const image = placeImageFor(place, stop);
@@ -624,7 +676,7 @@ export default function TripBuilder() {
             <div className={styles.stack}>
               <div className={`${styles.card} ${mustDoTouched && !mustDo.trim() ? styles.cardError : ""}`}>
                 <span className={styles.cardLabel}><Mountain /> One thing this trip must include</span>
-                <input value={mustDo} placeholder="e.g. Tokyo Marathon" aria-label="Must-do place"
+                <input value={mustDo} placeholder="A place, event or experience" aria-label="Must-do place"
                   onChange={(e) => { setMustDo(e.target.value); setMustDoTouched(true); }} />
                 <small className={mustDoTouched && !mustDo.trim() ? styles.hintError : styles.hint}>
                   {mustDoTouched && !mustDo.trim() ? "Name one thing and the draft protects a day for it." : "Everything else can move around it."}
@@ -715,7 +767,11 @@ export default function TripBuilder() {
           <small className={styles.saveState}>{saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved to EasyT" : "Saved on this device"}</small>
           {gate && <small className={styles.gate}>{gate}</small>}
           <button type="button" className={styles.primary} disabled={Boolean(gate)}
-            onClick={() => { if (gate) return; if (step === 3) { setGenerated(true); setActiveDay(0); } else setStep(step + 1); }}>
+            onClick={async () => {
+              if (gate) return;
+              if (step === 0 && !(await validateOrigin())) return;
+              if (step === 3) { setGenerated(true); setActiveDay(0); } else setStep(step + 1);
+            }}>
             {step === 3 ? "Build the draft" : "Continue"} →
           </button>
         </div>

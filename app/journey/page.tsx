@@ -172,7 +172,7 @@ function makeEasyTJourney(trip: EasyTTrip) {
     city: trip.brief.origin,
     country: trip.brief.origin,
     date: customDate(trip.startDate, 0),
-    coordinates: customCoordinate(trip.brief.origin, trip.brief.origin),
+    coordinates: trip.brief.originCoordinates ?? customCoordinate(trip.brief.origin, trip.brief.origin),
     theme: "transit",
     marker: "plane",
     description: "Your starting point. Travel days stay visible as part of the plan.",
@@ -315,7 +315,8 @@ export default function JourneyPage() {
         if (tripId) {
           try { activeTrip = await loadTripFromEasyT(tripId); } catch { /* fall back to the local canonical copy */ }
         }
-        activeTrip ??= loadActiveTrip();
+        const localTrip = loadActiveTrip();
+        if (!activeTrip && (!tripId || localTrip?.id === tripId)) activeTrip = localTrip;
         if (activeTrip) {
           setCustomTrip(activeTrip);
           setCustomBrief(customBriefFromEasyT(activeTrip));

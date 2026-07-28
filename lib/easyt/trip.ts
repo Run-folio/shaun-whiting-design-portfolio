@@ -55,6 +55,7 @@ export type TripRecommendation = {
 
 export type TripBrief = {
   origin: string;
+  originCoordinates?: [number, number];
   mustDo: string;
   pace: TripPace;
   hotelChanges: HotelChanges;
@@ -93,7 +94,7 @@ export type BuilderDay = {
 export type BuilderTripInput = {
   id: string;
   origin: string;
-  stops: Array<{ id: string; name: string; country: string }>;
+  stops: Array<{ id: string; name: string; country: string; coordinates?: [number, number] }>;
   startDate: string;
   endDate: string;
   picks: Record<string, string[]>;
@@ -102,6 +103,8 @@ export type BuilderTripInput = {
   hotels: HotelChanges;
   budget: BudgetBand;
   draft: BuilderDay[];
+  placeDetails?: Record<string, Array<{ title: string; coordinates?: [number, number] }>>;
+  originCoordinates?: [number, number];
   createdAt?: string;
 };
 
@@ -110,10 +113,12 @@ const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").
 export function tripFromBuilder(input: BuilderTripInput): EasyTTrip {
   const now = new Date().toISOString();
   const stops = input.stops.map((stop, order) => ({
-    ...stop,
+    id: stop.id,
+    name: stop.name,
+    country: stop.country,
     order,
-    latitude: null,
-    longitude: null,
+    latitude: stop.coordinates?.[1] ?? null,
+    longitude: stop.coordinates?.[0] ?? null,
     arrivalDate: null,
     departureDate: null,
     nights: null,
@@ -124,6 +129,7 @@ export function tripFromBuilder(input: BuilderTripInput): EasyTTrip {
     const stop = stopByName.get(day.destination) ?? stops[0];
     const date = new Date(`${input.startDate}T00:00:00`);
     date.setDate(date.getDate() + index);
+    const mappedPlace = input.placeDetails?.[stop?.id ?? ""]?.find((place) => place.title === day.title);
     return {
       id: `${input.id}-day-${index + 1}-${slug(day.title) || "plan"}`,
       stopId: stop?.id ?? "unassigned",
@@ -136,8 +142,8 @@ export function tripFromBuilder(input: BuilderTripInput): EasyTTrip {
       startsAt: null,
       endsAt: null,
       bookingUrl: null,
-      latitude: null,
-      longitude: null,
+      latitude: mappedPlace?.coordinates?.[1] ?? null,
+      longitude: mappedPlace?.coordinates?.[0] ?? null,
     };
   });
 
@@ -153,6 +159,7 @@ export function tripFromBuilder(input: BuilderTripInput): EasyTTrip {
     currency: "GBP",
     brief: {
       origin: input.origin,
+      originCoordinates: input.originCoordinates,
       mustDo: input.mustDo,
       pace: input.pace,
       hotelChanges: input.hotels,

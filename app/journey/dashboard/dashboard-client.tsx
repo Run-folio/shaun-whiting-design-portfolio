@@ -101,7 +101,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
                 "Your route is waiting."}
             </p>
             <div className={styles.tripFooter}>
-              <Link href={`/journey/new?trip=${encodeURIComponent(trip.id)}`}>
+              <Link href={`/journey/plan?trip=${encodeURIComponent(trip.id)}`}>
                 {trip.status === "archived" ? "View plan" : "Open plan"} →
               </Link>
               <details className={styles.tripMenu}>
