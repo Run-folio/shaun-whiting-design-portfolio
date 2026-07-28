@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import { getEasyTAuthSecret } from "@/lib/easyt/auth-environment";
 
 const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
@@ -35,7 +36,7 @@ export function getAuth(): EasyTAuth {
   if (authInstance) return authInstance;
 
   const databaseUrl = process.env.DATABASE_URL;
-  const secret = process.env.BETTER_AUTH_SECRET;
+  const secret = getEasyTAuthSecret();
   if (!databaseUrl || !secret) {
     throw new Error("EasyT authentication is not configured in this environment.");
   }

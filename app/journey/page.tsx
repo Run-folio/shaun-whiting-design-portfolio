@@ -12,7 +12,7 @@ import { JourneyLocalFinder } from "@/components/journey-local-finder";
 import { JourneyWeather } from "@/components/journey-weather";
 import { journeyCalendar, journeyDayMedia, journeyDetails, journeyMedia, march2027Journey, type JourneyCalendarDay, type JourneyLeg, type JourneyRestaurant, type JourneyStop, type RestaurantMeal } from "@/lib/journey";
 import { getCountryIntelligence } from "@/lib/country-intelligence";
-import { loadActiveTrip } from "@/lib/easyt/storage";
+import { loadActiveTrip, loadTripFromEasyT } from "@/lib/easyt/storage";
 import type { EasyTTrip } from "@/lib/easyt/trip";
 import styles from "./journey.module.css";
 
@@ -74,6 +74,11 @@ const customCoordinates: Record<string, [number, number]> = {
 };
 
 function customCoordinate(name: string, fallback: string): [number, number] { return customCoordinates[name.toLowerCase()] ?? customCoordinates[fallback.toLowerCase()] ?? [0, 0]; }
+function journeyTransportMode(mode: EasyTTrip["legs"][number]["mode"]): "flight" | "road" | "rail" {
+  if (mode === "flight") return "flight";
+  if (mode === "train") return "rail";
+  return "road";
+}
 function isGenericPlanningPrompt(value?: string) { return !value || /^(historic core|a standout museum|a local neighbourhood|best viewpoint|market, food hall|a nearby landscape|a seasonal|the strongest day trip|a slower local day|the place.s signature|choose .*strongest)/i.test(value); }
 function isPickCompatibleWithDestination(pick: CustomPick | undefined, destination: CustomDestination) {
   if (!pick) return false;
@@ -156,6 +161,101 @@ function makeCustomJourney(brief: CustomBrief) {
   return { title: "Your Journey", dateRange: `${customDate(brief.startDate, 0)} — ${customDate(brief.startDate, Math.max(0, totalDays - 1))}`, stops, legs, calendar };
 }
 
+/**
+ * Map Plan is a second view of the canonical EasyT document, not another
+ * itinerary generator. The public `/journey` story continues to use its fixed
+ * editorial dataset; only `/journey/plan` enters this path.
+ */
+function makeEasyTJourney(trip: EasyTTrip) {
+  const origin: JourneyStop = {
+    id: `${trip.id}-origin`,
+    city: trip.brief.origin,
+    country: trip.brief.origin,
+    date: customDate(trip.startDate, 0),
+    coordinates: customCoordinate(trip.brief.origin, trip.brief.origin),
+    theme: "transit",
+    marker: "plane",
+    description: "Your starting point. Travel days stay visible as part of the plan.",
+    highlights: ["Departure", "Route begins"],
+    aiPrompt: "What should I prepare before leaving?",
+  };
+  const stopById = new Map(trip.stops.map((stop) => [stop.id, stop]));
+  const orderedItems = [...trip.planItems].sort((a, b) => a.dayNumber - b.dayNumber);
+  const stops: JourneyStop[] = [origin];
+  const calendar: JourneyCalendarDay[] = orderedItems.map((item, index) => {
+    const base = stopById.get(item.stopId) ?? trip.stops[0];
+    const selectedPlaceTitles = new Set(base ? (trip.brief.selectedPlaces[base.id] ?? []) : []);
+    const isMappedPlace = item.type === "activity" && selectedPlaceTitles.has(item.title);
+    const city = isMappedPlace ? item.title : (base?.name ?? item.title);
+    const country = base?.country ?? city;
+    const stopId = `${trip.id}-day-${item.dayNumber}`;
+    const coordinates: [number, number] = item.longitude !== null && item.latitude !== null
+      ? [item.longitude, item.latitude]
+      : base?.longitude !== null && base?.longitude !== undefined && base.latitude !== null
+        ? [base.longitude, base.latitude]
+        : customCoordinate(city, country);
+    const previousItem = orderedItems[index - 1];
+    const previousBase = previousItem ? stopById.get(previousItem.stopId) : undefined;
+    const movedBase = index === 0 || previousBase?.id !== base?.id;
+    const relatedLeg = movedBase && base
+      ? trip.legs.find((leg) => leg.toStopId === base.id)
+      : undefined;
+    const travel = movedBase ? {
+      mode: relatedLeg ? journeyTransportMode(relatedLeg.mode) : (index === 0 ? "flight" : "road"),
+      from: index === 0 ? trip.brief.origin : previousBase?.name,
+      detail: relatedLeg?.provider
+        ? `${relatedLeg.provider} to ${base?.name ?? city}`
+        : `Travel to ${base?.name ?? city}`,
+      duration: relatedLeg?.durationMinutes
+        ? `${Math.floor(relatedLeg.durationMinutes / 60)}h ${relatedLeg.durationMinutes % 60}m`
+        : "Confirm the best connection",
+    } satisfies JourneyCalendarDay["travel"] : undefined;
+
+    stops.push({
+      id: stopId,
+      city,
+      country,
+      date: customDate(trip.startDate, item.dayNumber - 1),
+      coordinates,
+      theme: item.type === "arrival" ? "city" : "mountain",
+      marker: item.type === "arrival" ? "skyline" : "temple",
+      description: item.reason,
+      highlights: item.notes.slice(0, 3),
+      aiPrompt: `What should I refine around ${city}?`,
+    });
+
+    return {
+      id: `${trip.id}-calendar-${item.dayNumber}`,
+      date: customDate(trip.startDate, item.dayNumber - 1),
+      label: `Day ${item.dayNumber}`,
+      stopId,
+      city,
+      title: item.title,
+      travel,
+      items: item.notes.length ? item.notes : [item.title],
+    };
+  });
+  const legs: JourneyLeg[] = stops.slice(1).map((stop, index) => {
+    const from = stops[index];
+    const day = calendar[index];
+    return {
+      from: from.id,
+      to: stop.id,
+      mode: day.travel?.mode ?? "road",
+      label: `${from.city} → ${stop.city}`,
+      detail: day.travel?.detail ?? "Day plan",
+      duration: day.travel?.duration ?? "Local movement",
+    };
+  });
+  return {
+    title: trip.title || "Your Journey",
+    dateRange: `${customDate(trip.startDate, 0)} — ${customDate(trip.endDate, 0)}`,
+    stops,
+    legs,
+    calendar,
+  };
+}
+
 export default function JourneyPage() {
   const pathname = usePathname();
   const router = useRouter();
@@ -165,14 +265,20 @@ export default function JourneyPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState<{ restaurant: JourneyRestaurant; meal?: RestaurantMeal }>();
   const [customBrief, setCustomBrief] = useState<CustomBrief | null>(null);
+  const [customTrip, setCustomTrip] = useState<EasyTTrip | null>(null);
+  const [planHydrated, setPlanHydrated] = useState(!isPlanningPreview);
   const [resolvedCoordinates, setResolvedCoordinates] = useState<Record<string, [number, number]>>({});
   const [placeMedia, setPlaceMedia] = useState<Record<string, { image?: string; description?: string; sourceUrl?: string; coordinates?: [number, number] }>>({});
   const trackRef = useRef<HTMLDivElement>(null);
   const hasMounted = useRef(false);
   const journey = useMemo(() => {
-    const base = customBrief ? makeCustomJourney(customBrief) : ({ title: march2027Journey.title, dateRange: march2027Journey.dateRange, stops: march2027Journey.stops, legs: march2027Journey.legs, calendar: journeyCalendar });
+    const base = customTrip
+      ? makeEasyTJourney(customTrip)
+      : customBrief
+        ? makeCustomJourney(customBrief)
+        : ({ title: march2027Journey.title, dateRange: march2027Journey.dateRange, stops: march2027Journey.stops, legs: march2027Journey.legs, calendar: journeyCalendar });
     return customBrief ? { ...base, stops: base.stops.map((stop) => ({ ...stop, coordinates: resolvedCoordinates[stop.id] ?? stop.coordinates, description: placeMedia[stop.id]?.description ?? stop.description })) } : base;
-  }, [customBrief, resolvedCoordinates, placeMedia]);
+  }, [customBrief, customTrip, resolvedCoordinates, placeMedia]);
   const isCustomJourney = Boolean(customBrief);
   const selected = useMemo(
     () => journey.stops.find((stop) => stop.id === selectedId) ?? journey.stops[0],
@@ -201,32 +307,47 @@ export default function JourneyPage() {
 
   useEffect(() => {
     hasMounted.current = true;
-    try {
+    const hydratePlan = async () => {
       if (!isPlanningPreview) return;
-      const activeTrip = loadActiveTrip();
-      if (activeTrip) {
-        setCustomBrief(customBriefFromEasyT(activeTrip));
-        return;
+      try {
+        const tripId = new URLSearchParams(window.location.search).get("trip");
+        let activeTrip: EasyTTrip | null = null;
+        if (tripId) {
+          try { activeTrip = await loadTripFromEasyT(tripId); } catch { /* fall back to the local canonical copy */ }
+        }
+        activeTrip ??= loadActiveTrip();
+        if (activeTrip) {
+          setCustomTrip(activeTrip);
+          setCustomBrief(customBriefFromEasyT(activeTrip));
+          return;
+        }
+        // Older local drafts remain readable during migration, but new plans no
+        // longer write this compatibility payload.
+        try {
+          const stored = window.localStorage.getItem("journey:planned-trip");
+          const parsed = stored ? JSON.parse(stored) : null;
+          if (parsed?.brief?.destinations?.length) setCustomBrief(parsed.brief as CustomBrief);
+        } catch { /* A static Journey remains available if a local draft is malformed. */ }
+      } finally {
+        setPlanHydrated(true);
       }
-      const stored = window.localStorage.getItem("journey:planned-trip");
-      const parsed = stored ? JSON.parse(stored) : null;
-      if (parsed?.brief?.destinations?.length) setCustomBrief(parsed.brief as CustomBrief);
-    } catch { /* A static Journey remains available if a local draft is malformed. */ }
+    };
+    void hydratePlan();
   }, [isPlanningPreview]);
 
   useEffect(() => {
     if (!customBrief) return;
-    const generated = makeCustomJourney(customBrief);
+    const generated = customTrip ? makeEasyTJourney(customTrip) : makeCustomJourney(customBrief);
     const firstDay = generated.calendar[0];
     if (firstDay) {
       setSelectedDayId(firstDay.id);
       setSelectedId(firstDay.stopId);
     }
-  }, [customBrief]);
+  }, [customBrief, customTrip]);
 
   useEffect(() => {
     if (!customBrief) return;
-    const generated = makeCustomJourney(customBrief);
+    const generated = customTrip ? makeEasyTJourney(customTrip) : makeCustomJourney(customBrief);
     let active = true;
     Promise.all(generated.stops.slice(1).map(async (stop) => {
       const country = stop.id === "custom-origin" ? "" : stop.country;
@@ -238,11 +359,11 @@ export default function JourneyPage() {
       setPlaceMedia(Object.fromEntries(results.filter((entry): entry is [string, NonNullable<typeof entry[1]>] => Boolean(entry[1]))));
     }).catch(() => undefined);
     return () => { active = false; };
-  }, [customBrief]);
+  }, [customBrief, customTrip]);
 
   useEffect(() => {
     if (!customBrief) return;
-    const places = makeCustomJourney(customBrief).stops;
+    const places = (customTrip ? makeEasyTJourney(customTrip) : makeCustomJourney(customBrief)).stops;
     if (!places.length) return;
     let active = true;
     Promise.all(places.map(async (place) => {
@@ -257,7 +378,7 @@ export default function JourneyPage() {
       setResolvedCoordinates((current) => ({ ...current, ...Object.fromEntries(results.filter((entry): entry is [string, [number, number]] => Boolean(entry[1]))) }));
     }).catch(() => undefined);
     return () => { active = false; };
-  }, [customBrief]);
+  }, [customBrief, customTrip]);
 
   useEffect(() => {
     if (!window.matchMedia("(max-width: 720px)").matches) return;
@@ -315,6 +436,15 @@ export default function JourneyPage() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selectedDayIndex, journey.calendar]);
+
+  if (isPlanningPreview && !planHydrated) {
+    return (
+      <main className={`${styles.journey} ${styles.planLoading}`} aria-busy="true">
+        <div className={styles.planLoadingMark}><span>Easy</span><b>T</b></div>
+        <p>Opening your journey…</p>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.journey}>

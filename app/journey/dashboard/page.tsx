@@ -9,12 +9,13 @@ import {
 import EasyTNavigation from "../easyt-navigation";
 import DashboardClient from "./dashboard-client";
 import styles from "../account.module.css";
+import { isEasyTAuthConfigured } from "@/lib/easyt/auth-environment";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "My trips · EasyT" };
 
 export default async function EasyTDashboardPage() {
-  if (!process.env.DATABASE_URL || !process.env.BETTER_AUTH_SECRET) {
+  if (!isEasyTAuthConfigured()) {
     redirect("/journey/login?setup=required");
   }
 

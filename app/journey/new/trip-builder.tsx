@@ -14,7 +14,7 @@ import {
   Clock, GripVertical, MapPin, Mountain, Plane, Plus, Users, X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip, saveJourneyPlanBridge, saveTripToEasyT } from "@/lib/easyt/storage";
+import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
 import { tripFromBuilder } from "@/lib/easyt/trip";
 import { journeyMedia, type JourneyImage } from "@/lib/journey";
 import styles from "./trip-builder.module.css";
@@ -453,8 +453,7 @@ export default function TripBuilder() {
           <p><strong>{saveState === "saving" ? "Saving changes…" : saveState === "saved" ? "Saved to EasyT" : "Saved on this device"}</strong> · The research pass verifies transport, opening windows and where you actually sleep.</p>
           <button type="button" className={styles.primary} onClick={() => {
             saveActiveTrip(activeTripDocument);
-            saveJourneyPlanBridge(activeTripDocument);
-            window.location.assign("/journey/plan");
+            window.location.assign(`/journey/plan?trip=${encodeURIComponent(activeTripDocument.id)}`);
           }}>Open map view →</button>
         </div>
       </div>

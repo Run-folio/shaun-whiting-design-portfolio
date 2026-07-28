@@ -1,6 +1,7 @@
 import LoginForm from "./login-form";
 import EasyTNavigation from "../easyt-navigation";
 import styles from "../account.module.css";
+import { isEasyTAuthConfigured } from "@/lib/easyt/auth-environment";
 
 export const metadata = { title: "Sign in · EasyT" };
 
@@ -8,7 +9,7 @@ export default async function EasyTLoginPage({ searchParams }: { searchParams: P
   const { next, setup } = await searchParams;
   const callbackURL = next?.startsWith("/journey/") ? next : "/journey/dashboard";
   const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
-  const configured = Boolean(process.env.DATABASE_URL && process.env.BETTER_AUTH_SECRET);
+  const configured = isEasyTAuthConfigured();
   return <main className={styles.page}>
     <EasyTNavigation current="login" />
     <div className={styles.authWrap}>

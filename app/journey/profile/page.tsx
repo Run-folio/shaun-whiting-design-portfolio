@@ -8,12 +8,13 @@ import {
 import EasyTNavigation from "../easyt-navigation";
 import ProfileForm from "./profile-form";
 import styles from "../account.module.css";
+import { isEasyTAuthConfigured } from "@/lib/easyt/auth-environment";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Profile · EasyT" };
 
 export default async function EasyTProfilePage() {
-  if (!process.env.DATABASE_URL || !process.env.BETTER_AUTH_SECRET)
+  if (!isEasyTAuthConfigured())
     redirect("/journey/login?setup=required");
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/journey/login?next=/journey/profile");

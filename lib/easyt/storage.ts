@@ -39,11 +39,7 @@ export async function loadTripFromEasyT(tripId: string): Promise<EasyTTrip | nul
   return isEasyTTrip(payload.trip) ? payload.trip : null;
 }
 
-/**
- * Temporary renderer adapter. The public `/journey` dataset remains untouched;
- * only `/journey/plan` reads this compatibility shape while it is migrated to
- * the canonical EasyT document.
- */
+/** @deprecated New Map Plans read the canonical EasyT document directly. */
 export function saveJourneyPlanBridge(trip: EasyTTrip) {
   if (typeof window === "undefined") return;
   const duration = Math.max(1, Math.round((+new Date(`${trip.endDate}T00:00:00`) - +new Date(`${trip.startDate}T00:00:00`)) / 86400000) + 1);
