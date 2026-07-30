@@ -139,6 +139,7 @@
   line-height: 1.5;
   margin: 0 0 32px;
 }
+.forgotLink{justify-self:end;color:#17152f;font-size:13px;text-decoration:underline;text-underline-offset:3px}
 .tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
