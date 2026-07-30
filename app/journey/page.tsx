@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Building2, Castle, Flower2, House, Landmark, Mountain, PawPrint, PersonStanding, Plane, Plus, Torus, Utensils, Waves, type LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -258,7 +258,6 @@ function makeEasyTJourney(trip: EasyTTrip) {
 
 export default function JourneyPage() {
   const pathname = usePathname();
-  const router = useRouter();
   const isPlanningPreview = pathname === "/journey/plan";
   const [selectedDayId, setSelectedDayId] = useState("day-03");
   const [selectedId, setSelectedId] = useState("tokyo");
@@ -280,6 +279,9 @@ export default function JourneyPage() {
     return customBrief ? { ...base, stops: base.stops.map((stop) => ({ ...stop, coordinates: resolvedCoordinates[stop.id] ?? stop.coordinates, description: placeMedia[stop.id]?.description ?? stop.description })) } : base;
   }, [customBrief, customTrip, resolvedCoordinates, placeMedia]);
   const isCustomJourney = Boolean(customBrief);
+  const editTripHref = customTrip
+    ? `/journey/new?trip=${encodeURIComponent(customTrip.id)}`
+    : "/journey/new";
   const selected = useMemo(
     () => journey.stops.find((stop) => stop.id === selectedId) ?? journey.stops[0],
     [selectedId, journey.stops],
@@ -472,7 +474,7 @@ export default function JourneyPage() {
 
       <header className={styles.topbar}>
         <div className={styles.headerRow}>
-          {isPlanningPreview ? <button type="button" className={styles.back} onClick={() => router.back()}>← Back to builder</button> : <Link href="/" className={styles.back}>← Shaun Whiting</Link>}
+          {isPlanningPreview ? <Link href={editTripHref} className={styles.back}>← Edit trip</Link> : <Link href="/" className={styles.back}>← Shaun Whiting</Link>}
           <div className={styles.titleLockup}><span>{journey.title}</span><small>{journey.dateRange}</small></div>
           <nav className={styles.headerActions} aria-label="EasyT account navigation">
             <Link href="/journey/dashboard" className={styles.myTripsLink}>My trips</Link>

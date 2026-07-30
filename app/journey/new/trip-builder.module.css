@@ -48,7 +48,8 @@
   border: 1px solid var(--line); border-radius: 16px; background: #fff;
   transition: border-color .18s, background .18s;
 }
-.card:hover { border-color: var(--signal); }
+.card:hover,
+.card:focus-within { border-color: var(--signal); }
 .cardOpen { border-color: var(--signal); }
 .cardError { border-color: var(--signal); background: #fff7fa; }
 .cardLabel {
@@ -70,7 +71,7 @@
 .hint { color: var(--muted); }
 .hintError { color: var(--signal); }
 
-/* -------------------------------------------------- stops (drag + arrows) */
+/* ----------------------------------------------------------- stops (drag) */
 .suggestions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
 .suggestions button {
   display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px;
@@ -80,26 +81,25 @@
 .suggestions button:hover { border-color: var(--ink); color: var(--ink); }
 .suggestions svg { width: 12px; height: 12px; }
 
-.stopList { display: grid; gap: 8px; margin-top: 6px; }
+.stopList { display: grid; gap: 6px; margin-top: 2px; }
 .stopRow {
-  display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 12px 10px 16px;
-  border: 1px solid var(--line); border-radius: 14px; background: #fff; cursor: grab;
+  display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 8px 10px 8px 14px;
+  border: 1px solid var(--line); border-radius: 12px; background: #fff; cursor: grab;
   transition: border-color .16s, opacity .16s;
 }
 .stopRowDragging { border-color: var(--signal); opacity: .45; }
 .stopRow > b { color: var(--signal); font: 800 11px var(--font-geist-mono, monospace); }
 .grip { width: 15px; height: 15px; color: #a8a4ae; }
 .stopRow > div { display: grid; gap: 2px; min-width: 0; }
-.stopRow strong { font-size: 15px; font-weight: 570; }
-.stopRow small { color: var(--muted); font: 600 11px var(--font-geist-mono, monospace); }
-.stopActions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
-.stopActions button {
-  display: grid; place-items: center; width: 40px; height: 40px;
+.stopRow strong { font-size: 14px; font-weight: 570; }
+.stopRow small { color: var(--muted); font: 600 10px var(--font-geist-mono, monospace); }
+.removeStop {
+  display: grid; place-items: center; width: 32px; height: 32px; margin-left: auto;
   border: 0; border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer;
+  transition: color .16s, background .16s;
 }
-.stopActions button:hover:not(:disabled) { background: var(--tint); color: var(--ink); }
-.stopActions button:disabled { opacity: .3; cursor: not-allowed; }
-.stopActions svg { width: 15px; height: 15px; }
+.removeStop:hover { background: #fff1f7; color: var(--signal); }
+.removeStop svg { width: 15px; height: 15px; }
 
 /* ------------------------------------------------------ dates + calendar */
 .dateRow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -303,6 +303,8 @@
 .draftFoot p { margin: 0; max-width: 420px; color: #5c5866; font-size: 13px; line-height: 1.5; }
 
 .shellWide *:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* The card is the input boundary. Avoid drawing a second box inside it. */
+.card input:focus-visible { outline: 0; }
 
 @media (max-width: 900px) {
   .wizardBody, .draftBody { grid-template-columns: 1fr; }

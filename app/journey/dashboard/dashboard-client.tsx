@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Archive, Copy, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
+import { Archive, Copy, Edit3, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { EasyTTrip } from "@/lib/easyt/trip";
@@ -101,9 +101,18 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
                 "Your route is waiting."}
             </p>
             <div className={styles.tripFooter}>
-              <Link href={`/journey/plan?trip=${encodeURIComponent(trip.id)}`}>
-                {trip.status === "archived" ? "View plan" : "Open plan"} →
-              </Link>
+              <div className={styles.tripActions}>
+                <Link href={`/journey/plan?trip=${encodeURIComponent(trip.id)}`}>
+                  {trip.status === "archived" ? "View plan" : "Open plan"} →
+                </Link>
+                <Link
+                  className={styles.editTripLink}
+                  href={`/journey/new?trip=${encodeURIComponent(trip.id)}`}
+                >
+                  <Edit3 aria-hidden="true" />
+                  Edit trip
+                </Link>
+              </div>
               <details className={styles.tripMenu}>
                 <summary aria-label={`Actions for ${trip.title}`}>
                   <MoreHorizontal aria-hidden="true" />

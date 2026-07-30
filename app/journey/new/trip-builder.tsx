@@ -10,7 +10,7 @@
  */
 
 import {
-  CalendarDays, ChevronDown, ChevronLeft, ChevronRight, ChevronUp,
+  CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
   Clock, GripVertical, MapPin, Mountain, Plane, Plus, Users, X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -336,13 +336,6 @@ export default function TripBuilder() {
       return false;
     }
   };
-  const move = (index: number, delta: number) => {
-    const target = index + delta;
-    if (target < 0 || target >= stops.length) return;
-    const next = [...stops];
-    [next[index], next[target]] = [next[target], next[index]];
-    setStops(next);
-  };
   const togglePick = (stopId: string, title: string) => {
     const current = picks[stopId] ?? [];
     setPicks({ ...picks, [stopId]: current.includes(title) ? current.filter((t) => t !== title) : [...current, title] });
@@ -543,7 +536,7 @@ export default function TripBuilder() {
                   onChange={(e) => { setStopInput(e.target.value); setStopError(""); }}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addStop(); } }} />
                 <small className={stopError ? styles.hintError : styles.hint}>
-                  {stopError || "Press Enter to add. Drag a row or use the arrows to reorder."}
+                  {stopError || "Press Enter to add. Drag a row to reorder."}
                 </small>
                 {!stopInput.trim() && (
                   <div className={styles.suggestions}>
@@ -576,11 +569,14 @@ export default function TripBuilder() {
                       <strong>{stop.name}</strong>
                       <small>{(picks[stop.id] ?? []).length} places selected</small>
                     </div>
-                    <div className={styles.stopActions}>
-                      <button type="button" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Move earlier"><ChevronUp /></button>
-                      <button type="button" disabled={i === stops.length - 1} onClick={() => move(i, 1)} aria-label="Move later"><ChevronDown /></button>
-                      <button type="button" onClick={() => setStops(stops.filter((x) => x.id !== stop.id))} aria-label="Remove stop"><X /></button>
-                    </div>
+                    <button
+                      type="button"
+                      className={styles.removeStop}
+                      onClick={() => setStops(stops.filter((x) => x.id !== stop.id))}
+                      aria-label={`Remove ${stop.name}`}
+                    >
+                      <X />
+                    </button>
                   </div>
                 ))}
               </div>

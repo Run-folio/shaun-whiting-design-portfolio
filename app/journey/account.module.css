@@ -376,10 +376,34 @@
   justify-content: space-between;
   gap: 10px;
 }
+.tripActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
 .tripFooter a {
   color: #17152f;
+  font-family: var(--font-geist-sans, Geist, Inter, Arial, sans-serif);
   font-weight: 750;
+  letter-spacing: -0.01em;
+  text-transform: none;
   text-decoration: none;
+}
+.editTripLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #716e7a !important;
+  font-size: 13px;
+  font-weight: 600 !important;
+}
+.editTripLink:hover {
+  color: #ff3d8b !important;
+}
+.editTripLink svg {
+  width: 14px;
+  height: 14px;
 }
 .tripMenu {
   position: relative;
