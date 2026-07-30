@@ -108,7 +108,11 @@ function countryZoom(stop: JourneyStop) {
   return 8;
 }
 
-function greatCircle(from: JourneyStop, to: JourneyStop) {
+function hasCoordinates(stop: JourneyStop): stop is JourneyStop & { coordinates: [number, number] } {
+  return Array.isArray(stop.coordinates) && Number.isFinite(stop.coordinates[0]) && Number.isFinite(stop.coordinates[1]);
+}
+
+function greatCircle(from: JourneyStop & { coordinates: [number, number] }, to: JourneyStop & { coordinates: [number, number] }) {
   const interpolate = geoInterpolate(from.coordinates, to.coordinates);
   return { type: "LineString" as const, coordinates: Array.from({ length: 64 }, (_, index) => interpolate(index / 63)) };
 }
@@ -132,11 +136,11 @@ function placeMapUrl(place: Place, stop: JourneyStop) {
     : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
-function TransportGlyph({ mode }: { mode: JourneyLeg["mode"] }) {
+function TransportGlyph({ mode, angle = 0 }: { mode: JourneyLeg["mode"]; angle?: number }) {
   const props = { x: -9, y: -9, width: 18, height: 18, strokeWidth: 1.6, vectorEffect: "non-scaling-stroke" as const };
-  // Lucide's plane already faces the visual direction used by the route badge.
-  // Rotating it here inverted every flight icon.
-  if (mode === "flight") return <Plane {...props} />;
+  // Plane's native heading is north-east (-45°), so compensate before aiming
+  // it along the actual direction of travel.
+  if (mode === "flight") return <Plane {...props} transform={`rotate(${angle + 45})`} />;
   if (mode === "rail") return <TrainFront {...props} />;
   return <BusFront {...props} />;
 }
@@ -145,7 +149,9 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const [routeOpen, setRouteOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [restaurantOpen, setRestaurantOpen] = useState(false);
-  const selected = stops.find((stop) => stop.id === selectedId) ?? stops[0];
+  const mappedStops = useMemo(() => stops.filter(hasCoordinates), [stops]);
+  const selected = mappedStops.find((stop) => stop.id === selectedId) ?? mappedStops[0];
+  if (!selected) return <div className="journey-map journey-map--unmapped">This route needs a verified map location before it can be shown.</div>;
   // The original proof uses a Pacific-centred globe as part of its visual
   // story. Generated EasyT plans instead use a standard Mercator map so every
   // city, including European routes, is positioned and zoomed consistently.
@@ -161,6 +167,22 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
     const scale = countryZoom(selected);
     return { x: focusPoint[0] - selectedPoint[0] * scale, y: focusPoint[1] - selectedPoint[1] * scale, scale };
   }, [selected.id, selectedPoint[0], selectedPoint[1]]);
+  const routeView = useMemo(() => {
+    if (variant !== "planner" || mappedStops.length < 2) return targetView;
+    const points = mappedStops.map((stop) => projection(stop.coordinates)).filter((point): point is [number, number] => Boolean(point));
+    if (points.length < 2) return targetView;
+    const minX = Math.min(...points.map(([x]) => x));
+    const maxX = Math.max(...points.map(([x]) => x));
+    const minY = Math.min(...points.map(([, y]) => y));
+    const maxY = Math.max(...points.map(([, y]) => y));
+    const safe = { left: 310, right: 1130, top: 112, bottom: 670 };
+    const spreadX = Math.max(110, maxX - minX);
+    const spreadY = Math.max(110, maxY - minY);
+    const scale = Math.max(minZoom, Math.min(maxZoom, Math.min((safe.right - safe.left) / spreadX, (safe.bottom - safe.top) / spreadY) * .82));
+    const centreX = (minX + maxX) / 2;
+    const centreY = (minY + maxY) / 2;
+    return { x: (safe.left + safe.right) / 2 - centreX * scale, y: (safe.top + safe.bottom) / 2 - centreY * scale, scale };
+  }, [mappedStops, projection, targetView, variant]);
   const viewRef = useRef<View>(targetView);
   const dragRef = useRef<{ pointerId: number; x: number; y: number; origin: View } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -174,12 +196,12 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   useLayoutEffect(() => {
     if (!mountedRef.current) {
       mountedRef.current = true;
-      writeView(targetView);
+      writeView(variant === "planner" ? routeView : targetView);
     } else {
       animateTo(targetView, 880);
     }
     return () => cancelAnimationFrame(transitionFrameRef.current);
-  }, [selectedId, targetView]);
+  }, [selectedId, routeView, targetView, variant]);
 
   useLayoutEffect(() => {
     const handleResize = () => writeView(viewRef.current);
@@ -190,11 +212,17 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const routes = useMemo(() => legs.flatMap((leg) => {
     const from = stops.find((stop) => stop.id === leg.from);
     const to = stops.find((stop) => stop.id === leg.to);
-    return from && to ? [{ leg, from, to, route: greatCircle(from, to) }] : [];
+    return from && to && hasCoordinates(from) && hasCoordinates(to) ? [{ leg, from, to, route: greatCircle(from, to) }] : [];
   }), [legs, stops]);
   const activeRoute = routes.find(({ leg }) => leg.to === selectedId) ?? routes.find(({ leg }) => leg.from === selectedId);
   const activeRoutePath = activeRoute ? path(activeRoute.route) ?? "" : "";
   const routeMidpoint = activeRoute ? projection(geoInterpolate(activeRoute.from.coordinates, activeRoute.to.coordinates)(.5)) : null;
+  const routeAngle = activeRoute ? (() => {
+    const interpolate = geoInterpolate(activeRoute.from.coordinates, activeRoute.to.coordinates);
+    const before = projection(interpolate(.49));
+    const after = projection(interpolate(.51));
+    return before && after ? Math.atan2(after[1] - before[1], after[0] - before[0]) * 180 / Math.PI : 0;
+  })() : 0;
   const activeRoutePoint: [number, number] | null = routeMidpoint
     ? [Number(routeMidpoint[0].toFixed(6)), Number(routeMidpoint[1].toFixed(6))]
     : null;
@@ -320,7 +348,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
         </g>
         {activeRoutePath ? <g key={`traveller-${selectedId}`} className="journey-map__traveller"><animateMotion path={activeRoutePath} dur="1.05s" calcMode="spline" keyTimes="0;1" keySplines="0.45 0 0.2 1" fill="freeze" /><g className="journey-map__screen-scale" transform={`scale(${liveScreenScale})`}><circle r="4" filter="url(#traveller-glow)" /></g></g> : null}
         <g className="journey-map__stops">
-          {stops.map((stop) => {
+          {mappedStops.map((stop) => {
             const point = projection(stop.coordinates);
             const active = stop.id === selected.id;
             if (!point) return null;
@@ -395,7 +423,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
           <g className="journey-map__screen-scale" transform={`scale(${liveScreenScale})`}>
             <g className="journey-map__route-trigger" role="button" tabIndex={0} aria-label={`${routeOpen ? "Hide" : "Show"} ${activeRoute.leg.mode} details for ${activeRoute.leg.label}`} onClick={(event) => { event.stopPropagation(); setRouteOpen((open) => !open); }} onPointerDown={(event) => event.stopPropagation()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setRouteOpen((open) => !open); } }}>
               <circle r="15" />
-              <g><TransportGlyph mode={activeRoute.leg.mode} /></g>
+              <g><TransportGlyph mode={activeRoute.leg.mode} angle={routeAngle} /></g>
             </g>
             <path className="journey-map__route-leader" d="M14 8 L18 23" />
             <g className={`journey-map__route-card ${routeOpen ? "is-open" : ""}`} transform="translate(18 23)">
@@ -412,7 +440,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
     <div className="journey-map__controls" aria-label="Map controls">
       <button type="button" onClick={() => zoomAt(viewRef.current.scale * 1.45)} aria-label="Zoom in map"><Plus size={17} /></button>
       <button type="button" onClick={() => zoomAt(viewRef.current.scale / 1.45)} aria-label="Zoom out map"><Minus size={17} /></button>
-      <button type="button" onClick={() => animateTo(targetView)} aria-label={`Reset map to ${selected.city}`}><Scan size={16} /></button>
+      <button type="button" onClick={() => animateTo(variant === "planner" ? routeView : targetView)} aria-label={variant === "planner" ? "Fit all route destinations" : `Reset map to ${selected.city}`}><Scan size={16} /></button>
     </div>
     <div ref={zoomReadoutRef} className="journey-map__zoom-readout">{Math.round(targetView.scale * 10) / 10}×</div>
     {selectedPlace ? <aside className={`journey-map__place-detail ${selectedPlace.image ? "" : "is-text-only"}`} aria-live="polite">

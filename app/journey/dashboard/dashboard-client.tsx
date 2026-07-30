@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { EasyTTrip } from "@/lib/easyt/trip";
 import { EasyTSegmentedControl } from "@/components/easyt/easyt-controls";
+import { EasyTFeedback } from "@/components/easyt/easyt-feedback";
 import styles from "../account.module.css";
 
 export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
@@ -218,6 +219,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
           </section>
         </div>
       ) : null}
+      <EasyTFeedback />
     </>
   );
 }

@@ -76,6 +76,19 @@ export async function updateEasyTUserPreferences(
   `;
 }
 
+export async function createEasyTFeedback(input: {
+  ownerId: string;
+  rating: number;
+  comment?: string;
+  surface?: string;
+}) {
+  const sql = getEasyTDatabase();
+  await sql`
+    insert into easyt_feedback (owner_id, rating, comment, surface)
+    values (${input.ownerId}, ${input.rating}, ${input.comment?.trim() || null}, ${input.surface ?? "dashboard"})
+  `;
+}
+
 export async function listTripsForOwner(ownerId: string): Promise<EasyTTrip[]> {
   const sql = getEasyTDatabase();
   const rows = (await sql`

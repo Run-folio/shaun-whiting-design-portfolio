@@ -31,6 +31,21 @@ export type EstimatedLeg = {
   note: string;
 };
 
+type KnownConnection = Pick<EstimatedLeg, "mode" | "durationMinutes" | "note">;
+
+// These are deliberately door-to-door planning allowances, rather than a claim
+// about one particular departure. They keep the most common European corridors
+// from being incorrectly presented as flights while a live timetable provider
+// is not connected.
+const knownConnections: Record<string, KnownConnection> = {
+  "london|paris": { mode: "train", durationMinutes: 270, note: "Typical Eurostar door-to-door allowance; verify the live timetable before booking." },
+  "paris|london": { mode: "train", durationMinutes: 270, note: "Typical Eurostar door-to-door allowance; verify the live timetable before booking." },
+  "madrid|barcelona": { mode: "train", durationMinutes: 210, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
+  "barcelona|madrid": { mode: "train", durationMinutes: 210, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
+  "paris|rome": { mode: "flight", durationMinutes: 330, note: "Typical door-to-door flight allowance, including airport time; verify flight schedules before booking." },
+  "rome|paris": { mode: "flight", durationMinutes: 330, note: "Typical door-to-door flight allowance, including airport time; verify flight schedules before booking." },
+};
+
 export type PlannedDay = {
   number: string;
   date: string;
@@ -62,6 +77,15 @@ export function haversineKm(a?: [number, number], b?: [number, number]) {
 export function estimateLeg(from: PlannerStop | { name: string; coordinates?: [number, number] }, to: PlannerStop): EstimatedLeg {
   const distanceKm = haversineKm(from.coordinates, to.coordinates);
   const sameCountry = "country" in from && from.country.toLowerCase() === to.country.toLowerCase();
+  const connectionKey = `${from.name.toLowerCase().trim()}|${to.name.toLowerCase().trim()}`;
+  const known = knownConnections[connectionKey];
+  if (known) {
+    return {
+      ...known,
+      distanceKm,
+      label: `${from.name} → ${to.name}`,
+    };
+  }
   if (distanceKm === null) {
     return { mode: sameCountry ? "road" : "flight", distanceKm: null, durationMinutes: null, label: `${from.name} → ${to.name}`, note: "Confirm the best connection before booking." };
   }

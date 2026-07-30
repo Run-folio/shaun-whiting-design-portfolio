@@ -44,6 +44,8 @@ export type PlanItem = {
   bookingUrl: string | null;
   latitude: number | null;
   longitude: number | null;
+  image?: string | null;
+  sourceUrl?: string | null;
 };
 
 export type TripRecommendation = {
@@ -110,7 +112,7 @@ export type BuilderTripInput = {
   budget: BudgetBand;
   dayAllocations?: Record<string, number>;
   draft: BuilderDay[];
-  placeDetails?: Record<string, Array<{ title: string; coordinates?: [number, number] }>>;
+  placeDetails?: Record<string, Array<{ title: string; coordinates?: [number, number]; image?: string; sourceUrl?: string }>>;
   originCoordinates?: [number, number];
   createdAt?: string;
 };
@@ -160,6 +162,8 @@ export function tripFromBuilder(input: BuilderTripInput): EasyTTrip {
       bookingUrl: null,
       latitude: day.coordinates?.[1] ?? mappedPlace?.coordinates?.[1] ?? stop?.latitude ?? null,
       longitude: day.coordinates?.[0] ?? mappedPlace?.coordinates?.[0] ?? stop?.longitude ?? null,
+      image: mappedPlace?.image ?? null,
+      sourceUrl: mappedPlace?.sourceUrl ?? null,
     };
   });
 
