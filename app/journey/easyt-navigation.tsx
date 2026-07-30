@@ -94,10 +94,18 @@ export default function EasyTNavigation({
 
   return (
     <header className={styles.header}>
-      <Link className={styles.portfolio} href="/">
+      <button
+        type="button"
+        className={styles.portfolio}
+        onClick={() => {
+          if (window.history.length > 1) router.back();
+          else router.push("/journey/dashboard");
+        }}
+        aria-label="Go back"
+      >
         <ArrowLeft aria-hidden="true" />
-        <span>Shaun Whiting</span>
-      </Link>
+        <span>Back</span>
+      </button>
 
       <Link
         className={styles.brand}

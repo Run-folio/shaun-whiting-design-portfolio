@@ -61,6 +61,7 @@ export type TripBrief = {
   hotelChanges: HotelChanges;
   budgetBand: BudgetBand;
   selectedPlaces: Record<string, string[]>;
+  dayAllocations?: Record<string, number>;
 };
 
 export type EasyTTrip = {
@@ -102,6 +103,7 @@ export type BuilderTripInput = {
   pace: TripPace;
   hotels: HotelChanges;
   budget: BudgetBand;
+  dayAllocations?: Record<string, number>;
   draft: BuilderDay[];
   placeDetails?: Record<string, Array<{ title: string; coordinates?: [number, number] }>>;
   originCoordinates?: [number, number];
@@ -165,6 +167,7 @@ export function tripFromBuilder(input: BuilderTripInput): EasyTTrip {
       hotelChanges: input.hotels,
       budgetBand: input.budget,
       selectedPlaces: input.picks,
+      dayAllocations: input.dayAllocations,
     },
     stops,
     legs: stops.slice(1).map((stop, index) => ({

@@ -3,6 +3,7 @@
 
 .createTripLink{justify-self:end;display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 15px;color:#fff;background:#000;border:1px solid #000;border-radius:999px;font:500 14px var(--font-geist-sans,Geist,Inter,sans-serif);letter-spacing:-.01em;text-decoration:none;text-transform:none;font-variant-caps:normal;transition:background .18s,border-color .18s,transform .18s}.createTripLink svg{width:14px;height:14px}.createTripLink:hover{color:#fff;background:var(--signal);border-color:var(--signal);transform:translateY(-1px)}
 .headerActions{justify-self:end;display:flex;align-items:center;gap:7px}.myTripsLink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border:1px solid #d8d8dc;border-radius:999px;background:#fff;color:#111;text-decoration:none;font:500 14px var(--font-geist-sans,Geist,Inter,sans-serif);letter-spacing:-.01em;text-transform:none;font-variant-caps:normal;transition:border-color .18s,color .18s,background .18s}.myTripsLink:hover{border-color:var(--signal);color:var(--signal);background:#fff7fa}
+.savePlanLink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border:1px solid #d8d8dc;border-radius:999px;background:#fff;color:#111;font:500 14px var(--font-geist-sans,Geist,Inter,sans-serif);letter-spacing:-.01em;cursor:pointer;transition:border-color .18s,color .18s,background .18s}.savePlanLink:hover:not(:disabled){border-color:var(--signal);color:var(--signal);background:#fff7fa}.savePlanLink:disabled{opacity:.62;cursor:wait}.savePlanError{position:absolute;z-index:12;bottom:78px;left:50%;margin:0;padding:9px 13px;color:#8a1748;background:#fff5f8;border:1px solid rgba(255,61,139,.35);border-radius:999px;font:600 11px var(--font-geist-mono,monospace);transform:translateX(-50%)}
 
 /* Interactive geographic canvas */
 .journey :global(.journey-map){position:absolute;inset:0;z-index:0;overflow:hidden;background:#f3f4f5;user-select:none}
@@ -124,9 +125,9 @@
 .playButton:hover{background:#000;box-shadow:0 13px 34px rgba(31,29,61,.3);transform:translateX(-50%) translateY(-2px)}
 .playButton.playing{background:var(--signal)}
 .timeline{padding:0 clamp(12px,3.4vw,56px) 9px}
-.track{display:grid;overflow-x:auto;scrollbar-width:none;padding:12px 0 10px;scroll-padding-inline:50%;scroll-behavior:smooth;overscroll-behavior-inline:contain}
+.track{display:grid;overflow-x:auto;scrollbar-width:none;padding:12px 0 10px;scroll-padding-inline:50%;scroll-behavior:smooth;overscroll-behavior-inline:contain;touch-action:pan-x;overscroll-behavior-y:none}
 .track::-webkit-scrollbar{display:none}
-.stop{appearance:none;min-width:0;width:100%;height:72px;padding:19px 12px 8px;position:relative;text-align:left;color:rgba(0,0,0,.48);background:transparent;border:1px solid transparent;border-radius:8px;cursor:pointer;transition:color .18s,background .18s,border-color .18s,box-shadow .18s}
+.stop{appearance:none;min-width:132px;width:100%;height:72px;padding:19px 12px 8px;position:relative;text-align:left;color:rgba(0,0,0,.48);background:transparent;border:1px solid transparent;border-radius:8px;cursor:pointer;transition:color .18s,background .18s,border-color .18s,box-shadow .18s}
 .stopNode{position:absolute;z-index:3;top:5px;left:13px;display:grid;place-items:center;width:10px;height:10px;border-radius:50%;border:1px solid #1f1d3d;background:#fff}
 .stopNode i{width:3px;height:3px;border-radius:50%;background:#1f1d3d}
 .segment{position:absolute;z-index:0;top:10px;left:23px;width:calc(100% - 9px);height:1px;background:var(--hairline)}
@@ -185,9 +186,9 @@
 .carouselDots{display:flex;gap:4px}
 .carouselDots button{width:13px;height:2px;padding:0;background:rgba(31,29,61,.18);border:0;cursor:pointer;transition:width .2s,background .2s}
 .carouselDots button.currentDot{width:22px;background:var(--signal)}
-.restaurantFinder{margin-top:13px;padding:12px;background:var(--mist);border:1px solid rgba(31,29,61,.12)}
+.restaurantFinder{margin-top:13px;padding:12px;background:var(--mist);border:1px solid rgba(31,29,61,.12);border-radius:12px}
 .restaurantFinder>header{display:flex;align-items:center;gap:9px;padding-bottom:10px;border-bottom:1px solid rgba(31,29,61,.1)}
-.restaurantFinder>header>span{display:grid;width:28px;height:28px;place-items:center;color:var(--signal);background:#fff;border:1px solid rgba(31,29,61,.1)}
+.restaurantFinder>header>span{display:grid;width:28px;height:28px;place-items:center;color:var(--signal);background:#fff;border:1px solid rgba(31,29,61,.1);border-radius:8px}
 .restaurantFinder>header svg{width:13px;height:13px;stroke-width:1.7}
 .restaurantFinder>header div{display:grid;gap:1px}
 .restaurantFinder>header small{color:var(--signal);font:750 7px var(--font-geist-mono,monospace);letter-spacing:.12em;text-transform:uppercase}
@@ -198,7 +199,7 @@
 .restaurantLocalNote{margin:10px 0 0;color:rgba(31,29,61,.62);font-size:10px;line-height:1.45}
 .mealPicker{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px;margin-top:10px}
 .mealPicker>span{color:rgba(31,29,61,.5);font:700 7px var(--font-geist-mono,monospace);letter-spacing:.08em;text-transform:uppercase}
-.mealPicker>div{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(31,29,61,.14);background:#fff}
+.mealPicker>div{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(31,29,61,.14);background:#fff;border-radius:8px;overflow:hidden}
 .mealPicker button{min-height:30px;color:var(--accent);background:transparent;border:0;font:700 8px var(--font-geist-mono,monospace);text-transform:capitalize;cursor:pointer;transition:color .18s,background .18s}
 .mealPicker button+button{border-left:1px solid rgba(31,29,61,.14)}
 .mealPicker button[aria-pressed="true"]{color:#fff;background:var(--accent)}
@@ -208,7 +209,7 @@
 .restaurantQuestion h3{margin:6px 0 10px;color:var(--ink);font-size:15px;font-weight:570;letter-spacing:-.02em}
 .restaurantQuestion>div{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 .restaurantQuestion>div.dishOptions{grid-template-columns:repeat(2,1fr)}
-.restaurantQuestion button{min-height:34px;padding:7px 6px;color:var(--accent);background:#fff;border:1px solid rgba(31,29,61,.13);font:600 8px var(--font-geist-mono,monospace);cursor:pointer;transition:color .18s,border-color .18s,background .18s}
+.restaurantQuestion button{min-height:34px;padding:7px 6px;color:var(--accent);background:#fff;border:1px solid rgba(31,29,61,.13);border-radius:8px;font:600 8px var(--font-geist-mono,monospace);cursor:pointer;transition:color .18s,border-color .18s,background .18s}
 .restaurantQuestion button:hover{color:#fff;background:var(--accent);border-color:var(--accent)}
 .restaurantResult{padding-top:11px}
 .restaurantResult h3{margin:7px 0 2px;color:var(--ink);font-size:18px;font-weight:620;line-height:1.08;letter-spacing:-.025em}
@@ -220,12 +221,12 @@
 .restaurantResult dt{color:var(--signal);font-weight:750;text-transform:uppercase}
 .restaurantResult dd{margin:0;color:var(--accent)}
 .restaurantActions{display:flex;align-items:center;gap:6px;margin-top:10px}
-.restaurantActions a,.restaurantActions button{display:flex;min-height:29px;align-items:center;justify-content:center;padding:0 9px;color:var(--accent);background:#fff;border:1px solid rgba(31,29,61,.13);font:650 7px var(--font-geist-mono,monospace);text-decoration:none;cursor:pointer;transition:color .18s,background .18s}
+.restaurantActions a,.restaurantActions button{display:flex;min-height:29px;align-items:center;justify-content:center;padding:0 9px;color:var(--accent);background:#fff;border:1px solid rgba(31,29,61,.13);border-radius:999px;font:650 7px var(--font-geist-mono,monospace);text-decoration:none;cursor:pointer;transition:color .18s,background .18s}
 .restaurantActions a{color:#fff;background:var(--accent)}
 .restaurantActions .restaurantSave{color:#fff;background:var(--signal);border-color:var(--signal)}
 .restaurantActions .restaurantSave:disabled{color:rgba(31,29,61,.52);background:rgba(31,29,61,.07);border-color:transparent;cursor:default}
 .restaurantActions svg{width:11px;height:11px;margin-left:5px}
-.restaurantActions button:last-child{width:29px;padding:0}
+.restaurantActions button:last-child{width:29px;padding:0;border-radius:50%}
 .restaurantActions button:last-child svg{margin:0}
 .restaurantActions a:hover,.restaurantActions button:hover{color:#fff;background:var(--signal)}
 .restaurantResult>small{display:block;margin-top:8px;color:rgba(31,29,61,.42);font:6.5px var(--font-geist-mono,monospace)}

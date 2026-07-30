@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Building2, Castle, Flower2, House, Landmark, Mountain, PawPrint, PersonStanding, Plane, Plus, Torus, Utensils, Waves, type LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -12,7 +12,8 @@ import { JourneyLocalFinder } from "@/components/journey-local-finder";
 import { JourneyWeather } from "@/components/journey-weather";
 import { journeyCalendar, journeyDayMedia, journeyDetails, journeyMedia, march2027Journey, type JourneyCalendarDay, type JourneyLeg, type JourneyRestaurant, type JourneyStop, type RestaurantMeal } from "@/lib/journey";
 import { getCountryIntelligence } from "@/lib/country-intelligence";
-import { loadActiveTrip, loadTripFromEasyT } from "@/lib/easyt/storage";
+import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
+import { authClient } from "@/lib/auth-client";
 import type { EasyTTrip } from "@/lib/easyt/trip";
 import styles from "./journey.module.css";
 
@@ -258,6 +259,8 @@ function makeEasyTJourney(trip: EasyTTrip) {
 
 export default function JourneyPage() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
   const isPlanningPreview = pathname === "/journey/plan";
   const [selectedDayId, setSelectedDayId] = useState("day-03");
   const [selectedId, setSelectedId] = useState("tokyo");
@@ -268,6 +271,8 @@ export default function JourneyPage() {
   const [planHydrated, setPlanHydrated] = useState(!isPlanningPreview);
   const [resolvedCoordinates, setResolvedCoordinates] = useState<Record<string, [number, number]>>({});
   const [placeMedia, setPlaceMedia] = useState<Record<string, { image?: string; description?: string; sourceUrl?: string; coordinates?: [number, number] }>>({});
+  const [cloudSaveState, setCloudSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [autoSaveRequested, setAutoSaveRequested] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
   const hasMounted = useRef(false);
   const journey = useMemo(() => {
@@ -307,12 +312,34 @@ export default function JourneyPage() {
     setSelectedRestaurant(restaurant ? { restaurant, meal } : undefined);
   }, []);
 
+  const savePlan = useCallback(async () => {
+    if (!customTrip) return;
+    if (!session?.user) {
+      const next = `/journey/plan?trip=${encodeURIComponent(customTrip.id)}&save=1`;
+      router.push(`/journey/login?next=${encodeURIComponent(next)}`);
+      return;
+    }
+    setCloudSaveState("saving");
+    try {
+      const saved = await saveTripToEasyT(customTrip);
+      saveActiveTrip(saved);
+      setCustomTrip(saved);
+      setCustomBrief(customBriefFromEasyT(saved));
+      setCloudSaveState("saved");
+      router.replace(`/journey/plan?trip=${encodeURIComponent(saved.id)}`);
+    } catch {
+      setCloudSaveState("error");
+    }
+  }, [customTrip, router, session?.user]);
+
   useEffect(() => {
     hasMounted.current = true;
     const hydratePlan = async () => {
       if (!isPlanningPreview) return;
       try {
-        const tripId = new URLSearchParams(window.location.search).get("trip");
+        const params = new URLSearchParams(window.location.search);
+        const tripId = params.get("trip");
+        setAutoSaveRequested(params.get("save") === "1");
         let activeTrip: EasyTTrip | null = null;
         if (tripId) {
           try { activeTrip = await loadTripFromEasyT(tripId); } catch { /* fall back to the local canonical copy */ }
@@ -337,6 +364,11 @@ export default function JourneyPage() {
     };
     void hydratePlan();
   }, [isPlanningPreview]);
+
+  useEffect(() => {
+    if (!isPlanningPreview || !autoSaveRequested || !customTrip || !session?.user || cloudSaveState !== "idle") return;
+    void savePlan();
+  }, [autoSaveRequested, cloudSaveState, customTrip, isPlanningPreview, savePlan, session?.user]);
 
   useEffect(() => {
     if (!customBrief) return;
@@ -478,11 +510,14 @@ export default function JourneyPage() {
           <div className={styles.titleLockup}><span>{journey.title}</span><small>{journey.dateRange}</small></div>
           <nav className={styles.headerActions} aria-label="EasyT account navigation">
             <Link href="/journey/dashboard" className={styles.myTripsLink}>My trips</Link>
+            {isPlanningPreview && isCustomJourney ? <button type="button" className={styles.savePlanLink} onClick={() => void savePlan()} disabled={cloudSaveState === "saving"}>
+              {cloudSaveState === "saving" ? "Saving…" : cloudSaveState === "saved" ? "Saved" : "Save trip"}
+            </button> : null}
             <Link href="/journey/new" className={styles.createTripLink}><Plus /> <span>New trip</span></Link>
           </nav>
         </div>
         <nav className={styles.timeline} aria-label="Trip itinerary">
-          <div className={styles.track} ref={trackRef} style={{ gridTemplateColumns: `repeat(${journey.calendar.length}, minmax(74px, 1fr))` }}>
+          <div className={styles.track} ref={trackRef} style={{ gridTemplateColumns: `repeat(${journey.calendar.length}, minmax(132px, 1fr))` }}>
             {journey.calendar.map((day, index) => {
               const active = day.id === selectedDayId;
               return (
@@ -579,6 +614,7 @@ export default function JourneyPage() {
         <strong>{isPlaying ? "Pause journey" : "Play journey"}</strong>
         <small>{selectedDayIndex + 1} / {journey.calendar.length}</small>
       </button>
+      {cloudSaveState === "error" ? <p className={styles.savePlanError}>Couldn’t save this trip just now. Your plan is still safe on this device.</p> : null}
 
     </main>
   );

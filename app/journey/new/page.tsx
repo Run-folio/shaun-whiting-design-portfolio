@@ -12,7 +12,7 @@ export default function NewTripPage() {
       <EasyTNavigation current="new" />
 
       <section className={styles.intro}>
-        <p className={styles.eyebrow}>EASYT · MAKE THE BUCKET LIST REAL</p>
+        <p className={styles.eyebrow}>TAKE THE LEAP</p>
         <h1>Build your trip.</h1>
         <p className={styles.lede}>Start with the places that matter.</p>
       </section>

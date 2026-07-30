@@ -343,6 +343,18 @@
   flex-direction: column;
   box-shadow: 0 16px 42px rgba(23, 21, 47, 0.06);
 }
+.tripCardLink {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.tripCardLink:hover h2 {
+  color: #ff3d8b;
+}
 .tripMeta {
   display: flex;
   justify-content: space-between;
@@ -469,6 +481,98 @@
 .tripMenu .tripDelete {
   color: #b21351;
 }
+.giftOverlay {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(23, 21, 47, 0.35);
+  backdrop-filter: blur(8px);
+}
+.giftDialog,
+.giftClaimCard {
+  position: relative;
+  width: min(520px, 100%);
+  padding: clamp(28px, 5vw, 48px);
+  border: 1px solid rgba(23, 21, 47, 0.14);
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(23, 21, 47, 0.2);
+}
+.giftDialog h2,
+.giftClaimCard h1 {
+  margin: 12px 0 10px;
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: .95;
+  letter-spacing: -.065em;
+}
+.giftDialog .field {
+  margin-top: 18px;
+}
+.giftDialog textarea {
+  width: 100%;
+  min-height: 104px;
+  resize: vertical;
+  border: 1px solid #d8d5dc;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font: inherit;
+  outline: none;
+}
+.giftDialog textarea:focus { border-color: #ff3d8b; box-shadow: 0 0 0 3px rgba(255, 61, 139, .12); }
+.giftClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dddade;
+  border-radius: 50%;
+  background: #fff;
+  color: #17152f;
+  cursor: pointer;
+}
+.giftClose:hover { border-color: #ff3d8b; color: #ff3d8b; }
+.giftDialogIcon,
+.giftClaimIcon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #fff0f6;
+  color: #ff3d8b;
+}
+.giftComplete { display: grid; gap: 14px; margin-top: 24px; }
+.giftComplete p { margin: 0; color: #575461; line-height: 1.5; }
+.giftComplete input {
+  width: 100%;
+  border: 1px solid #d8d5dc;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f7f6f3;
+  color: #17152f;
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.giftClaimPage {
+  min-height: calc(100vh - 84px);
+  display: grid;
+  place-items: center;
+  padding: 48px 24px 90px;
+  position: relative;
+  z-index: 1;
+}
+.giftClaimCard { text-align: center; }
+.giftClaimIcon { margin: 0 auto 24px; }
+.giftClaimCopy { max-width: 440px; margin: 0 auto; color: #67636f; font-size: 18px; line-height: 1.55; }
+.giftNote { margin: 26px 0; padding: 18px; border-radius: 16px; background: #fff4f8; color: #4e4855; font-style: italic; line-height: 1.5; }
+.giftRecipient { margin: 24px 0; color: #777482; font: 700 12px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.giftClaimActions { display: grid; gap: 14px; justify-items: center; margin-top: 26px; }
+.giftClaimActions .primaryLink { border: 0; cursor: pointer; }
 .danger {
   min-height: 38px;
   padding: 0 14px;

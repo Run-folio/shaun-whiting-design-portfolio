@@ -196,6 +196,22 @@
 }
 .radioCardOn .radioDot { border-color: var(--ink); box-shadow: inset 0 0 0 4px var(--ink); }
 
+/* ------------------------------------------------------ day allocation */
+.allocationPanel { display: grid; gap: 18px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.allocationHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.allocationHead p { margin: 0 0 5px; color: var(--signal); font: 800 11px var(--font-geist-mono, monospace); letter-spacing: .1em; }
+.allocationHead h3 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -.03em; }
+.allocationHead span { display: block; max-width: 560px; margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.allocationHead > strong { flex: 0 0 auto; padding: 8px 10px; border-radius: 999px; background: var(--tint); color: #3f3c4a; font: 750 11px var(--font-geist-mono, monospace); white-space: nowrap; }
+.allocationList { display: grid; gap: 8px; }
+.allocationRow { display: grid; grid-template-columns: minmax(130px, .9fr) minmax(120px, 1.5fr) 54px; align-items: center; gap: 16px; padding: 11px 0; border-top: 1px solid var(--line); }
+.allocationRow > span { display: grid; gap: 3px; min-width: 0; }
+.allocationRow strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 620; }
+.allocationRow small { color: var(--muted); font: 600 10px var(--font-geist-mono, monospace); }
+.allocationRow input { width: 100%; accent-color: var(--ink); cursor: ew-resize; }
+.allocationRow > b { display: grid; justify-items: end; color: var(--ink); font-size: 19px; line-height: 1; }
+.allocationRow > b small { margin-top: 3px; }
+
 /* ------------------------------------------------------------ side rail */
 .rail { border-left: 1px solid var(--line); background: var(--tint); padding: 26px 26px 30px; display: grid; gap: 22px; align-content: start; }
 .railBlock { display: grid; gap: 10px; }
@@ -311,6 +327,7 @@
   .rail { border-left: 0; border-top: 1px solid var(--line); }
   .timeline { border-right: 0; border-bottom: 1px solid var(--line); max-height: 320px; }
   .dateRow, .groupGrid { grid-template-columns: 1fr !important; }
+  .allocationHead { display: grid; gap: 10px; }
   .steps { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 620px){.placeCard{grid-template-columns:82px 24px minmax(0,1fr);align-items:start}.placeThumb,.placeThumbFallback{width:82px;min-height:82px}.placeThumb img{min-height:82px}.placeCost{grid-column:3;margin:0}.dayImage{height:220px}}
+@media (max-width: 620px){.placeCard{grid-template-columns:82px 24px minmax(0,1fr);align-items:start}.placeThumb,.placeThumbFallback{width:82px;min-height:82px}.placeThumb img{min-height:82px}.placeCost{grid-column:3;margin:0}.dayImage{height:220px}.allocationRow{grid-template-columns:1fr 44px;gap:8px}.allocationRow input{grid-column:1 / -1;grid-row:2}.allocationRow > b{grid-column:2;grid-row:1}}

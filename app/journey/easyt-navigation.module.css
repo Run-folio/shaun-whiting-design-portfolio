@@ -25,6 +25,10 @@
   align-items: center;
   gap: 8px;
   font: 600 12px var(--font-geist-mono, monospace);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
 }
 .portfolio svg {
   width: 15px;

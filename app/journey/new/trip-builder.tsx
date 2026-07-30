@@ -11,10 +11,10 @@
 
 import {
   CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
-  Clock, GripVertical, MapPin, Mountain, Plane, Plus, Users, X,
+  Clock, GripVertical, MapPin, Plane, Plus, Users, X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
+import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip } from "@/lib/easyt/storage";
 import { tripFromBuilder } from "@/lib/easyt/trip";
 import { journeyMedia, type JourneyImage } from "@/lib/journey";
 import styles from "./trip-builder.module.css";
@@ -114,9 +114,48 @@ const suggestionsFor = (stop?: Stop) => {
   return nearby.filter((name) => name.toLowerCase() !== stop.name.toLowerCase());
 };
 
+/** Keep a saved custom split valid when the route or dates change. */
+const rebalanceDays = (
+  stops: Stop[],
+  totalDays: number,
+  preferred: Record<string, number>,
+  recommended: Record<string, number>,
+) => {
+  const result = Object.fromEntries(stops.map((stop) => [
+    stop.id,
+    Math.max(1, Math.round(preferred[stop.id] ?? recommended[stop.id] ?? 1)),
+  ])) as Record<string, number>;
+  if (!stops.length || totalDays < stops.length) return result;
+
+  let difference = totalDays - Object.values(result).reduce((sum, days) => sum + days, 0);
+  while (difference < 0) {
+    const donor = [...stops].sort((a, b) => result[b.id] - result[a.id])[0];
+    if (!donor || result[donor.id] <= 1) break;
+    result[donor.id] -= 1;
+    difference += 1;
+  }
+  while (difference > 0) {
+    const receiver = [...stops].sort((a, b) => {
+      const aGap = (recommended[a.id] ?? 1) - result[a.id];
+      const bGap = (recommended[b.id] ?? 1) - result[b.id];
+      return bGap - aGap;
+    })[0];
+    if (!receiver) break;
+    result[receiver.id] += 1;
+    difference -= 1;
+  }
+  return result;
+};
+
 const MEDIA_KEYS: Record<string, string> = {
+  "guatemala city": "guatemala",
+  "los angeles": "los-angeles-out",
   "hong kong": "hong-kong",
+  "hirayu onsen": "hirayu",
   "mt takao": "tokyo",
+  "mount takao": "tokyo",
+  "tianmen mountain": "zhangjiajie",
+  "zhangjiajie national forest park": "wulingyuan",
 };
 
 const PLACE_IMAGE_HINTS: Record<string, string> = {
@@ -135,7 +174,9 @@ const PLACE_IMAGE_HINTS: Record<string, string> = {
 const mediaImagesFor = (destination: string): JourneyImage[] => {
   const normalized = destination.trim().toLowerCase();
   const key = MEDIA_KEYS[normalized] ?? normalized.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-  const media = journeyMedia[key];
+  const media = journeyMedia[key] ?? journeyMedia[Object.keys(journeyMedia).find((mediaKey) =>
+    mediaKey !== "los-angeles-back" && (key.includes(mediaKey) || mediaKey.includes(key)),
+  ) ?? ""];
   return media ? [media.hero, ...(media.gallery ?? [])] : [];
 };
 
@@ -235,7 +276,7 @@ export default function TripBuilder() {
   const [tripId, setTripId] = useState(() => `trip-${crypto.randomUUID()}`);
   const [createdAt, setCreatedAt] = useState(() => new Date().toISOString());
   const [hydrated, setHydrated] = useState(false);
-  const [saveState, setSaveState] = useState<"saving" | "saved" | "offline">("saving");
+  const [saveState, setSaveState] = useState<"saving" | "local">("saving");
   const [step, setStep] = useState(0);
   const [generated, setGenerated] = useState(false);
   const [activeDay, setActiveDay] = useState(0);
@@ -257,13 +298,10 @@ export default function TripBuilder() {
 
   const [filter, setFilter] = useState("All");
   const [picks, setPicks] = useState<Record<string, string[]>>({});
+  const [dayAllocations, setDayAllocations] = useState<Record<string, number>>({});
   const [discoveredPlaces, setDiscoveredPlaces] = useState<Record<string, Place[]>>({});
   const [discovering, setDiscovering] = useState<Record<string, boolean>>({});
 
-  const [mustDo, setMustDo] = useState("");
-  const [mustDoTouched, setMustDoTouched] = useState(false);
-  const [pace, setPace] = useState<"slow" | "full">("slow");
-  const [hotels, setHotels] = useState<"few" | "some">("few");
   const [budget, setBudget] = useState<"value" | "mid" | "high">("value");
 
   const pickerRef = useDismiss(Boolean(picker), () => setPicker(null));
@@ -280,9 +318,7 @@ export default function TripBuilder() {
       setStartDate(saved.startDate);
       setEndDate(saved.endDate);
       setPicks(saved.brief.selectedPlaces);
-      setMustDo(saved.brief.mustDo);
-      setPace(saved.brief.pace);
-      setHotels(saved.brief.hotelChanges);
+      setDayAllocations(saved.brief.dayAllocations ?? {});
       setBudget(saved.brief.budgetBand);
     };
     const hydrate = async () => {
@@ -341,6 +377,48 @@ export default function TripBuilder() {
   const originMissing = originTouched && (!origin.trim() || Boolean(originError));
   const gate = step === 0 ? (!origin.trim() ? "Add where you're starting from" : !stops.length ? "Add at least one stop to continue" : "") : "";
 
+  /** A transparent default: selected activity volume influences the recommended split. */
+  const recommendedDays = useMemo(() => {
+    if (!stops.length) return {} as Record<string, number>;
+    const allocation = Object.fromEntries(stops.map((stop) => [stop.id, 1])) as Record<string, number>;
+    let remaining = Math.max(0, totalDays - stops.length);
+    const ranked = [...stops].sort((a, b) => {
+      const score = (stop: Stop) => (picks[stop.id] ?? []).length + Math.min(2, placesFor(stop, discoveredPlaces).length / 5);
+      return score(b) - score(a);
+    });
+    for (let index = 0; remaining > 0; index += 1, remaining -= 1) allocation[ranked[index % ranked.length].id] += 1;
+    return allocation;
+  }, [stops, totalDays, picks, discoveredPlaces]);
+
+  const allocation = useMemo(
+    () => rebalanceDays(stops, totalDays, dayAllocations, recommendedDays),
+    [stops, totalDays, dayAllocations, recommendedDays],
+  );
+
+  const updateAllocatedDays = (stopId: string, requested: number) => {
+    const current = allocation[stopId] ?? 1;
+    const others = stops.filter((stop) => stop.id !== stopId);
+    if (!others.length) return;
+    const maximum = Math.max(1, totalDays - others.length);
+    const next = Math.max(1, Math.min(maximum, requested));
+    const difference = next - current;
+    if (!difference) return;
+    const nextAllocation = { ...allocation, [stopId]: next };
+    if (difference > 0) {
+      let remaining = difference;
+      [...others].sort((a, b) => nextAllocation[b.id] - nextAllocation[a.id]).forEach((stop) => {
+        const movable = Math.max(0, nextAllocation[stop.id] - 1);
+        const amount = Math.min(movable, remaining);
+        nextAllocation[stop.id] -= amount;
+        remaining -= amount;
+      });
+    } else {
+      const receiver = [...others].sort((a, b) => (recommendedDays[b.id] ?? 1) - (recommendedDays[a.id] ?? 1))[0];
+      nextAllocation[receiver.id] += Math.abs(difference);
+    }
+    setDayAllocations(nextAllocation);
+  };
+
   const addStop = async (name?: string) => {
     const value = (name ?? stopInput).trim();
     if (!value) return setStopError("Type a city, region or landmark first.");
@@ -381,45 +459,36 @@ export default function TripBuilder() {
   /** Each selected place is consumed exactly once; leftovers cycle varied open days. */
   const draft = useMemo(() => {
     if (!stops.length) return [];
-    const alloc = stops.map(() => Math.max(2, Math.floor(totalDays / stops.length)));
-    let remaining = Math.max(0, totalDays - alloc.reduce((a, b) => a + b, 0));
-    for (let p = 0; remaining > 0; p += 1, remaining -= 1) alloc[p % alloc.length] += 1;
+    const alloc = stops.map((stop) => allocation[stop.id] ?? 1);
 
     let cursor = 0;
     return stops.flatMap((stop, si) => {
       const titles = picks[stop.id] ?? [];
       const chosen = placesFor(stop, discoveredPlaces).filter((p) => titles.includes(p.title));
-      const queue = pace === "slow" ? chosen.slice(0, Math.max(1, Math.ceil(chosen.length / 2))) : [...chosen];
+      const queue = [...chosen];
       let openIndex = 0;
       return Array.from({ length: alloc[si] }, (_, i) => {
         const number = ++cursor;
         const arrival = i === 0;
-        const anchor = si === 0 && i === Math.min(alloc[si] - 1, 2) && Boolean(mustDo.trim());
-        if (anchor) {
-          const at = queue.findIndex((p) => p.title === mustDo.trim());
-          if (at >= 0) queue.splice(at, 1);
-        }
-        const place = !arrival && !anchor && queue.length ? queue.shift()! : null;
-        const open = !arrival && !anchor && !place ? OPEN_DAYS[openIndex++ % OPEN_DAYS.length] : null;
+        const place = !arrival && queue.length ? queue.shift()! : null;
+        const open = !arrival && !place ? OPEN_DAYS[openIndex++ % OPEN_DAYS.length] : null;
         const date = new Date(`${startDate}T00:00:00`);
         date.setDate(date.getDate() + number - 1);
         return {
           number: pad(number),
           date: new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(date),
           destination: stop.name,
-          title: anchor ? mustDo.trim() : arrival ? "Arrive and settle in" : place ? place.title : `${open!.title} in ${stop.name}`,
-          reason: anchor ? "Your one non-negotiable becomes the day's centre of gravity."
-            : arrival ? "A softer start makes the whole trip feel less like transit."
+          title: arrival ? "Arrive and settle in" : place ? place.title : `${open!.title} in ${stop.name}`,
+          reason: arrival ? "A softer start makes the whole trip feel less like transit."
             : place ? `Built around ${place.title} and kept inside ${place.area}, rather than adding another base.`
             : open!.reason,
-          items: anchor ? ["Keep the morning protected", `Build the day around ${mustDo.trim()}`, "Leave the evening deliberately light"]
-            : arrival ? ["Arrive, transfer and check in", `Short walk near your base in ${stop.name}`, "One easy local dinner"]
+          items: arrival ? ["Arrive, transfer and check in", `Short walk near your base in ${stop.name}`, "One easy local dinner"]
             : place ? [place.title, place.description, `Keep the day in ${place.area}`]
             : open!.items,
         };
       });
     });
-  }, [stops, picks, totalDays, startDate, mustDo, pace, discoveredPlaces]);
+  }, [stops, picks, startDate, discoveredPlaces, allocation]);
 
   const activeTripDocument = useMemo(() => tripFromBuilder({
     id: tripId,
@@ -428,28 +497,23 @@ export default function TripBuilder() {
     startDate,
     endDate,
     picks,
-    mustDo,
-    pace,
-    hotels,
+    mustDo: "",
+    pace: "slow",
+    hotels: "few",
     budget,
+    dayAllocations: allocation,
     draft,
     placeDetails: discoveredPlaces,
     originCoordinates,
     createdAt,
-  }), [tripId, origin, stops, startDate, endDate, picks, mustDo, pace, hotels, budget, draft, discoveredPlaces, originCoordinates, createdAt]);
+  }), [tripId, origin, stops, startDate, endDate, picks, budget, allocation, draft, discoveredPlaces, originCoordinates, createdAt]);
 
   useEffect(() => {
     if (!hydrated || !origin.trim() || !stops.length) return;
     setSaveState("saving");
-    const timer = window.setTimeout(async () => {
+    const timer = window.setTimeout(() => {
       saveActiveTrip(activeTripDocument);
-      try {
-        const saved = await saveTripToEasyT(activeTripDocument);
-        saveActiveTrip(saved);
-        setSaveState("saved");
-      } catch {
-        setSaveState("offline");
-      }
+      setSaveState("local");
     }, 450);
     return () => window.clearTimeout(timer);
   }, [hydrated, activeTripDocument]);
@@ -468,12 +532,12 @@ export default function TripBuilder() {
             <p className={styles.eyebrow}>Draft · editable</p>
             <h2>{origin} to {stops.map((s) => s.name).join(" & ")}</h2>
           </div>
-          <button type="button" className={styles.ghost} onClick={() => { setGenerated(false); setStep(3); }}>Edit brief</button>
+          <button type="button" className={styles.primary} onClick={() => { setGenerated(false); setStep(3); }}>Edit brief</button>
         </div>
 
         <div className={styles.draftSummary}>
           <span><CalendarDays /> {totalDays} days</span>
-          <span><Clock /> {pace === "slow" ? "Slower pace" : "Fuller pace"}</span>
+          <span><Clock /> {stops.length} destinations · custom split</span>
           <span><MapPin /> {selected.length} selected places</span>
         </div>
 
@@ -529,7 +593,7 @@ export default function TripBuilder() {
         </div>
 
         <div className={styles.draftFoot}>
-          <p><strong>{saveState === "saving" ? "Saving changes…" : saveState === "saved" ? "Saved to EasyT" : "Saved on this device"}</strong> · The research pass verifies transport, opening windows and where you actually sleep.</p>
+          <p><strong>{saveState === "saving" ? "Saving changes…" : "Saved on this device"}</strong> · Explore the map first, then save it to an account when you are ready.</p>
           <button type="button" className={styles.primary} onClick={() => {
             saveActiveTrip(activeTripDocument);
             window.location.assign(`/journey/plan?trip=${encodeURIComponent(activeTripDocument.id)}`);
@@ -650,7 +714,7 @@ export default function TripBuilder() {
               </div>
               <p className={styles.lengthNote}>
                 <strong>{totalDays} {totalDays === 1 ? "day" : "days"}</strong>
-                <span>{stops.length ? `Roughly ${Math.max(2, Math.floor(totalDays / stops.length))} days per stop across ${stops.length} ${stops.length === 1 ? "base" : "bases"}.` : "Add stops and this splits across them."}</span>
+                <span>{stops.length ? "Choose exactly how your time is split between destinations in the next step." : "Add stops and this splits across them."}</span>
               </p>
             </div>
           )}
@@ -707,26 +771,31 @@ export default function TripBuilder() {
 
           {step === 3 && (
             <div className={styles.stack}>
-              <div className={`${styles.card} ${mustDoTouched && !mustDo.trim() ? styles.cardError : ""}`}>
-                <span className={styles.cardLabel}><Mountain /> One thing this trip must include</span>
-                <input value={mustDo} placeholder="A place, event or experience" aria-label="Must-do place"
-                  onChange={(e) => { setMustDo(e.target.value); setMustDoTouched(true); }} />
-                <small className={mustDoTouched && !mustDo.trim() ? styles.hintError : styles.hint}>
-                  {mustDoTouched && !mustDo.trim() ? "Name one thing and the draft protects a day for it." : "Everything else can move around it."}
-                </small>
-              </div>
-              <RadioGroup label="Pace" help="This changes how many selected places land on each day."
-                value={pace} onChange={setPace}
-                options={[
-                  { value: "slow", label: "Slower", note: "Fewer places per day, more open time." },
-                  { value: "full", label: "Fuller", note: "Every selected place gets placed." },
-                ]} />
-              <RadioGroup label="Hotel changes" help="Fewer bases means more day trips instead of moves."
-                value={hotels} onChange={setHotels}
-                options={[
-                  { value: "few", label: "As few as possible", note: "One base per city." },
-                  { value: "some", label: "Happy to move", note: "Change base to shorten travel." },
-                ]} />
+              <section className={styles.allocationPanel} aria-labelledby="day-allocation-title">
+                <div className={styles.allocationHead}>
+                  <div>
+                    <p>YOUR TIME</p>
+                    <h3 id="day-allocation-title">Shape the days</h3>
+                    <span>We&apos;ve suggested a starting split from your selected places. Move a slider and EasyT rebalances the rest.</span>
+                  </div>
+                  <strong>{totalDays} days total</strong>
+                </div>
+                <div className={styles.allocationList}>
+                  {stops.map((stop) => {
+                    const days = allocation[stop.id] ?? 1;
+                    const suggestion = recommendedDays[stop.id] ?? 1;
+                    return (
+                      <label className={styles.allocationRow} key={stop.id}>
+                        <span><strong>{stop.name}</strong><small>{(picks[stop.id] ?? []).length} selected places · suggested {suggestion} {suggestion === 1 ? "day" : "days"}</small></span>
+                        <input type="range" min="1" max={Math.max(1, totalDays - Math.max(0, stops.length - 1))} value={days}
+                          onChange={(event) => updateAllocatedDays(stop.id, Number(event.target.value))}
+                          aria-label={`${stop.name}: ${days} days`} />
+                        <b>{days}<small>{days === 1 ? "day" : "days"}</small></b>
+                      </label>
+                    );
+                  })}
+                </div>
+              </section>
               <RadioGroup label="Budget band" help="Used to pick where to sleep and eat during research."
                 value={budget} onChange={setBudget}
                 options={[
@@ -745,7 +814,7 @@ export default function TripBuilder() {
               {[{ name: origin.trim() || "Add your origin", note: "Departure", origin: true },
                 ...stops.map((stop) => ({
                   name: stop.name,
-                  note: `${(picks[stop.id] ?? []).length} selected · ${Math.max(2, Math.floor(totalDays / Math.max(1, stops.length)))} days`,
+                  note: `${(picks[stop.id] ?? []).length} selected · ${allocation[stop.id] ?? 1} ${(allocation[stop.id] ?? 1) === 1 ? "day" : "days"}`,
                   origin: false,
                 }))].map((node, i, list) => (
                 <div key={`${node.name}-${i}`} className={styles.railNode}>
@@ -797,7 +866,7 @@ export default function TripBuilder() {
       <div className={styles.wizardFoot}>
         <button type="button" className={styles.ghost} disabled={step === 0} onClick={() => setStep(Math.max(0, step - 1))}>Back</button>
         <div className={styles.footRight}>
-          <small className={styles.saveState}>{saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved to EasyT" : "Saved on this device"}</small>
+          <small className={styles.saveState}>{saveState === "saving" ? "Saving…" : "Saved on this device"}</small>
           {gate && <small className={styles.gate}>{gate}</small>}
           <button type="button" className={styles.primary} disabled={Boolean(gate)}
             onClick={async () => {

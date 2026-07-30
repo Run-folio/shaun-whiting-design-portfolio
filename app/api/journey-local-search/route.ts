@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   const kind = request.nextUrl.searchParams.get("kind") === "stay" ? "stay" : "restaurant";
   const latitude = Number(request.nextUrl.searchParams.get("lat"));
   const longitude = Number(request.nextUrl.searchParams.get("lon"));
-  if (!city || !country || !Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+  if (!city || !Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
     return NextResponse.json({ places: [] }, { status: 400 });
   }
 
@@ -57,9 +57,9 @@ export async function GET(request: NextRequest) {
         const lon = place.lon ?? place.center?.lon;
         const name = tags.name?.trim();
         if (!name || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-        const address = addressFor(tags, `${city}, ${country}`);
+        const address = addressFor(tags, country ? `${city}, ${country}` : city);
         const searchQuery = `${name}, ${address}`;
-        const china = /china/i.test(country);
+        const china = /china/i.test(country ?? "");
         return {
           id: `${place.id}`,
           name,

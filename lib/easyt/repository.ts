@@ -1,12 +1,41 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import { getEasyTDatabase } from "./database";
 import { EasyTTrip, isEasyTTrip } from "./trip";
 
 type TripDocumentRow = { document: unknown };
 export type EasyTUserPreferences = { language: "en" | "es" };
+
+type GiftRow = {
+  id: string;
+  trip_id: string;
+  sender_id: string;
+  recipient_email: string;
+  note: string | null;
+  token_hash: string;
+  status: "pending" | "claimed" | "revoked" | "expired";
+  claimed_by: string | null;
+  claimed_trip_id: string | null;
+  expires_at: string;
+  sender_name: string | null;
+  sender_email: string;
+  trip_title: string;
+  document: unknown;
+};
+
+export type EasyTGiftPreview = {
+  tripTitle: string;
+  senderName: string;
+  recipientEmail: string;
+  note: string | null;
+  status: GiftRow["status"];
+  expiresAt: string;
+};
+
+const tokenHash = (token: string) =>
+  createHash("sha256").update(token).digest("hex");
 
 export async function ensureEasyTUser(
   ownerId: string,
@@ -232,6 +261,14 @@ export async function duplicateTripForOwner(
   const source = await getTripForOwner(ownerId, tripId);
   if (!source) return null;
 
+  return copyTripForOwner(ownerId, source, `${source.title} copy`);
+}
+
+async function copyTripForOwner(
+  ownerId: string,
+  source: EasyTTrip,
+  title: string,
+): Promise<EasyTTrip> {
   const now = new Date().toISOString();
   const id = randomUUID();
   const stopIds = new Map(
@@ -245,7 +282,7 @@ export async function duplicateTripForOwner(
     ...source,
     id,
     ownerId,
-    title: `${source.title} copy`,
+    title,
     status: "draft",
     stops,
     legs: source.legs.map((leg) => ({
@@ -269,6 +306,121 @@ export async function duplicateTripForOwner(
   };
 
   return saveTripForOwner(ownerId, duplicate);
+}
+
+export async function createTripGift(
+  sender: { id: string; email: string; name?: string | null },
+  tripId: string,
+  recipientEmail: string,
+  note?: string | null,
+) {
+  const source = await getTripForOwner(sender.id, tripId);
+  if (!source) return null;
+
+  const sql = getEasyTDatabase();
+  const token = randomBytes(32).toString("base64url");
+  const now = new Date();
+  const expiresAt = new Date(now);
+  expiresAt.setDate(expiresAt.getDate() + 14);
+  const gift = {
+    id: randomUUID(),
+    token,
+    tripTitle: source.title,
+    recipientEmail: recipientEmail.trim().toLowerCase(),
+    note: note?.trim().slice(0, 500) || null,
+    expiresAt: expiresAt.toISOString(),
+  };
+
+  await sql`
+    insert into easyt_trip_gifts (
+      id, trip_id, sender_id, recipient_email, note, token_hash, status, expires_at
+    ) values (
+      ${gift.id}, ${tripId}, ${sender.id}, ${gift.recipientEmail}, ${gift.note},
+      ${tokenHash(token)}, 'pending', ${gift.expiresAt}
+    )
+  `;
+  return gift;
+}
+
+async function getGiftRow(token: string): Promise<GiftRow | null> {
+  const sql = getEasyTDatabase();
+  const rows = (await sql`
+    select
+      gifts.id,
+      gifts.trip_id,
+      gifts.sender_id,
+      gifts.recipient_email,
+      gifts.note,
+      gifts.token_hash,
+      gifts.status,
+      gifts.claimed_by,
+      gifts.claimed_trip_id,
+      gifts.expires_at,
+      users.name as sender_name,
+      users.email as sender_email,
+      trips.title as trip_title,
+      trips.document
+    from easyt_trip_gifts gifts
+    join easyt_users users on users.id = gifts.sender_id
+    join easyt_trips trips on trips.id = gifts.trip_id
+    where gifts.token_hash = ${tokenHash(token)}
+      and trips.deleted_at is null
+    limit 1
+  `) as GiftRow[];
+  return rows[0] ?? null;
+}
+
+export async function getTripGiftPreview(
+  token: string,
+): Promise<EasyTGiftPreview | null> {
+  const gift = await getGiftRow(token);
+  if (!gift) return null;
+  const expired = new Date(gift.expires_at).getTime() < Date.now();
+  return {
+    tripTitle: gift.trip_title,
+    senderName: gift.sender_name || gift.sender_email.split("@")[0],
+    recipientEmail: gift.recipient_email,
+    note: gift.note,
+    status: expired && gift.status === "pending" ? "expired" : gift.status,
+    expiresAt: gift.expires_at,
+  };
+}
+
+export async function claimTripGift(
+  token: string,
+  recipient: { id: string; email: string; name?: string | null },
+): Promise<{ trip: EasyTTrip; alreadyClaimed: boolean } | null> {
+  const gift = await getGiftRow(token);
+  if (!gift) return null;
+  if (gift.recipient_email.toLowerCase() !== recipient.email.toLowerCase()) {
+    throw new Error("This invitation was sent to a different email address.");
+  }
+  if (gift.status === "claimed" && gift.claimed_by === recipient.id && gift.claimed_trip_id) {
+    const existing = await getTripForOwner(recipient.id, gift.claimed_trip_id);
+    if (existing) return { trip: existing, alreadyClaimed: true };
+  }
+  if (gift.status !== "pending") throw new Error("This invitation is no longer available.");
+  if (new Date(gift.expires_at).getTime() < Date.now()) {
+    const sql = getEasyTDatabase();
+    await sql`update easyt_trip_gifts set status = 'expired' where id = ${gift.id}`;
+    throw new Error("This invitation has expired.");
+  }
+  if (!isEasyTTrip(gift.document)) throw new Error("The shared trip could not be read.");
+
+  await ensureEasyTUser(recipient.id, recipient.email, recipient.name);
+  const trip = await copyTripForOwner(recipient.id, gift.document, gift.trip_title);
+  const sql = getEasyTDatabase();
+  const updated = (await sql`
+    update easyt_trip_gifts
+    set status = 'claimed', claimed_by = ${recipient.id}, claimed_trip_id = ${trip.id}, claimed_at = now()
+    where id = ${gift.id} and status = 'pending'
+    returning id
+  `) as Array<{ id: string }>;
+  if (!updated[0]) {
+    await deleteTripForOwner(recipient.id, trip.id);
+    throw new Error("This invitation has already been claimed.");
+  }
+  return { trip, alreadyClaimed: false };
 }
 
 export async function deleteTripForOwner(ownerId: string, tripId: string) {
