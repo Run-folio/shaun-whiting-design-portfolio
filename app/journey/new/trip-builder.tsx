@@ -46,7 +46,32 @@ const CATALOG: Record<string, Place[]> = {
   ],
 };
 
-const SUGGESTIONS = ["Paris", "Mexico City", "Bangkok", "Cape Town", "Rome"];
+/**
+ * Fast, relevant next-stop prompts. They deliberately appear only after a
+ * destination has been added — an empty route should not pretend to know
+ * where someone wants to go.
+ */
+const NEARBY_SUGGESTIONS: Record<string, string[]> = {
+  tokyo: ["Nikko", "Kanazawa", "Takayama", "Kyoto"],
+  japan: ["Kyoto", "Kanazawa", "Takayama", "Nikko"],
+  paris: ["Versailles", "Reims", "Lyon", "Bordeaux"],
+  france: ["Lyon", "Bordeaux", "Nice", "Strasbourg"],
+  "mexico city": ["Puebla", "Oaxaca", "Tepoztlán", "San Miguel de Allende"],
+  mexico: ["Puebla", "Oaxaca", "Mérida", "San Miguel de Allende"],
+  bangkok: ["Ayutthaya", "Kanchanaburi", "Chiang Mai", "Koh Samui"],
+  thailand: ["Chiang Mai", "Ayutthaya", "Kanchanaburi", "Krabi"],
+  london: ["Bath", "Oxford", "Brighton", "Edinburgh"],
+  "united kingdom": ["Bath", "Edinburgh", "York", "Brighton"],
+  barcelona: ["Girona", "Valencia", "Madrid", "Seville"],
+  madrid: ["Toledo", "Seville", "Valencia", "Barcelona"],
+  spain: ["Seville", "Granada", "Valencia", "Barcelona"],
+  rome: ["Florence", "Naples", "Bologna", "Sorrento"],
+  italy: ["Florence", "Bologna", "Naples", "Venice"],
+  "hong kong": ["Macau", "Shenzhen", "Guangzhou", "Taipei"],
+  china: ["Shanghai", "Chengdu", "Xi'an", "Hong Kong"],
+  "guatemala city": ["Antigua Guatemala", "Lake Atitlán", "Flores", "Semuc Champey"],
+  guatemala: ["Antigua Guatemala", "Lake Atitlán", "Flores", "Tikal"],
+};
 const FILTERS = ["All", "Food", "Nature", "Cities", "Beach"];
 const STEPS = [
   { label: "Where", note: "Route first" },
@@ -80,6 +105,14 @@ const parseTyped = (text: string) => {
 };
 const placesFor = (stop: Stop, discovered: Record<string, Place[]>): Place[] =>
   discovered[stop.id] ?? CATALOG[stop.name.trim().toLowerCase()] ?? [];
+
+const suggestionsFor = (stop?: Stop) => {
+  if (!stop) return [];
+  const nearby = NEARBY_SUGGESTIONS[stop.name.trim().toLowerCase()]
+    ?? NEARBY_SUGGESTIONS[stop.country.trim().toLowerCase()]
+    ?? [];
+  return nearby.filter((name) => name.toLowerCase() !== stop.name.toLowerCase());
+};
 
 const MEDIA_KEYS: Record<string, string> = {
   "hong kong": "hong-kong",
@@ -301,6 +334,10 @@ export default function TripBuilder() {
   const openDays = Math.max(0, totalDays - committed);
   const over = committed > totalDays;
   const selected = stops.flatMap((stop) => (picks[stop.id] ?? []).map((title) => ({ stopId: stop.id, title })));
+  const contextualSuggestions = useMemo(
+    () => suggestionsFor(stops.at(-1)).filter((name) => !stops.some((stop) => stop.name.toLowerCase() === name.toLowerCase())).slice(0, 4),
+    [stops],
+  );
   const originMissing = originTouched && (!origin.trim() || Boolean(originError));
   const gate = step === 0 ? (!origin.trim() ? "Add where you're starting from" : !stops.length ? "Add at least one stop to continue" : "") : "";
 
@@ -526,21 +563,21 @@ export default function TripBuilder() {
                   onChange={(e) => { setOrigin(e.target.value); setOriginTouched(true); setOriginCoordinates(undefined); setOriginError(""); }}
                   onBlur={() => { if (origin.trim() && !originCoordinates) void validateOrigin(); }} />
                 <small className={originMissing ? styles.hintError : styles.hint}>
-                  {originError || (originMissing ? "Add the city or airport you're leaving from." : originCoordinates ? "Verified on the map" : "City or airport")}
+                  {originError || (originMissing ? "Add the city or airport you're leaving from." : "")}
                 </small>
               </div>
 
               <div className={`${styles.card} ${stopError ? styles.cardError : ""}`}>
-                <span className={styles.cardLabel}><MapPin /> Add a stop</span>
-                <input value={stopInput} placeholder="City, region or landmark" aria-label="Add a stop"
+                <span className={styles.cardLabel}><MapPin /> Add a destination</span>
+                <input value={stopInput} placeholder="City, region or landmark" aria-label="Add a destination"
                   onChange={(e) => { setStopInput(e.target.value); setStopError(""); }}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addStop(); } }} />
                 <small className={stopError ? styles.hintError : styles.hint}>
-                  {stopError || "Press Enter to add. Drag a row to reorder."}
+                  {stopError}
                 </small>
-                {!stopInput.trim() && (
+                {!stopInput.trim() && contextualSuggestions.length > 0 && (
                   <div className={styles.suggestions}>
-                    {SUGGESTIONS.filter((n) => !stops.some((s) => s.name === n)).slice(0, 4).map((name) => (
+                    {contextualSuggestions.map((name) => (
                       <button type="button" key={name} onClick={() => addStop(name)}><Plus /> {name}</button>
                     ))}
                   </div>

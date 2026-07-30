@@ -49,8 +49,8 @@
   transition: border-color .18s, background .18s;
 }
 .card:hover,
-.card:focus-within { border-color: var(--signal); }
-.cardOpen { border-color: var(--signal); }
+.card:focus-within { border-color: var(--ink); }
+.cardOpen { border-color: var(--ink); }
 .cardError { border-color: var(--signal); background: #fff7fa; }
 .cardLabel {
   display: inline-flex; align-items: center; gap: 8px; min-width: 0; color: #3f3c4a;
