@@ -1,6 +1,6 @@
 "use client";
 
-import { geoGraticule10, geoInterpolate, geoNaturalEarth1, geoPath } from "d3-geo";
+import { geoGraticule10, geoInterpolate, geoMercator, geoNaturalEarth1, geoPath } from "d3-geo";
 import { BusFront, ExternalLink, MapPin, Minus, Plane, Plus, Scan, TrainFront, Utensils, X } from "lucide-react";
 import { feature } from "topojson-client";
 import worldTopology from "world-atlas/countries-50m.json";
@@ -141,12 +141,17 @@ function TransportGlyph({ mode }: { mode: JourneyLeg["mode"] }) {
   return <BusFront {...props} />;
 }
 
-export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeItems, previewImage, detailImageSrc, dayPlace, restaurant, onSelect }: { stops: JourneyStop[]; legs: JourneyLeg[]; selectedId: string; selectedDayId: string; activeItems: string[]; previewImage?: JourneyImage; detailImageSrc?: string; dayPlace?: JourneyMapPlace; restaurant?: { restaurant: JourneyRestaurant; meal?: RestaurantMeal }; onSelect: (id: string) => void }) {
+export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeItems, previewImage, detailImageSrc, dayPlace, restaurant, onSelect, variant = "story" }: { stops: JourneyStop[]; legs: JourneyLeg[]; selectedId: string; selectedDayId: string; activeItems: string[]; previewImage?: JourneyImage; detailImageSrc?: string; dayPlace?: JourneyMapPlace; restaurant?: { restaurant: JourneyRestaurant; meal?: RestaurantMeal }; onSelect: (id: string) => void; variant?: "story" | "planner" }) {
   const [routeOpen, setRouteOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [restaurantOpen, setRestaurantOpen] = useState(false);
   const selected = stops.find((stop) => stop.id === selectedId) ?? stops[0];
-  const projection = useMemo(() => geoNaturalEarth1().rotate([-180, 0]).fitExtent([[22, 112], [width - 22, height - 22]], land), []);
+  // The original proof uses a Pacific-centred globe as part of its visual
+  // story. Generated EasyT plans instead use a standard Mercator map so every
+  // city, including European routes, is positioned and zoomed consistently.
+  const projection = useMemo(() => variant === "planner"
+    ? geoMercator().fitExtent([[22, 62], [width - 22, height - 22]], land)
+    : geoNaturalEarth1().rotate([-180, 0]).fitExtent([[22, 112], [width - 22, height - 22]], land), [variant]);
   const path = useMemo(() => geoPath(projection), [projection]);
   const selectedPoint = projection(selected.coordinates) ?? [width / 2, height / 2];
   const selectedCountry = countries.features.find((country) => String(country.id) === countryCode(selected) || normalized(country.properties?.name ?? "") === normalized(selected.country));
@@ -298,8 +303,8 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const selectedPlaceMapUrl = selectedPlace ? placeMapUrl(selectedPlace, selected) : "";
   const selectedPlaceMapProvider = selected.country === "China" ? "Amap" : "Google Maps";
 
-  return <div className="journey-map" aria-label="Interactive Pacific journey map">
-    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Geographic Pacific route from Guatemala to Los Angeles, Japan, China and Hong Kong" onWheel={handleWheel} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}>
+  return <div className="journey-map" aria-label={variant === "planner" ? "Interactive journey map" : "Interactive Pacific journey map"}>
+    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={variant === "planner" ? "Interactive geographic route map" : "Geographic Pacific route from Guatemala to Los Angeles, Japan, China and Hong Kong"} onWheel={handleWheel} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}>
       <defs>
         <linearGradient id="ocean" x1="0" x2="1" y1="0" y2="1"><stop stopColor="#f9f9f7" /><stop offset="1" stopColor="#eceff3" /></linearGradient>
         <filter id="traveller-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
@@ -308,6 +313,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
       <g ref={viewportRef} className="journey-map__viewport">
         <path d={path(geoGraticule10()) ?? undefined} className="journey-map__graticule" />
         <path d={path(land) ?? undefined} className="journey-map__land" />
+        {variant === "story" ? <text className="journey-map__ocean-label" x="195" y="389">Pacific Ocean</text> : null}
         {selectedCountry ? <path d={path(selectedCountry as never) ?? undefined} className="journey-map__selected-country" /> : null}
         <g className="journey-map__routes">
           {routes.map(({ leg, route }) => <path pathLength={1} key={`${leg.from}-${leg.to}-${leg.from === activeRoute?.leg.from ? selectedId : "idle"}`} d={path(route) ?? undefined} className={leg === activeRoute?.leg ? "is-active" : ""} />)}
@@ -401,7 +407,6 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
             </g>
           </g>
         </g> : null}
-        <text className="journey-map__ocean-label" x="705" y="402">Pacific Ocean</text>
       </g>
     </svg>
     <div className="journey-map__controls" aria-label="Map controls">

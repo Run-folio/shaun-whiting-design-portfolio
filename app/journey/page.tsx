@@ -186,7 +186,9 @@ function makeEasyTJourney(trip: EasyTTrip) {
   const calendar: JourneyCalendarDay[] = orderedItems.map((item, index) => {
     const base = stopById.get(item.stopId) ?? trip.stops[0];
     const selectedPlaceTitles = new Set(base ? (trip.brief.selectedPlaces[base.id] ?? []) : []);
-    const isMappedPlace = item.type === "activity" && selectedPlaceTitles.has(item.title);
+    // A generated day can pair places under a human title ("X + nearby time").
+    // Coordinates are the reliable signal that it is a real mappable place.
+    const isMappedPlace = item.type === "activity" && (selectedPlaceTitles.has(item.title) || (item.latitude !== null && item.longitude !== null));
     const city = isMappedPlace ? item.title : (base?.name ?? item.title);
     const country = base?.country ?? city;
     const stopId = `${trip.id}-day-${item.dayNumber}`;
@@ -493,6 +495,7 @@ export default function JourneyPage() {
         detailImageSrc={images[0]?.src}
         dayPlace={customMapPlace}
         restaurant={selectedRestaurant}
+        variant={isCustomJourney ? "planner" : "story"}
         onSelect={(id) => {
           setIsPlaying(false);
           setSelectedId(id);

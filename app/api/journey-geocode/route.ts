@@ -30,14 +30,26 @@ function matchesCountry(returnedCountry: string | undefined, requestedCountry: s
 }
 
 async function find(query: string, country?: string) {
-  const params = new URLSearchParams({ q: query, format: "jsonv2", limit: "1", addressdetails: "1", dedupe: "1", "accept-language": "en" });
+  const params = new URLSearchParams({ q: query, format: "jsonv2", limit: "8", addressdetails: "1", dedupe: "1", "accept-language": "en" });
   const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
     headers: { "User-Agent": "Journey trip planner prototype" },
     next: { revalidate: 60 * 60 * 24 * 30 },
   });
   if (!response.ok) return null;
   const results = await response.json() as NominatimResult[];
-  const result = results[0];
+  // Nominatim occasionally returns an identically named place in another
+  // country first. Score candidates rather than trusting the first result.
+  const requested = normalise(query.split(",")[0] ?? query);
+  const result = results
+    .filter((candidate) => !country || matchesCountry(candidate.address?.country, country))
+    .map((candidate) => {
+      const name = normalise(candidate.name ?? candidate.display_name ?? "");
+      const kind = candidate.addresstype ?? candidate.type ?? candidate.category ?? "";
+      const nameMatch = name === requested ? 50 : name.includes(requested) ? 24 : 0;
+      const placeKind = /city|town|village|suburb|neighbourhood|county|state|island|peak|park|attraction|museum|historic/.test(kind) ? 12 : 0;
+      return { candidate, score: nameMatch + placeKind };
+    })
+    .sort((a, b) => b.score - a.score)[0]?.candidate;
   const latitude = Number(result?.lat);
   const longitude = Number(result?.lon);
   const isCountry = result.type === "country" || result.addresstype === "country";

@@ -16,16 +16,13 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip } from "@/lib/easyt/storage";
 import { tripFromBuilder } from "@/lib/easyt/trip";
+import { buildCredibleItinerary, type PlannedDay, type PlannerPlace } from "@/lib/easyt/planner";
 import { journeyMedia, type JourneyImage } from "@/lib/journey";
 import styles from "./trip-builder.module.css";
 
 /* ---------------------------------------------------------------- data */
 
-export type Place = {
-  title: string; area: string; type: string;
-  cost: number; tags: string[]; description: string;
-  image?: string; sourceUrl?: string; coordinates?: [number, number];
-};
+export type Place = PlannerPlace;
 export type Stop = { id: string; name: string; country: string; coordinates?: [number, number] };
 
 // TODO: replace with the live discovery API response.
@@ -456,39 +453,16 @@ export default function TripBuilder() {
     setPicks({ ...picks, [stopId]: current.includes(title) ? current.filter((t) => t !== title) : [...current, title] });
   };
 
-  /** Each selected place is consumed exactly once; leftovers cycle varied open days. */
-  const draft = useMemo(() => {
-    if (!stops.length) return [];
-    const alloc = stops.map((stop) => allocation[stop.id] ?? 1);
-
-    let cursor = 0;
-    return stops.flatMap((stop, si) => {
-      const titles = picks[stop.id] ?? [];
-      const chosen = placesFor(stop, discoveredPlaces).filter((p) => titles.includes(p.title));
-      const queue = [...chosen];
-      let openIndex = 0;
-      return Array.from({ length: alloc[si] }, (_, i) => {
-        const number = ++cursor;
-        const arrival = i === 0;
-        const place = !arrival && queue.length ? queue.shift()! : null;
-        const open = !arrival && !place ? OPEN_DAYS[openIndex++ % OPEN_DAYS.length] : null;
-        const date = new Date(`${startDate}T00:00:00`);
-        date.setDate(date.getDate() + number - 1);
-        return {
-          number: pad(number),
-          date: new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(date),
-          destination: stop.name,
-          title: arrival ? "Arrive and settle in" : place ? place.title : `${open!.title} in ${stop.name}`,
-          reason: arrival ? "A softer start makes the whole trip feel less like transit."
-            : place ? `Built around ${place.title} and kept inside ${place.area}, rather than adding another base.`
-            : open!.reason,
-          items: arrival ? ["Arrive, transfer and check in", `Short walk near your base in ${stop.name}`, "One easy local dinner"]
-            : place ? [place.title, place.description, `Keep the day in ${place.area}`]
-            : open!.items,
-        };
-      });
-    });
-  }, [stops, picks, startDate, discoveredPlaces, allocation]);
+  /** Selected real places are grouped into achievable days; each move gets a visible estimate. */
+  const draft = useMemo<PlannedDay[]>(() => buildCredibleItinerary({
+    origin,
+    originCoordinates,
+    stops,
+    startDate,
+    allocations: allocation,
+    picks,
+    places: Object.fromEntries(stops.map((stop) => [stop.id, placesFor(stop, discoveredPlaces)])),
+  }), [origin, originCoordinates, stops, startDate, allocation, picks, discoveredPlaces]);
 
   const activeTripDocument = useMemo(() => tripFromBuilder({
     id: tripId,

@@ -1,3 +1,5 @@
+import { estimateLeg } from "@/lib/easyt/planner";
+
 export const EASYT_TRIP_SCHEMA_VERSION = 1 as const;
 
 export type TripStatus = "draft" | "planned" | "archived";
@@ -90,6 +92,9 @@ export type BuilderDay = {
   title: string;
   reason: string;
   items: string[];
+  type?: "arrival" | "activity" | "open";
+  placeTitle?: string;
+  coordinates?: [number, number];
 };
 
 export type BuilderTripInput = {
@@ -114,38 +119,47 @@ const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").
 
 export function tripFromBuilder(input: BuilderTripInput): EasyTTrip {
   const now = new Date().toISOString();
-  const stops = input.stops.map((stop, order) => ({
-    id: stop.id,
-    name: stop.name,
-    country: stop.country,
-    order,
-    latitude: stop.coordinates?.[1] ?? null,
-    longitude: stop.coordinates?.[0] ?? null,
-    arrivalDate: null,
-    departureDate: null,
-    nights: null,
-  }));
+  let dayOffset = 0;
+  const stops = input.stops.map((stop, order) => {
+    const allocation = Math.max(1, input.dayAllocations?.[stop.id] ?? 1);
+    const arrival = new Date(`${input.startDate}T00:00:00`);
+    arrival.setDate(arrival.getDate() + dayOffset);
+    const departure = new Date(arrival);
+    departure.setDate(departure.getDate() + allocation);
+    dayOffset += allocation;
+    return {
+      id: stop.id,
+      name: stop.name,
+      country: stop.country,
+      order,
+      latitude: stop.coordinates?.[1] ?? null,
+      longitude: stop.coordinates?.[0] ?? null,
+      arrivalDate: arrival.toISOString().slice(0, 10),
+      departureDate: departure.toISOString().slice(0, 10),
+      nights: Math.max(0, allocation - 1),
+    };
+  });
 
   const stopByName = new Map(stops.map((stop) => [stop.name, stop]));
   const planItems = input.draft.map((day, index): PlanItem => {
     const stop = stopByName.get(day.destination) ?? stops[0];
     const date = new Date(`${input.startDate}T00:00:00`);
     date.setDate(date.getDate() + index);
-    const mappedPlace = input.placeDetails?.[stop?.id ?? ""]?.find((place) => place.title === day.title);
+    const mappedPlace = input.placeDetails?.[stop?.id ?? ""]?.find((place) => place.title === (day.placeTitle ?? day.title));
     return {
       id: `${input.id}-day-${index + 1}-${slug(day.title) || "plan"}`,
       stopId: stop?.id ?? "unassigned",
       dayNumber: index + 1,
       date: date.toISOString().slice(0, 10),
-      type: day.title.toLowerCase().startsWith("arrive") ? "arrival" : day.title.toLowerCase().includes("open") ? "open" : "activity",
+      type: day.type ?? (day.title.toLowerCase().startsWith("arrive") || day.title.toLowerCase().startsWith("travel") ? "arrival" : day.title.toLowerCase().includes("open") ? "open" : "activity"),
       title: day.title,
       reason: day.reason,
       notes: day.items,
       startsAt: null,
       endsAt: null,
       bookingUrl: null,
-      latitude: mappedPlace?.coordinates?.[1] ?? null,
-      longitude: mappedPlace?.coordinates?.[0] ?? null,
+      latitude: day.coordinates?.[1] ?? mappedPlace?.coordinates?.[1] ?? stop?.latitude ?? null,
+      longitude: day.coordinates?.[0] ?? mappedPlace?.coordinates?.[0] ?? stop?.longitude ?? null,
     };
   });
 
@@ -170,16 +184,20 @@ export function tripFromBuilder(input: BuilderTripInput): EasyTTrip {
       dayAllocations: input.dayAllocations,
     },
     stops,
-    legs: stops.slice(1).map((stop, index) => ({
-      id: `${input.id}-leg-${index + 1}`,
-      fromStopId: stops[index].id,
-      toStopId: stop.id,
-      mode: "unknown",
-      distanceKm: null,
-      durationMinutes: null,
-      provider: null,
-      routeMetadata: {},
-    })),
+    legs: input.stops.slice(1).map((stop, index) => {
+      const from = input.stops[index];
+      const estimate = estimateLeg(from, stop);
+      return {
+        id: `${input.id}-leg-${index + 1}`,
+        fromStopId: from.id,
+        toStopId: stop.id,
+        mode: estimate.mode,
+        distanceKm: estimate.distanceKm,
+        durationMinutes: estimate.durationMinutes,
+        provider: estimate.note,
+        routeMetadata: { planningEstimate: true, label: estimate.label },
+      };
+    }),
     planItems,
     recommendations: [],
     createdAt: input.createdAt ?? now,

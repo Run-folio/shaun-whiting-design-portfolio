@@ -8,13 +8,14 @@ type WikiPage = {
   coordinates?: Array<{ lat?: number; lon?: number }>;
 };
 
-const irrelevant = /^(tourism|tourist attraction|visitor cent(?:er|re)|tourist gateway|tourist information|list of|travel|tour operator|tourism in|geography of|history of|economy of|line \d+|metro line|bus line)/i;
-const nonVisitPage = /\b(district|municipality|administrative division|rapid transit line|metro line|population density|electoral district|neighbourhood of madrid)\b/i;
+const irrelevant = /^(tourism|tourist attraction|visitor cent(?:er|re)|tourist gateway|tourist information|list of|travel|tour operator|tourism in|geography of|history of|economy of|line \d+|metro line|bus line|culture of|architecture of)/i;
+const nonVisitPage = /\b(administrative division|rapid transit line|metro line|population density|electoral district|neighbourhood of madrid|disambiguation|politics of|demographics of|transport in)\b/i;
+const strongPlaceSignal = /museum|palace|cathedral|church|monastery|temple|castle|fortress|square|plaza|market|park|garden|gallery|theatre|theater|monument|tower|bridge|beach|mountain|lake|historic|landmark|zoo|aquarium|viewpoint|observatory|archaeological|ruins|heritage/i;
 
 function visitorValue(page: WikiPage) {
   const text = `${page.title ?? ""} ${page.extract ?? ""}`;
   let score = page.thumbnail?.source ? 5 : 0;
-  if (/museum|palace|cathedral|church|monastery|temple|castle|fortress|square|plaza|market|park|garden|gallery|theatre|theater|monument|tower|bridge|beach|mountain|lake|historic|landmark|unesco/i.test(text)) score += 6;
+  if (strongPlaceSignal.test(text)) score += 6;
   if (/one of the (?:best known|most visited|most famous|oldest|largest)|major tourist|popular attraction|world heritage/i.test(text)) score += 5;
   if (nonVisitPage.test(text)) score -= 20;
   return score;
@@ -26,6 +27,12 @@ function classify(title: string, extract: string) {
   if (/market|food|restaurant|culinary/.test(text)) return { type: "Food", tags: ["Food"] };
   if (/museum|gallery|theatre|theater|cultural/.test(text)) return { type: "Culture", tags: ["Cities"] };
   return { type: "Landmark", tags: ["Cities"] };
+}
+
+function suggestedVisitLength(title: string, extract: string) {
+  const text = `${title} ${extract}`.toLowerCase();
+  if (/mountain|beach|lake|forest|trail|national park|archaeological|zoo|aquarium/.test(text)) return 1;
+  return 0.5;
 }
 
 export async function GET(request: NextRequest) {
@@ -44,8 +51,11 @@ export async function GET(request: NextRequest) {
       generator: "geosearch",
       ggsnamespace: "0",
       ggscoord: `${latitude}|${longitude}`,
+      // Wikimedia caps geosearch at 10 km. That keeps the shortlist genuinely
+      // local to the selected stop rather than quietly turning into a
+      // whole-country recommendation engine.
       ggsradius: "10000",
-      ggslimit: "40",
+      ggslimit: "80",
       prop: "extracts|pageimages|coordinates",
       exintro: "1",
       explaintext: "1",
@@ -65,7 +75,17 @@ export async function GET(request: NextRequest) {
       .filter((page) => {
         const coordinate = page.coordinates?.[0];
         const key = page.title?.toLowerCase() ?? "";
-        return Boolean(page.title && page.extract && coordinate && !irrelevant.test(page.title) && !nonVisitPage.test(`${page.title} ${page.extract}`) && !seen.has(key) && seen.add(key));
+        const text = `${page.title} ${page.extract}`;
+        return Boolean(
+          page.title
+          && page.extract
+          && coordinate
+          && !irrelevant.test(page.title)
+          && !nonVisitPage.test(text)
+          && strongPlaceSignal.test(text)
+          && !seen.has(key)
+          && seen.add(key),
+        );
       })
       .sort((a, b) => visitorValue(b) - visitorValue(a))
       .slice(0, 10)
@@ -78,7 +98,7 @@ export async function GET(request: NextRequest) {
           area: destination,
           type: category.type,
           tags: category.tags,
-          cost: 0.5,
+          cost: suggestedVisitLength(page.title!, page.extract!),
           description: `${page.extract!.slice(0, 190).replace(/\s+\S*$/, "")}…`,
           image: page.thumbnail?.source,
           sourceUrl: `https://en.wikipedia.org/?curid=${page.pageid}`,
