@@ -24,9 +24,12 @@ export function JourneyLocalFinder({ kind, city, country, dayId, coordinates, on
   const label = kind === "restaurant" ? "Taste finder" : "Stay finder";
   const Icon = kind === "restaurant" ? Utensils : BedDouble;
   const isReady = kind === "restaurant" ? Boolean(meal && pace && mood) : Boolean(stayStyle);
+  const longitude = coordinates[0];
+  const latitude = coordinates[1];
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     setLoading(true);
     setSearchUnavailable(false);
     setChosen(null);
@@ -35,17 +38,17 @@ export function JourneyLocalFinder({ kind, city, country, dayId, coordinates, on
     setPace(undefined);
     setMood(undefined);
     setStayStyle(undefined);
-    fetch(`/api/journey-local-search?kind=${kind}&city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&lat=${coordinates[1]}&lon=${coordinates[0]}`)
-      .then((response) => response.ok ? response.json() : { places: [] })
+    fetch(`/api/journey-local-search?kind=${kind}&city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&lat=${latitude}&lon=${longitude}`, { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Venue search unavailable")))
       .then((data: { places?: LocalPlace[]; unavailable?: boolean }) => { if (active) { setPlaces(data.places ?? []); setSearchUnavailable(Boolean(data.unavailable)); } })
-      .catch(() => { if (active) { setPlaces([]); setSearchUnavailable(true); } })
+      .catch((error: unknown) => { if (active && (error as { name?: string })?.name !== "AbortError") { setPlaces([]); setSearchUnavailable(true); } })
       .finally(() => { if (active) setLoading(false); });
     try {
       const store = JSON.parse(window.localStorage.getItem(storageKey) ?? "{}") as Record<string, LocalPlace>;
       if (store[dayId]) { setSaved(store[dayId]); setChosen(store[dayId]); }
     } catch { /* The finder remains usable without local persistence. */ }
-    return () => { active = false; };
-  }, [city, coordinates, country, dayId, kind, storageKey]);
+    return () => { active = false; controller.abort(); };
+  }, [city, country, dayId, kind, latitude, longitude, storageKey]);
 
   useEffect(() => {
     if (kind !== "restaurant" || !saved || !onRestaurantSelect) return onRestaurantSelect?.();

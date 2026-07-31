@@ -297,7 +297,7 @@
   .stopNode{left:9px}
   .segment{left:19px;width:calc(100% - 5px)}
   .stop strong{font-size:11px}
-  .journey :global(.journey-map){inset:142px 0 auto;height:304px;border-bottom:1px solid rgba(31,29,61,.14)}
+  .journey :global(.journey-map){inset:142px 0 auto;height:304px;border-bottom:1px solid rgba(31,29,61,.14);touch-action:none}
   .vignette,.grain{display:none}
   .destination{position:relative;left:auto;top:auto;width:calc(100% - 28px);max-width:620px;max-height:none;margin:16px auto 0;padding:17px 18px 18px 21px;overflow:visible;border-radius:10px}
   .destinationLine{left:-21px}
@@ -322,6 +322,9 @@
   .journey :global(.journey-map__place-detail){right:10px;bottom:10px;left:10px;width:auto;grid-template-columns:88px 1fr auto;transform:none;animation:none}
   .journey :global(.journey-map__place-detail>img){width:88px;height:76px}
   .journey :global(.journey-map__place-detail p){display:none}
+  .titleLockup{max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .destinationTitle h1{max-width:calc(100% - 42px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .journey :global(.journey-map__stop-label){paint-order:stroke;stroke:#f4f5f6;stroke-width:3px;stroke-linejoin:round}
   .mediaCarousel figcaption{gap:7px;font-size:8px}
 }
 
@@ -329,6 +332,7 @@
   .myTripsLink{padding-inline:10px}.createTripLink span{display:none}.createTripLink{width:34px;padding:0;justify-content:center}
   .journey{padding-top:428px}
   .journey :global(.journey-map){height:286px}
+  .titleLockup{max-width:46vw;font-size:13px}
   .destinationTitle{gap:9px}
   .destinationTitle h1{font-size:40px}
   .weatherCard{flex-basis:136px}

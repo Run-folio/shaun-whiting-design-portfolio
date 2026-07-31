@@ -127,7 +127,7 @@ export default function EasyTNavigation({
           <span>{labels.prototype}</span>
         </EasyTLinkButton>
         <EasyTLinkButton
-          className={`${styles.quietLink} ${current === "trips" ? styles.current : ""}`}
+          className={`${styles.quietLink} ${styles.tripsLink} ${current === "trips" ? styles.current : ""}`}
           href="/journey/dashboard"
           size="small"
           variant="secondary"

@@ -149,6 +149,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const [routeOpen, setRouteOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [restaurantOpen, setRestaurantOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const mappedStops = useMemo(() => stops.filter(hasCoordinates), [stops]);
   const selected = mappedStops.find((stop) => stop.id === selectedId) ?? mappedStops[0];
   if (!selected) return <div className="journey-map journey-map--unmapped">This route needs a verified map location before it can be shown.</div>;
@@ -162,11 +163,18 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const selectedPoint = projection(selected.coordinates) ?? [width / 2, height / 2];
   const selectedCountry = countries.features.find((country) => String(country.id) === countryCode(selected) || normalized(country.properties?.name ?? "") === normalized(selected.country));
   // The selected geography sits in the clear stage between the two side panels.
-  const focusPoint: [number, number] = [width * 0.5, height * 0.52];
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 980px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  const focusPoint: [number, number] = [width * 0.5, isMobile ? height * 0.46 : height * 0.52];
   const targetView = useMemo(() => {
-    const scale = countryZoom(selected);
+    const scale = Math.min(maxZoom, countryZoom(selected) * (isMobile ? 1.35 : 1));
     return { x: focusPoint[0] - selectedPoint[0] * scale, y: focusPoint[1] - selectedPoint[1] * scale, scale };
-  }, [selected.id, selectedPoint[0], selectedPoint[1]]);
+  }, [focusPoint, isMobile, selected.id, selectedPoint[0], selectedPoint[1]]);
   const routeView = useMemo(() => {
     if (variant !== "planner" || mappedStops.length < 2) return targetView;
     const points = mappedStops.map((stop) => projection(stop.coordinates)).filter((point): point is [number, number] => Boolean(point));
@@ -185,6 +193,8 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   }, [mappedStops, projection, targetView, variant]);
   const viewRef = useRef<View>(targetView);
   const dragRef = useRef<{ pointerId: number; x: number; y: number; origin: View } | null>(null);
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ distance: number; centerX: number; centerY: number; scale: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const viewportRef = useRef<SVGGElement>(null);
   const zoomReadoutRef = useRef<HTMLDivElement>(null);
@@ -309,11 +319,41 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
     cancelAnimationFrame(wheelFrameRef.current);
     wheelFrameRef.current = 0;
     wheelTargetRef.current = null;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, origin: viewRef.current };
+    pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointersRef.current.size >= 2) {
+      const points = [...pointersRef.current.values()];
+      const [first, second] = points;
+      pinchRef.current = {
+        distance: Math.max(1, Math.hypot(second.x - first.x, second.y - first.y)),
+        centerX: (first.x + second.x) / 2,
+        centerY: (first.y + second.y) / 2,
+        scale: viewRef.current.scale,
+      };
+      dragRef.current = null;
+    } else {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, origin: viewRef.current };
+    }
   }
 
   function handlePointerMove(event: ReactPointerEvent<SVGSVGElement>) {
+    if (pointersRef.current.has(event.pointerId)) pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointersRef.current.size >= 2 && pinchRef.current) {
+      const points = [...pointersRef.current.values()];
+      const [first, second] = points;
+      const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+      const centerX = (first.x + second.x) / 2;
+      const centerY = (first.y + second.y) / 2;
+      const rect = svgRef.current?.getBoundingClientRect();
+      if (rect) {
+        const anchorX = ((centerX - rect.left) / rect.width) * width;
+        const anchorY = ((centerY - rect.top) / rect.height) * height;
+        const next = zoomedView(viewRef.current, pinchRef.current.scale * (distance / pinchRef.current.distance), anchorX, anchorY);
+        writeView(next);
+      }
+      event.preventDefault();
+      return;
+    }
     const drag = dragRef.current;
     const rect = svgRef.current?.getBoundingClientRect();
     if (!drag || drag.pointerId !== event.pointerId || !rect) return;
@@ -321,6 +361,8 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   }
 
   function handlePointerUp(event: ReactPointerEvent<SVGSVGElement>) {
+    pointersRef.current.delete(event.pointerId);
+    if (pointersRef.current.size < 2) pinchRef.current = null;
     if (dragRef.current?.pointerId === event.pointerId) dragRef.current = null;
   }
 
@@ -332,7 +374,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const selectedPlaceMapProvider = selected.country === "China" ? "Amap" : "Google Maps";
 
   return <div className="journey-map" aria-label={variant === "planner" ? "Interactive journey map" : "Interactive Pacific journey map"}>
-    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={variant === "planner" ? "Interactive geographic route map" : "Geographic Pacific route from Guatemala to Los Angeles, Japan, China and Hong Kong"} onWheel={handleWheel} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}>
+    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={variant === "planner" ? "Interactive geographic route map" : "Geographic Pacific route from Guatemala to Los Angeles, Japan, China and Hong Kong"} onWheel={handleWheel} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onPointerLeave={handlePointerUp}>
       <defs>
         <linearGradient id="ocean" x1="0" x2="1" y1="0" y2="1"><stop stopColor="#f9f9f7" /><stop offset="1" stopColor="#eceff3" /></linearGradient>
         <filter id="traveller-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
