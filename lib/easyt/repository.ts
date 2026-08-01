@@ -76,6 +76,34 @@ export async function updateEasyTUserPreferences(
   `;
 }
 
+export async function getCountryStamps(ownerId: string) {
+  const sql = getEasyTDatabase();
+  return (await sql`
+    select country_id as "countryId", status
+    from easyt_country_stamps
+    where owner_id = ${ownerId}
+  `) as Array<{ countryId: string; status: "visited" | "want" }>;
+}
+
+export async function setCountryStamp(
+  ownerId: string,
+  countryId: string,
+  status: "visited" | "want" | null,
+) {
+  const sql = getEasyTDatabase();
+  if (status === null) {
+    await sql`delete from easyt_country_stamps where owner_id = ${ownerId} and country_id = ${countryId}`;
+    return;
+  }
+  await sql`
+    insert into easyt_country_stamps (owner_id, country_id, status)
+    values (${ownerId}, ${countryId}, ${status})
+    on conflict (owner_id, country_id) do update set
+      status = excluded.status,
+      updated_at = now()
+  `;
+}
+
 export async function createEasyTFeedback(input: {
   ownerId: string;
   rating: number;
