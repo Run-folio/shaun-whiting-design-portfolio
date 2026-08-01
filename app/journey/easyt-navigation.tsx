@@ -28,7 +28,7 @@ const copy = {
     prototype: "Prototype",
     trips: "My trips",
     newTrip: "New trip",
-    stamped: "Stamped",
+    stamped: "Stamps",
     account: "Account",
     profile: "Profile",
     language: "Language",
@@ -121,15 +121,6 @@ export default function EasyTNavigation({
 
       <nav className={styles.actions} aria-label="EasyT navigation">
         <EasyTLinkButton
-          className={`${styles.quietLink} ${current === "prototype" ? styles.current : ""}`}
-          href="/journey"
-          icon={Map}
-          size="small"
-          variant="secondary"
-        >
-          <span>{labels.prototype}</span>
-        </EasyTLinkButton>
-        <EasyTLinkButton
           className={`${styles.quietLink} ${current === "stamped" ? styles.current : ""}`}
           href="/journey/stamped"
           icon={Stamp}
@@ -176,6 +167,13 @@ export default function EasyTNavigation({
               <Link href="/journey/profile">
                 <UserRound aria-hidden="true" />
                 <span>{labels.profile}</span>
+              </Link>
+              <Link
+                className={current === "prototype" ? styles.submenuCurrent : undefined}
+                href="/journey"
+              >
+                <Map aria-hidden="true" />
+                <span>{labels.prototype}</span>
               </Link>
               <label className={styles.languageControl}>
                 <Languages aria-hidden="true" />
