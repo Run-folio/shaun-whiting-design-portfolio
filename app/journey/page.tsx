@@ -15,6 +15,7 @@ import { getCountryIntelligence } from "@/lib/country-intelligence";
 import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
 import { authClient } from "@/lib/auth-client";
 import type { EasyTTrip } from "@/lib/easyt/trip";
+import { estimateLeg } from "@/lib/easyt/planner";
 import styles from "./journey.module.css";
 
 const destinationIcons: Record<string, LucideIcon> = {
@@ -31,7 +32,7 @@ const destinationIcons: Record<string, LucideIcon> = {
   skyline: Building2,
 };
 
-type CustomPick = { id: string; title: string; area: string; type: string; duration: string; description: string; image?: string; country?: string };
+type CustomPick = { id: string; title: string; area: string; type: string; duration: string; description: string; image?: string; sourceUrl?: string; coordinates?: [number, number]; country?: string };
 type CustomDestination = { id: string; name: string; country?: string; coordinates?: [number, number]; kind?: string };
 type CustomBrief = { origin: string; destinations: CustomDestination[]; startDate: string; duration: string; travellers: string; interests: string[]; picks: Record<string, string[]>; pickDetails?: Record<string, CustomPick[]> };
 
@@ -48,6 +49,9 @@ function customBriefFromEasyT(trip: EasyTTrip): CustomBrief {
         type: "Activity",
         duration: "Flexible",
         description: item.reason,
+        image: item.image ?? undefined,
+        sourceUrl: item.sourceUrl ?? undefined,
+        coordinates: item.longitude !== null && item.latitude !== null ? [item.longitude, item.latitude] : undefined,
         country: stop.country,
       } satisfies CustomPick)),
   ]));
@@ -74,7 +78,7 @@ const customCoordinates: Record<string, [number, number]> = {
   "guatemala city": [-90.5069, 14.6349], london: [-0.1276, 51.5072], japan: [139.6917, 35.6895], tokyo: [139.6917, 35.6895], "hong kong": [114.1694, 22.3193], france: [2.3522, 48.8566], spain: [2.1734, 41.3851], italy: [12.4964, 41.9028], china: [104.1954, 35.8617], thailand: [100.5018, 13.7563], mexico: [-99.1332, 19.4326], "united states": [-74.006, 40.7128], "united kingdom": [-0.1276, 51.5072], "south korea": [126.978, 37.5665], germany: [13.405, 52.52], portugal: [-9.1393, 38.7223], greece: [23.7275, 37.9838], turkey: [28.9784, 41.0082], vietnam: [105.8342, 21.0278], indonesia: [115.1889, -8.4095], australia: [151.2093, -33.8688], brazil: [-43.1729, -22.9068], morocco: [-7.9811, 31.6295], canada: [-79.3832, 43.6532], india: [77.209, 28.6139], singapore: [103.8198, 1.3521], "united arab emirates": [55.2708, 25.2048], egypt: [31.2357, 30.0444], croatia: [18.0944, 42.6507], switzerland: [8.5417, 47.3769], argentina: [-58.3816, -34.6037], peru: [-77.0428, -12.0464], cusco: [-71.9785, -13.517], "sacred valley": [-72.115, -13.308], "machu picchu": [-72.5451, -13.1631], colombia: [-74.0721, 4.711], "bogotá": [-74.0721, 4.711], bogota: [-74.0721, 4.711], medellín: [-75.5812, 6.2442], medellin: [-75.5812, 6.2442], iceland: [-21.9426, 64.1466], "new zealand": [174.7633, -36.8485], "south africa": [18.4241, -33.9249], "costa rica": [-84.0907, 9.9281], philippines: [120.9842, 14.5995], malaysia: [101.6869, 3.139], austria: [16.3738, 48.2082], netherlands: [4.9041, 52.3676], czechia: [14.4378, 50.0755], "czech republic": [14.4378, 50.0755], ireland: [-6.2603, 53.3498], norway: [10.7522, 59.9139], denmark: [12.5683, 55.6761], sweden: [18.0686, 59.3293], poland: [19.945, 50.0647], chile: [-70.6693, -33.4489], kenya: [36.8219, -1.2921], tanzania: [39.2083, -6.7924], maldives: [73.5093, 4.1755], guatemala: [-90.5069, 14.6349],
 };
 
-function customCoordinate(name: string, fallback: string): [number, number] { return customCoordinates[name.toLowerCase()] ?? customCoordinates[fallback.toLowerCase()] ?? [0, 0]; }
+function customCoordinate(name: string, fallback: string): [number, number] | null { return customCoordinates[name.toLowerCase()] ?? customCoordinates[fallback.toLowerCase()] ?? null; }
 function journeyTransportMode(mode: EasyTTrip["legs"][number]["mode"]): "flight" | "road" | "rail" {
   if (mode === "flight") return "flight";
   if (mode === "train") return "rail";
@@ -118,7 +122,11 @@ function customPlaceDetails(place: CustomPick | undefined) {
 function customDate(startDate: string, offset: number) { const date = new Date(`${startDate || "2027-03-01"}T00:00:00`); date.setDate(date.getDate() + offset); return new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(date); }
 const planningBases: Record<string, string> = { peru: "Cusco", colombia: "Bogotá", japan: "Tokyo", china: "Beijing", italy: "Rome", france: "Paris", spain: "Barcelona", thailand: "Bangkok", vietnam: "Hanoi", indonesia: "Bali", "south korea": "Seoul", mexico: "Mexico City", portugal: "Lisbon", greece: "Athens", turkey: "Istanbul", "united kingdom": "London", "united states": "New York", australia: "Sydney", brazil: "Rio de Janeiro", morocco: "Marrakech", india: "Delhi", egypt: "Cairo", "new zealand": "Auckland", "south africa": "Cape Town" };
 function planningBase(destination: string) { return getCountryIntelligence(destination)?.preferredFirstBase ?? planningBases[destination.toLowerCase()] ?? destination; }
-function connection(from: string, to: string, first: boolean): JourneyCalendarDay["travel"] { const local = from === to; return { mode: local ? "road" : "flight", from: first ? undefined : from, detail: local ? `Local transfer into ${to}` : `Travel from ${from} to ${to}`, duration: local ? "~30–60 min transfer" : "Travel day · confirm the best flight or rail link" }; }
+function formatEstimate(minutes: number | null) { return minutes === null ? "Confirm connection" : `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m approx.`; }
+function connection(from: JourneyStop, to: JourneyStop, first: boolean): JourneyCalendarDay["travel"] {
+  const estimate = estimateLeg({ name: from.city, country: from.country, coordinates: from.coordinates ?? undefined }, { id: to.id, name: to.city, country: to.country, coordinates: to.coordinates ?? undefined });
+  return { mode: estimate.mode === "train" ? "rail" : estimate.mode === "flight" ? "flight" : "road", from: first ? undefined : from.city, detail: `${estimate.distanceKm ? `${estimate.distanceKm.toLocaleString()} km · ` : ""}${estimate.note}`, duration: formatEstimate(estimate.durationMinutes) };
+}
 function makeCustomJourney(brief: CustomBrief) {
   const totalDays = Math.max(1, Number.parseInt(brief.duration, 10) || 10);
   const allocations = brief.destinations.map(() => Math.max(2, Math.floor(totalDays / Math.max(1, brief.destinations.length))));
@@ -147,17 +155,18 @@ function makeCustomJourney(brief: CustomBrief) {
       const stopId = `custom-${destination.id}-${localDay + 1}`;
       const previousStop = stops[stops.length - 1];
       stops.push({
-        id: stopId, city, country, date: customDate(brief.startDate, dayNumber - 1), coordinates: isArrival && destination.coordinates ? destination.coordinates : customCoordinate(city, country), theme: isArrival ? "city" : "mountain", marker: isArrival ? "skyline" : "temple",
+        id: stopId, city, country, date: customDate(brief.startDate, dayNumber - 1), coordinates: isPlace ? pick?.coordinates ?? destination.coordinates ?? customCoordinate(city, "") : destination.coordinates ?? customCoordinate(city, ""), theme: isArrival ? "city" : "mountain", marker: isArrival ? "skyline" : "temple",
         description: isPlace ? (pick?.description ?? `A focused day for ${city} in ${country}.`) : (isArrival ? `A calm arrival chapter in ${base}, with enough room to settle before the trip’s bigger days.` : `A focused day in ${base}, ${country}.`),
         highlights: isArrival ? ["Arrival", "Check in", "Local dinner"] : isPlace ? [pick?.area ?? country, pick?.type ?? "Signature place", pick?.duration ?? "Flexible"] : [country, "Local base", "Flexible"], aiPrompt: `What should I refine around ${city}?`,
       });
-      calendar.push({ id: `custom-day-${dayNumber}`, date: customDate(brief.startDate, dayNumber - 1), label: `Day ${dayNumber}`, stopId, city, title: isArrival ? `Arrive in ${base}` : isPlace ? picked! : `Explore ${base}`, travel: isArrival ? connection(previousBase, base, destinationIndex === 0) : previousStop.country === country ? connection(previousStop.city, city, false) : undefined, items: isArrival ? [`Check in around ${base}`, "A gentle orientation walk in the closest district", "Choose dinner near your base"] : [isPlace ? picked! : `Explore ${base} at a slower pace`, `Pair ${isPlace ? picked! : "your base"} with one nearby supporting place`, "Reserve a restaurant or stay option directly in today’s plan"] });
+      calendar.push({ id: `custom-day-${dayNumber}`, date: customDate(brief.startDate, dayNumber - 1), label: `Day ${dayNumber}`, stopId, city, title: isArrival ? `Arrive in ${base}` : isPlace ? picked! : `Explore ${base}`, travel: isArrival ? connection(previousStop, stops[stops.length - 1], destinationIndex === 0) : previousStop.country === country ? connection(previousStop, stops[stops.length - 1], false) : undefined, items: isArrival ? [`Check in around ${base}`, "A gentle orientation walk in the closest district", "Choose dinner near your base"] : [isPlace ? picked! : `Explore ${base} at a slower pace`, `Pair ${isPlace ? picked! : "your base"} with one nearby supporting place`, "Reserve a restaurant or stay option directly in today’s plan"] });
     }
   });
   const legs: JourneyLeg[] = stops.slice(1).map((stop, index) => {
     const from = stops[index];
     const local = from.country === stop.country;
-    return { from: from.id, to: stop.id, mode: local ? "road" : "flight", label: `${from.city} → ${stop.city}`, detail: local ? "Local connection · confirm the best rail, road or transfer" : "Suggested transport leg · verify the best service before booking", duration: local ? "Local travel" : "Travel day" };
+    const estimate = estimateLeg({ name: from.city, country: from.country, coordinates: from.coordinates ?? undefined }, { id: stop.id, name: stop.city, country: stop.country, coordinates: stop.coordinates ?? undefined });
+    return { from: from.id, to: stop.id, mode: estimate.mode === "train" ? "rail" : estimate.mode === "flight" ? "flight" : "road", label: estimate.label, detail: `${estimate.distanceKm ? `${estimate.distanceKm.toLocaleString()} km · ` : ""}${estimate.note}`, duration: formatEstimate(estimate.durationMinutes) };
   });
   return { title: "Your Journey", dateRange: `${customDate(brief.startDate, 0)} — ${customDate(brief.startDate, Math.max(0, totalDays - 1))}`, stops, legs, calendar };
 }
@@ -192,26 +201,37 @@ function makeEasyTJourney(trip: EasyTTrip) {
     const city = isMappedPlace ? item.title : (base?.name ?? item.title);
     const country = base?.country ?? city;
     const stopId = `${trip.id}-day-${item.dayNumber}`;
-    const coordinates: [number, number] = item.longitude !== null && item.latitude !== null
+    const coordinates: [number, number] | null = item.longitude !== null && item.latitude !== null
       ? [item.longitude, item.latitude]
       : base?.longitude !== null && base?.longitude !== undefined && base.latitude !== null
         ? [base.longitude, base.latitude]
-        : customCoordinate(city, country);
+        : customCoordinate(city, "");
     const previousItem = orderedItems[index - 1];
     const previousBase = previousItem ? stopById.get(previousItem.stopId) : undefined;
     const movedBase = index === 0 || previousBase?.id !== base?.id;
     const relatedLeg = movedBase && base
       ? trip.legs.find((leg) => leg.toStopId === base.id)
       : undefined;
+    const estimatedLeg = movedBase && base ? estimateLeg(
+      {
+        name: index === 0 ? trip.brief.origin : previousBase?.name ?? "Previous stop",
+        country: index === 0 ? trip.brief.origin : previousBase?.country ?? "",
+        coordinates: index === 0 ? origin.coordinates ?? undefined : previousBase?.longitude !== null && previousBase?.longitude !== undefined && previousBase.latitude !== null ? [previousBase.longitude, previousBase.latitude] : undefined,
+      },
+      {
+        id: base.id,
+        name: base.name,
+        country: base.country,
+        coordinates: base.longitude !== null && base.latitude !== null ? [base.longitude, base.latitude] : undefined,
+      },
+    ) : undefined;
+    const minutes = relatedLeg?.durationMinutes ?? estimatedLeg?.durationMinutes;
+    const distanceKm = relatedLeg?.distanceKm ?? estimatedLeg?.distanceKm;
     const travel = movedBase ? {
-      mode: relatedLeg ? journeyTransportMode(relatedLeg.mode) : (index === 0 ? "flight" : "road"),
+      mode: relatedLeg ? journeyTransportMode(relatedLeg.mode) : estimatedLeg ? journeyTransportMode(estimatedLeg.mode) : (index === 0 ? "flight" : "road"),
       from: index === 0 ? trip.brief.origin : previousBase?.name,
-      detail: relatedLeg?.provider
-        ? `${relatedLeg.provider} to ${base?.name ?? city}`
-        : `Travel to ${base?.name ?? city}`,
-      duration: relatedLeg?.durationMinutes
-        ? `${Math.floor(relatedLeg.durationMinutes / 60)}h ${relatedLeg.durationMinutes % 60}m`
-        : "Confirm the best connection",
+      detail: `${distanceKm ? `${distanceKm.toLocaleString()} km · ` : ""}${relatedLeg?.provider ?? estimatedLeg?.note ?? `Travel to ${base?.name ?? city}`}`,
+      duration: minutes ? `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m` : "Confirm the best connection",
     } satisfies JourneyCalendarDay["travel"] : undefined;
 
     stops.push({
@@ -305,10 +325,14 @@ export default function JourneyPage() {
   // generic country-level boilerplate that made every day read the same.
   const details = isCustomJourney ? customPlaceDetails(customPlace) : (journeyDetails[selected.id] ?? []);
   const media = isCustomJourney ? undefined : journeyMedia[selected.id];
-  const customImage = placeMedia[selected.id]?.image ? { src: placeMedia[selected.id]!.image!, alt: selected.city, caption: selected.city, sourceUrl: placeMedia[selected.id]?.sourceUrl ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(selected.city.replace(/ /g, "_"))}` } : undefined;
+  const customImage = placeMedia[selected.id]?.image
+    ? { src: placeMedia[selected.id]!.image!, alt: selected.city, caption: selected.city, sourceUrl: placeMedia[selected.id]?.sourceUrl ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(selected.city.replace(/ /g, "_"))}` }
+    : customPlace?.image
+      ? { src: customPlace.image, alt: selected.city, caption: selected.city, sourceUrl: customPlace.sourceUrl ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(selected.city.replace(/ /g, "_"))}` }
+      : undefined;
   const images = isCustomJourney ? (customImage ? [customImage] : []) : (journeyDayMedia[selectedDay.id] ?? (media ? [media.hero, ...(media.gallery ?? [])] : []));
   const mapPreviewImage = images.find((image) => image.src !== images[0]?.src);
-  const customMapPlace: JourneyMapPlace | undefined = isCustomJourney ? { name: selected.city, coordinates: selected.coordinates, address: `${selected.city}, ${selected.country}`, image: customImage, summary: selected.description } : undefined;
+  const customMapPlace: JourneyMapPlace | undefined = isCustomJourney && selected.coordinates ? { name: selected.city, coordinates: selected.coordinates, address: `${selected.city}, ${selected.country}`, image: customImage, summary: selected.description } : undefined;
   const DestinationIcon = destinationIcons[selected.marker] ?? Landmark;
   const handleRestaurantSelect = useCallback((restaurant?: JourneyRestaurant, meal?: RestaurantMeal) => {
     setSelectedRestaurant(restaurant ? { restaurant, meal } : undefined);
@@ -553,7 +577,7 @@ export default function JourneyPage() {
               <div className={styles.destinationLine} />
               <div className={styles.introTop}>
                 <p className={styles.kicker}>{selectedDay.date} <span /> {selected.country}</p>
-                <JourneyWeather city={selected.city} coordinates={selected.coordinates} date={selectedDay.date} />
+                {selected.coordinates ? <JourneyWeather city={selected.city} coordinates={selected.coordinates} date={selectedDay.date} /> : <span className={styles.weatherUnavailable}>Weather appears once this stop is mapped.</span>}
               </div>
               <div className={styles.destinationTitle}><h1>{selected.city}</h1><span aria-hidden="true"><DestinationIcon /></span></div>
               <p className={styles.description}>{selected.description}</p>
@@ -608,7 +632,7 @@ export default function JourneyPage() {
             setSelectedDayId(nextDay.id);
             setSelectedId(nextDay.stopId);
           }}><small>Next</small><span>{journey.calendar[selectedDayIndex + 1].date}</span><strong>{journey.calendar[selectedDayIndex + 1].city} →</strong></button> : null}
-          {isCustomJourney ? <><JourneyLocalFinder kind="restaurant" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} /><JourneyLocalFinder kind="stay" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} /></> : <JourneyRestaurantFinder stopId={selected.id} city={selected.city} dayId={selectedDay.id} onSelectRestaurant={handleRestaurantSelect} />}
+          {isCustomJourney && selected.coordinates ? <><JourneyLocalFinder kind="restaurant" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} /><JourneyLocalFinder kind="stay" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} /></> : !isCustomJourney ? <JourneyRestaurantFinder stopId={selected.id} city={selected.city} dayId={selectedDay.id} onSelectRestaurant={handleRestaurantSelect} /> : null}
         </motion.div>
       </aside>
 

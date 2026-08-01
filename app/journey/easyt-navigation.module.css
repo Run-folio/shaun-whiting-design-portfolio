@@ -249,6 +249,10 @@
   .quietLink {
     display: none;
   }
+  .tripsLink {
+    display: inline-flex;
+    padding-inline: 10px;
+  }
   .primaryLink span {
     display: none;
   }

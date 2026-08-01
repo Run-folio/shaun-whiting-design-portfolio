@@ -6,7 +6,7 @@ export interface JourneyStop {
   city: string;
   country: string;
   date: string;
-  coordinates: [number, number];
+  coordinates: [number, number] | null;
   theme: JourneyTheme;
   marker: JourneyMarker;
   description: string;

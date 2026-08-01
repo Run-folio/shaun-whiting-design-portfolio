@@ -19,31 +19,36 @@ export function JourneyLocalFinder({ kind, city, country, dayId, coordinates, on
   const [chosen, setChosen] = useState<LocalPlace | null>(null);
   const [saved, setSaved] = useState<LocalPlace | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchUnavailable, setSearchUnavailable] = useState(false);
   const storageKey = `journey:local-${kind}:v2`;
   const label = kind === "restaurant" ? "Taste finder" : "Stay finder";
   const Icon = kind === "restaurant" ? Utensils : BedDouble;
   const isReady = kind === "restaurant" ? Boolean(meal && pace && mood) : Boolean(stayStyle);
+  const longitude = coordinates[0];
+  const latitude = coordinates[1];
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     setLoading(true);
+    setSearchUnavailable(false);
     setChosen(null);
     setSaved(null);
     setMeal(undefined);
     setPace(undefined);
     setMood(undefined);
     setStayStyle(undefined);
-    fetch(`/api/journey-local-search?kind=${kind}&city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&lat=${coordinates[1]}&lon=${coordinates[0]}`)
-      .then((response) => response.ok ? response.json() : { places: [] })
-      .then((data: { places?: LocalPlace[] }) => { if (active) setPlaces(data.places ?? []); })
-      .catch(() => { if (active) setPlaces([]); })
+    fetch(`/api/journey-local-search?kind=${kind}&city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&lat=${latitude}&lon=${longitude}`, { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Venue search unavailable")))
+      .then((data: { places?: LocalPlace[]; unavailable?: boolean }) => { if (active) { setPlaces(data.places ?? []); setSearchUnavailable(Boolean(data.unavailable)); } })
+      .catch((error: unknown) => { if (active && (error as { name?: string })?.name !== "AbortError") { setPlaces([]); setSearchUnavailable(true); } })
       .finally(() => { if (active) setLoading(false); });
     try {
       const store = JSON.parse(window.localStorage.getItem(storageKey) ?? "{}") as Record<string, LocalPlace>;
       if (store[dayId]) { setSaved(store[dayId]); setChosen(store[dayId]); }
     } catch { /* The finder remains usable without local persistence. */ }
-    return () => { active = false; };
-  }, [city, coordinates, country, dayId, kind, storageKey]);
+    return () => { active = false; controller.abort(); };
+  }, [city, country, dayId, kind, latitude, longitude, storageKey]);
 
   useEffect(() => {
     if (kind !== "restaurant" || !saved || !onRestaurantSelect) return onRestaurantSelect?.();
@@ -68,7 +73,7 @@ export function JourneyLocalFinder({ kind, city, country, dayId, coordinates, on
     <header><span><Icon /></span><div><small>{label}</small><strong>{city}</strong></div></header>
     <p className={styles.restaurantContext}><b>{kind === "restaurant" ? "Choose the meal" : "Choose the base"}</b><span>Results are named OpenStreetMap venues around today’s mapped location—not invented shortlists.</span></p>
     {loading ? <p className={styles.restaurantLocalNote}>Checking actual local venues…</p> : null}
-    {!loading && !places.length ? <p className={styles.restaurantLocalNote}>No mapped venues came back for this area. Open Maps to search around the day’s location instead.</p> : null}
+    {!loading && !places.length ? <p className={styles.restaurantLocalNote}>{searchUnavailable ? "Live venue search is temporarily unavailable. Open Maps to search around today’s location instead." : "No mapped venues came back for this area. Open Maps to search around the day’s location instead."}</p> : null}
     {!loading && kind === "restaurant" && !meal ? <div className={styles.restaurantQuestion}><p>First, choose the moment <b>1 / 4</b></p><h3>When do you want to eat?</h3><div>{(["lunch", "dinner"] as const).map((option) => <button key={option} type="button" onClick={() => setMeal(option)}>{option}</button>)}</div></div> : null}
     {!loading && kind === "restaurant" && meal && !pace ? <div className={styles.restaurantQuestion}><p>Then, the pace <b>2 / 4</b></p><h3>How should the meal feel?</h3><div>{([{ value: "quick", label: "Quick & easy" }, { value: "relaxed", label: "Take our time" }, { value: "occasion", label: "A trip highlight" }] as const).map((option) => <button key={option.value} type="button" onClick={() => setPace(option.value)}>{option.label}</button>)}</div></div> : null}
     {!loading && kind === "restaurant" && meal && pace && !mood ? <div className={styles.restaurantQuestion}><p>Finally, the direction <b>3 / 4</b></p><h3>What sounds right?</h3><div>{([{ value: "local", label: "Local favourite" }, { value: "comfort", label: "Easy comfort" }, { value: "surprise", label: "Surprise me" }] as const).map((option) => <button key={option.value} type="button" onClick={() => setMood(option.value)}>{option.label}</button>)}</div></div> : null}

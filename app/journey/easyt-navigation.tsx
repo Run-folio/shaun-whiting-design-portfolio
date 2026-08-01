@@ -10,6 +10,7 @@ import {
   LogOut,
   Map,
   Plus,
+  Stamp,
   UserRound,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
@@ -18,7 +19,7 @@ import { EasyTLinkButton } from "@/components/easyt/easyt-controls";
 import styles from "./easyt-navigation.module.css";
 
 type EasyTNavigationProps = {
-  current?: "prototype" | "trips" | "new" | "login" | "profile";
+  current?: "prototype" | "trips" | "stamped" | "new" | "login" | "profile";
   account?: { name?: string | null; email: string; language?: Language };
 };
 
@@ -27,6 +28,7 @@ const copy = {
     prototype: "Prototype",
     trips: "My trips",
     newTrip: "New trip",
+    stamped: "Stamped",
     account: "Account",
     profile: "Profile",
     language: "Language",
@@ -36,6 +38,7 @@ const copy = {
     prototype: "Prototipo",
     trips: "Mis viajes",
     newTrip: "Nuevo viaje",
+    stamped: "Sellos",
     account: "Cuenta",
     profile: "Perfil",
     language: "Idioma",
@@ -127,7 +130,16 @@ export default function EasyTNavigation({
           <span>{labels.prototype}</span>
         </EasyTLinkButton>
         <EasyTLinkButton
-          className={`${styles.quietLink} ${current === "trips" ? styles.current : ""}`}
+          className={`${styles.quietLink} ${current === "stamped" ? styles.current : ""}`}
+          href="/journey/stamped"
+          icon={Stamp}
+          size="small"
+          variant="secondary"
+        >
+          <span>{labels.stamped}</span>
+        </EasyTLinkButton>
+        <EasyTLinkButton
+          className={`${styles.quietLink} ${styles.tripsLink} ${current === "trips" ? styles.current : ""}`}
           href="/journey/dashboard"
           size="small"
           variant="secondary"
