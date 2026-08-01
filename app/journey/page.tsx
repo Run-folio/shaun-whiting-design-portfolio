@@ -122,7 +122,11 @@ function customPlaceDetails(place: CustomPick | undefined) {
 function customDate(startDate: string, offset: number) { const date = new Date(`${startDate || "2027-03-01"}T00:00:00`); date.setDate(date.getDate() + offset); return new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(date); }
 const planningBases: Record<string, string> = { peru: "Cusco", colombia: "Bogotá", japan: "Tokyo", china: "Beijing", italy: "Rome", france: "Paris", spain: "Barcelona", thailand: "Bangkok", vietnam: "Hanoi", indonesia: "Bali", "south korea": "Seoul", mexico: "Mexico City", portugal: "Lisbon", greece: "Athens", turkey: "Istanbul", "united kingdom": "London", "united states": "New York", australia: "Sydney", brazil: "Rio de Janeiro", morocco: "Marrakech", india: "Delhi", egypt: "Cairo", "new zealand": "Auckland", "south africa": "Cape Town" };
 function planningBase(destination: string) { return getCountryIntelligence(destination)?.preferredFirstBase ?? planningBases[destination.toLowerCase()] ?? destination; }
-function connection(from: string, to: string, first: boolean): JourneyCalendarDay["travel"] { const local = from === to; return { mode: local ? "road" : "flight", from: first ? undefined : from, detail: local ? `Local transfer into ${to}` : `Travel from ${from} to ${to}`, duration: local ? "~30–60 min transfer" : "Travel day · confirm the best flight or rail link" }; }
+function formatEstimate(minutes: number | null) { return minutes === null ? "Confirm connection" : `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m approx.`; }
+function connection(from: JourneyStop, to: JourneyStop, first: boolean): JourneyCalendarDay["travel"] {
+  const estimate = estimateLeg({ name: from.city, country: from.country, coordinates: from.coordinates ?? undefined }, { id: to.id, name: to.city, country: to.country, coordinates: to.coordinates ?? undefined });
+  return { mode: estimate.mode === "train" ? "rail" : estimate.mode === "flight" ? "flight" : "road", from: first ? undefined : from.city, detail: `${estimate.distanceKm ? `${estimate.distanceKm.toLocaleString()} km · ` : ""}${estimate.note}`, duration: formatEstimate(estimate.durationMinutes) };
+}
 function makeCustomJourney(brief: CustomBrief) {
   const totalDays = Math.max(1, Number.parseInt(brief.duration, 10) || 10);
   const allocations = brief.destinations.map(() => Math.max(2, Math.floor(totalDays / Math.max(1, brief.destinations.length))));
@@ -155,13 +159,14 @@ function makeCustomJourney(brief: CustomBrief) {
         description: isPlace ? (pick?.description ?? `A focused day for ${city} in ${country}.`) : (isArrival ? `A calm arrival chapter in ${base}, with enough room to settle before the trip’s bigger days.` : `A focused day in ${base}, ${country}.`),
         highlights: isArrival ? ["Arrival", "Check in", "Local dinner"] : isPlace ? [pick?.area ?? country, pick?.type ?? "Signature place", pick?.duration ?? "Flexible"] : [country, "Local base", "Flexible"], aiPrompt: `What should I refine around ${city}?`,
       });
-      calendar.push({ id: `custom-day-${dayNumber}`, date: customDate(brief.startDate, dayNumber - 1), label: `Day ${dayNumber}`, stopId, city, title: isArrival ? `Arrive in ${base}` : isPlace ? picked! : `Explore ${base}`, travel: isArrival ? connection(previousBase, base, destinationIndex === 0) : previousStop.country === country ? connection(previousStop.city, city, false) : undefined, items: isArrival ? [`Check in around ${base}`, "A gentle orientation walk in the closest district", "Choose dinner near your base"] : [isPlace ? picked! : `Explore ${base} at a slower pace`, `Pair ${isPlace ? picked! : "your base"} with one nearby supporting place`, "Reserve a restaurant or stay option directly in today’s plan"] });
+      calendar.push({ id: `custom-day-${dayNumber}`, date: customDate(brief.startDate, dayNumber - 1), label: `Day ${dayNumber}`, stopId, city, title: isArrival ? `Arrive in ${base}` : isPlace ? picked! : `Explore ${base}`, travel: isArrival ? connection(previousStop, stops[stops.length - 1], destinationIndex === 0) : previousStop.country === country ? connection(previousStop, stops[stops.length - 1], false) : undefined, items: isArrival ? [`Check in around ${base}`, "A gentle orientation walk in the closest district", "Choose dinner near your base"] : [isPlace ? picked! : `Explore ${base} at a slower pace`, `Pair ${isPlace ? picked! : "your base"} with one nearby supporting place`, "Reserve a restaurant or stay option directly in today’s plan"] });
     }
   });
   const legs: JourneyLeg[] = stops.slice(1).map((stop, index) => {
     const from = stops[index];
     const local = from.country === stop.country;
-    return { from: from.id, to: stop.id, mode: local ? "road" : "flight", label: `${from.city} → ${stop.city}`, detail: local ? "Local connection · confirm the best rail, road or transfer" : "Suggested transport leg · verify the best service before booking", duration: local ? "Local travel" : "Travel day" };
+    const estimate = estimateLeg({ name: from.city, country: from.country, coordinates: from.coordinates ?? undefined }, { id: stop.id, name: stop.city, country: stop.country, coordinates: stop.coordinates ?? undefined });
+    return { from: from.id, to: stop.id, mode: estimate.mode === "train" ? "rail" : estimate.mode === "flight" ? "flight" : "road", label: estimate.label, detail: `${estimate.distanceKm ? `${estimate.distanceKm.toLocaleString()} km · ` : ""}${estimate.note}`, duration: formatEstimate(estimate.durationMinutes) };
   });
   return { title: "Your Journey", dateRange: `${customDate(brief.startDate, 0)} — ${customDate(brief.startDate, Math.max(0, totalDays - 1))}`, stops, legs, calendar };
 }

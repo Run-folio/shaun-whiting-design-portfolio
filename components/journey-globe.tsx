@@ -140,7 +140,7 @@ function TransportGlyph({ mode, angle = 0 }: { mode: JourneyLeg["mode"]; angle?:
   const props = { x: -9, y: -9, width: 18, height: 18, strokeWidth: 1.6, vectorEffect: "non-scaling-stroke" as const };
   // Plane's native heading is north-east (-45°), so compensate before aiming
   // it along the actual direction of travel.
-  if (mode === "flight") return <Plane {...props} transform={`rotate(${angle + 45})`} />;
+ if (mode === "flight") return <Plane {...props} transform={`rotate(${angle + 45}) scale(-1 1)`} />;
   if (mode === "rail") return <TrainFront {...props} />;
   return <BusFront {...props} />;
 }

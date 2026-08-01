@@ -38,12 +38,35 @@ type KnownConnection = Pick<EstimatedLeg, "mode" | "durationMinutes" | "note">;
 // from being incorrectly presented as flights while a live timetable provider
 // is not connected.
 const knownConnections: Record<string, KnownConnection> = {
+  // Common long-haul legs in the canonical Tokyo Marathon+ journey. These are
+  // planning allowances (airport time included), not live departure times.
+  "guatemala city|los angeles": { mode: "flight", durationMinutes: 480, note: "Approximate door-to-door flight allowance; verify the live service before booking." },
+  "los angeles|tokyo": { mode: "flight", durationMinutes: 840, note: "Approximate door-to-door trans-Pacific allowance; verify the live service before booking." },
+  "tokyo|hong kong": { mode: "flight", durationMinutes: 360, note: "Approximate door-to-door flight allowance; verify the live service before booking." },
+  "hong kong|los angeles": { mode: "flight", durationMinutes: 1020, note: "Approximate door-to-door trans-Pacific allowance; verify the live service before booking." },
+  "los angeles|guatemala city": { mode: "flight", durationMinutes: 480, note: "Approximate door-to-door flight allowance; verify the live service before booking." },
   "london|paris": { mode: "train", durationMinutes: 270, note: "Typical Eurostar door-to-door allowance; verify the live timetable before booking." },
   "paris|london": { mode: "train", durationMinutes: 270, note: "Typical Eurostar door-to-door allowance; verify the live timetable before booking." },
   "madrid|barcelona": { mode: "train", durationMinutes: 210, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
   "barcelona|madrid": { mode: "train", durationMinutes: 210, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
   "paris|rome": { mode: "flight", durationMinutes: 330, note: "Typical door-to-door flight allowance, including airport time; verify flight schedules before booking." },
   "rome|paris": { mode: "flight", durationMinutes: 330, note: "Typical door-to-door flight allowance, including airport time; verify flight schedules before booking." },
+  // Light-touch rail corridors: useful planning allowances for common city
+  // pairs, without pretending to provide live departures or seat availability.
+  "london|amsterdam": { mode: "train", durationMinutes: 300, note: "Typical Eurostar door-to-door allowance; verify the live timetable before booking." },
+  "amsterdam|london": { mode: "train", durationMinutes: 300, note: "Typical Eurostar door-to-door allowance; verify the live timetable before booking." },
+  "paris|brussels": { mode: "train", durationMinutes: 120, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
+  "brussels|paris": { mode: "train", durationMinutes: 120, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
+  "rome|florence": { mode: "train", durationMinutes: 120, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
+  "florence|rome": { mode: "train", durationMinutes: 120, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
+  "tokyo|kanazawa": { mode: "train", durationMinutes: 190, note: "Typical Hokuriku Shinkansen door-to-door allowance; verify the live timetable before booking." },
+  "kanazawa|tokayama": { mode: "train", durationMinutes: 150, note: "Typical regional rail and bus door-to-door allowance; verify the live timetable before booking." },
+  "kanazawa|takayama": { mode: "train", durationMinutes: 180, note: "Typical regional rail and bus door-to-door allowance; verify the live timetable before booking." },
+  "takayama|matsumoto": { mode: "train", durationMinutes: 150, note: "Typical regional rail and bus door-to-door allowance; verify the live timetable before booking." },
+  "chengdu|tongren": { mode: "train", durationMinutes: 360, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
+  "tongren|zhangjiajie": { mode: "train", durationMinutes: 210, note: "Typical rail connection door-to-door allowance; verify the live timetable before booking." },
+  "zhangjiajie|hong kong": { mode: "train", durationMinutes: 420, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
+  "hong kong|zhangjiajie": { mode: "train", durationMinutes: 420, note: "Typical high-speed rail door-to-door allowance; verify the live timetable before booking." },
 };
 
 export type PlannedDay = {
