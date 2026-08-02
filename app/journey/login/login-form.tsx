@@ -50,7 +50,7 @@ export default function LoginForm({
   return <section className={styles.authPanel}>
     <p className={styles.eyebrow}>EasyT account</p>
     <h2>{mode === "sign-in" ? "Welcome back." : "Start travelling."}</h2>
-    <p className={styles.muted}>{verificationSent ? `We sent a verification link to ${initialEmail || "your email"}. Confirm it, then sign in below.` : mode === "sign-in" ? "Open your saved plans and pick up where you left off." : "Save your first plan and keep every trip in one place."}</p>
+    <p className={styles.muted}>{verificationSent ? `Your account is ready. We sent a one-time verification link to ${initialEmail || "your email"}. Confirm it, then sign in below.` : mode === "sign-in" ? "Open your saved plans and pick up where you left off." : "Save your first plan and keep every trip in one place."}</p>
     {(!configured || showSetupNotice) && <p className={styles.setupNotice}>Accounts are being connected to the live site. The Tokyo Marathon+ prototype and trip builder are still available.</p>}
     <EasyTSegmentedControl
       ariaLabel="Account action"
