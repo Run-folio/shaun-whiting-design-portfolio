@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireEasyTOwner } from "@/lib/easyt/owner";
 import { createTripGift } from "@/lib/easyt/repository";
+import { sendEasyTEmail } from "@/lib/easyt/email";
 
 export const dynamic = "force-dynamic";
 
@@ -17,28 +18,21 @@ async function sendGiftEmail(input: {
   note: string | null;
   claimUrl: string;
 }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!apiKey || !from) return false;
   const text = [
     `A trip has been shared with you: ${input.tripTitle}`,
     input.note ? `\nMessage: ${input.note}` : "",
     `\nClaim your editable copy: ${input.claimUrl}`,
   ].join("\n");
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from,
-        to: input.recipientEmail,
-        subject: `A trip was shared with you: ${input.tripTitle}`,
-        text,
-      }),
+    await sendEasyTEmail({
+      to: input.recipientEmail,
+      subject: `A trip was shared with you: ${input.tripTitle}`,
+      text,
     });
-    return response.ok;
-  } catch {
+    return true;
+  } catch (error) {
     // The invitation remains valid even when email delivery is unavailable.
+    console.error("EasyT gift email delivery failed", error);
     return false;
   }
 }

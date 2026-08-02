@@ -11,6 +11,10 @@ export async function sendEasyTEmail(email: EasyTEmail) {
   const from = process.env.EMAIL_FROM;
 
   if (!apiKey || !from) {
+    console.error("EasyT email configuration missing", {
+      hasApiKey: Boolean(apiKey),
+      hasFrom: Boolean(from),
+    });
     throw new Error("Transactional email is not configured. Add RESEND_API_KEY and EMAIL_FROM.");
   }
 
@@ -25,8 +29,15 @@ export async function sendEasyTEmail(email: EasyTEmail) {
 
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
+    console.error("EasyT email provider rejected request", {
+      subject: email.subject,
+      status: response.status,
+      detail: detail.slice(0, 500),
+    });
     throw new Error(`Email delivery failed (${response.status})${detail ? `: ${detail}` : ""}`);
   }
+
+  console.info("EasyT email sent", { subject: email.subject, status: response.status });
 }
 
 export function emailButton(url: string, label: string) {
