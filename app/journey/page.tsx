@@ -16,6 +16,7 @@ import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip, saveTripToEasyT } fr
 import { authClient } from "@/lib/auth-client";
 import type { EasyTTrip } from "@/lib/easyt/trip";
 import { estimateLeg } from "@/lib/easyt/planner";
+import { applyRecommendation, recommendationImpact, reviewTrip, undoRecommendation } from "@/lib/easyt/review";
 import styles from "./journey.module.css";
 
 const destinationIcons: Record<string, LucideIcon> = {
@@ -315,6 +316,7 @@ export default function JourneyPage() {
   );
   const selectedDay = journey.calendar.find((day) => day.id === selectedDayId) ?? journey.calendar[0];
   const selectedDayIndex = journey.calendar.findIndex((day) => day.id === selectedDay.id);
+  const reviewRecommendations = useMemo(() => customTrip ? reviewTrip(customTrip).map((item) => ({ ...item, status: customTrip.recommendations.find((saved) => saved.id === item.id)?.status ?? item.status })) : [], [customTrip]);
   const customPlace = useMemo(() => {
     if (!customBrief) return undefined;
     return customBrief.destinations.flatMap((destination) => customBrief.pickDetails?.[destination.id] ?? [])
@@ -329,14 +331,32 @@ export default function JourneyPage() {
     ? { src: placeMedia[selected.id]!.image!, alt: selected.city, caption: selected.city, sourceUrl: placeMedia[selected.id]?.sourceUrl ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(selected.city.replace(/ /g, "_"))}` }
     : customPlace?.image
       ? { src: customPlace.image, alt: selected.city, caption: selected.city, sourceUrl: customPlace.sourceUrl ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(selected.city.replace(/ /g, "_"))}` }
-      : undefined;
-  const images = isCustomJourney ? (customImage ? [customImage] : []) : (journeyDayMedia[selectedDay.id] ?? (media ? [media.hero, ...(media.gallery ?? [])] : []));
+      : Object.entries(placeMedia).map(([stopId, item]) => {
+        const stop = journey.stops.find((candidate) => candidate.id === stopId);
+        return stop?.country === selected.country && item.image
+          ? { src: item.image, alt: selected.country, caption: `${selected.country} · journey reference`, sourceUrl: item.sourceUrl ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(selected.country.replace(/ /g, "_"))}` }
+          : undefined;
+      }).find(Boolean);
+  const dayMedia = journeyDayMedia[selectedDay.id];
+  const images = isCustomJourney ? (customImage ? [customImage] : []) : (dayMedia?.length ? dayMedia : media ? [media.hero, ...(media.gallery ?? [])] : []);
   const mapPreviewImage = images.find((image) => image.src !== images[0]?.src);
   const customMapPlace: JourneyMapPlace | undefined = isCustomJourney && selected.coordinates ? { name: selected.city, coordinates: selected.coordinates, address: `${selected.city}, ${selected.country}`, image: customImage, summary: selected.description } : undefined;
   const DestinationIcon = destinationIcons[selected.marker] ?? Landmark;
   const handleRestaurantSelect = useCallback((restaurant?: JourneyRestaurant, meal?: RestaurantMeal) => {
     setSelectedRestaurant(restaurant ? { restaurant, meal } : undefined);
   }, []);
+
+  const changeRecommendation = useCallback((recommendationId: string, action: "apply" | "undo") => {
+    if (!customTrip) return;
+    const source = { ...customTrip, recommendations: reviewRecommendations };
+    const next = action === "apply" ? applyRecommendation(source, recommendationId) : undoRecommendation(source, recommendationId);
+    setCustomTrip(next);
+    saveActiveTrip(next);
+    if (session?.user) {
+      setCloudSaveState("saving");
+      void saveTripToEasyT(next).then((saved) => { saveActiveTrip(saved); setCustomTrip(saved); setCloudSaveState("saved"); }).catch(() => setCloudSaveState("error"));
+    }
+  }, [customTrip, reviewRecommendations, session?.user]);
 
   const savePlan = useCallback(async () => {
     if (!customTrip) return;
@@ -347,7 +367,8 @@ export default function JourneyPage() {
     }
     setCloudSaveState("saving");
     try {
-      const saved = await saveTripToEasyT(customTrip);
+      const reviewedTrip = { ...customTrip, recommendations: reviewTrip(customTrip) };
+      const saved = await saveTripToEasyT(reviewedTrip);
       saveActiveTrip(saved);
       setCustomTrip(saved);
       setCustomBrief(customBriefFromEasyT(saved));
@@ -540,6 +561,7 @@ export default function JourneyPage() {
             {isPlanningPreview && isCustomJourney ? <button type="button" className={styles.savePlanLink} onClick={() => void savePlan()} disabled={cloudSaveState === "saving"}>
               {cloudSaveState === "saving" ? "Saving…" : cloudSaveState === "saved" ? "Saved" : "Save trip"}
             </button> : null}
+            {isPlanningPreview && customTrip && session?.user ? <a className={styles.exportPlanLink} href={`/api/easyt/trips/${encodeURIComponent(customTrip.id)}/pdf`} download={`${customTrip.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`}>Export PDF</a> : null}
             <Link href="/journey/new" className={styles.createTripLink}><Plus /> <span>New trip</span></Link>
           </nav>
         </div>
@@ -610,6 +632,10 @@ export default function JourneyPage() {
           <p className={styles.itineraryEyebrow}>{selectedDay.date} <span /> {selectedDay.label}</p>
           <h2>{selectedDay.title}</h2>
           <p className={styles.itineraryLocation}>{selectedDay.city}</p>
+          {isPlanningPreview && customTrip ? <section className={styles.reviewPanel} aria-label="Plan review">
+            <div className={styles.reviewHeader}><div><small>PLAN REVIEW</small><strong>{reviewRecommendations.length ? `${reviewRecommendations.length} planning signal${reviewRecommendations.length === 1 ? "" : "s"}` : "No immediate warnings"}</strong></div><span>Deterministic checks</span></div>
+            {reviewRecommendations.length ? <div className={styles.reviewList}>{reviewRecommendations.map((item) => <article key={item.id} className={`${styles.reviewItem} ${styles[`review${item.severity[0].toUpperCase()}${item.severity.slice(1)}`]} ${item.status !== "open" ? styles.reviewResolved : ""}`}><div><b>{item.status === "open" ? item.severity : item.status}</b><strong>{item.message}</strong></div><p>{item.evidence}</p><small>Affects {item.affectedDays.length ? item.affectedDays.map((day) => `day ${day}`).join(", ") : "the overall plan"} · {item.confidence} confidence</small><p className={styles.reviewImpact}>{recommendationImpact(item)}</p><div className={styles.reviewActions}>{item.status === "open" ? <button type="button" onClick={() => changeRecommendation(item.id, "apply")}>Apply</button> : <button type="button" onClick={() => changeRecommendation(item.id, "undo")}>Undo</button>}</div></article>)}</div> : <p className={styles.reviewEmpty}>The route currently has coverage for every day and no long road transfer signal. Live schedules and closures still need checking before booking.</p>}
+          </section> : null}
           {selectedDay.travel ? <div className={styles.dayTravel}><Plane /><div><small>{selectedDay.travel.mode === "flight" ? "Travel connection" : "Local transfer"}</small><strong>{selectedDay.travel.from ? `${selectedDay.travel.from} → ${selectedDay.city}` : selectedDay.travel.detail}</strong><span>{selectedDay.travel.duration} · {selectedDay.travel.detail}</span></div></div> : null}
           <ol>
             {selectedDay.items.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, "0")}</b><span>{item}</span></li>)}

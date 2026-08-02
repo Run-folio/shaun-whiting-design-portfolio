@@ -12,6 +12,7 @@
 .svgCallout .mapCallout{align-items:flex-start;flex-wrap:wrap;gap:6px 10px}.svgCallout .mapCallout>div:first-child{flex:1 1 120px;min-width:120px;max-width:none}.svgCallout .calloutActions{flex:0 1 auto;gap:6px}
 .dotWant{background:#4f7cff}.want{fill:#4f7cff}.wantLabel{color:#4f7cff}.searchBox{display:flex;align-items:center;gap:8px;border:1px solid #d9d8de;border-radius:999px;padding:9px 13px;margin:16px 0 12px;background:#fff;color:#8d8a9d}.searchBox:focus-within{border-color:#ff3f91;box-shadow:0 0 0 3px #ff3f9114}.searchBox span{font-size:20px;line-height:1}.searchBox input{min-width:0;width:100%;border:0;outline:0;background:transparent;color:#373548;font:500 14px/1.2 ui-sans-serif,system-ui,sans-serif}.searchBox input::placeholder{color:#9a98a3}
 .savePrompt{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 18px 18px;padding:14px 16px;border:1px solid #ffb4d2;border-radius:14px;background:#fff5f9;color:#17152f}
+.guestNote{margin:-8px 18px 18px;color:#686779;font-size:12px}.guestNote a{color:#b21351;font-weight:700;text-underline-offset:3px}
 .savePrompt > div{display:flex;flex-direction:column;gap:4px}
 .savePrompt strong{font-size:14px}
 .savePrompt span{font-size:13px;color:#686779}

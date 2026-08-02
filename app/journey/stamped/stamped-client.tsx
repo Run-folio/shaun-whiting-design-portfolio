@@ -61,7 +61,8 @@ export default function StampedClient({ userKey, authenticated }: Props) {
       .map((feature) => aliases[feature.properties?.name] || feature.properties?.name)
       .filter((name): name is string => Boolean(name) && name !== "Antarctica")
       .filter((name, index, names) => names.indexOf(name) === index)
-      .map((name) => known.get(name) || ({ id: slug(name), name, continent: "Other" } as Country));
+      .map((name) => known.get(name) || ({ id: slug(name), name, continent: "Other" } as Country))
+      .sort((a, b) => a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
   }, [topo]);
   const groupNames = useMemo(() => [...Object.keys(groups), "Other"], []);
   const filtered = useMemo(() => {
@@ -96,6 +97,7 @@ export default function StampedClient({ userKey, authenticated }: Props) {
 
   return <div className={styles.shell}>
     <section className={styles.intro}><div><p className={styles.eyebrow}>EASYT · STAMPED</p><h1>Your world, marked.</h1><p>Keep a living record of where you’ve been, and the places still calling.</p></div><div className={styles.stat}><strong>{visitedCount}</strong><span>countries visited</span></div></section>
+    {!isAuthenticated && <p className={styles.guestNote}>Exploring as a guest · your changes stay on this device. <a href="/journey/login?next=%2Fjourney%2Fstamped">Sign in</a></p>}
     {!isAuthenticated && savePrompt && <div className={styles.savePrompt} role="status"><div><strong>Keep your stamps</strong><span>Create a free account to save this map and use it on every device.</span></div><a href="/journey/login?mode=sign-up&next=%2Fjourney%2Fstamped">Create account</a><button type="button" onClick={() => setSavePrompt(false)} aria-label="Dismiss save prompt">Dismiss</button></div>}
     <div className={styles.workspace}>
       <section className={styles.mapPanel} aria-label="World map">
