@@ -5,8 +5,8 @@ import { isEasyTAuthConfigured } from "@/lib/easyt/auth-environment";
 
 export const metadata = { title: "Sign in · EasyT" };
 
-export default async function EasyTLoginPage({ searchParams }: { searchParams: Promise<{ next?: string; setup?: string; mode?: string }> }) {
-  const { next, setup, mode } = await searchParams;
+export default async function EasyTLoginPage({ searchParams }: { searchParams: Promise<{ next?: string; setup?: string; mode?: string; email?: string; sent?: string }> }) {
+  const { next, setup, mode, email, sent } = await searchParams;
   const callbackURL = next?.startsWith("/journey/") ? next : "/journey/dashboard";
   const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
   const configured = isEasyTAuthConfigured();
@@ -19,7 +19,7 @@ export default async function EasyTLoginPage({ searchParams }: { searchParams: P
           <div><p className={styles.eyebrow}>EasyT · travel companion</p><h1>Plan once.<br/>Travel better.</h1><p>Build a living itinerary, keep every detail in reach, and make decisions together as you go.</p></div>
           <div className={styles.storyList}><span>A map that follows every day</span><span>Real places, useful timing</span><span>Restaurants and stays in context</span></div>
         </section>
-        <LoginForm callbackURL={callbackURL} googleEnabled={googleEnabled} configured={configured} showSetupNotice={setup === "required"} initialMode={initialMode} />
+          <LoginForm callbackURL={callbackURL} googleEnabled={googleEnabled} configured={configured} showSetupNotice={setup === "required"} initialMode={sent === "1" ? "sign-in" : initialMode} initialEmail={email} verificationSent={sent === "1"} />
       </div>
     </div>
   </main>;
