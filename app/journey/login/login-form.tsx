@@ -40,7 +40,11 @@ export default function LoginForm({
     const result = mode === "sign-up"
       ? await authClient.signUp.email({ name, email, password, callbackURL })
       : await authClient.signIn.email({ email: submittedEmail, password, callbackURL });
-    if (result.error) { setError(result.error.message || "We couldn't complete that request."); setBusy(false); }
+    if (result.error) {
+      const message = result.error.message || "We couldn't complete that request.";
+      setError(message.toLowerCase().includes("email not verified") ? "Email not verified. We sent a fresh verification link—check your inbox, then try again." : message);
+      setBusy(false);
+    }
     else if (mode === "sign-up") {
       window.location.assign(`/journey/login?next=${encodeURIComponent(callbackURL)}&email=${encodeURIComponent(submittedEmail)}&sent=1`);
     }

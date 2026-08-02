@@ -34,6 +34,10 @@ function createAuth(databaseUrl: string, secret: string) {
         });
       },
       sendOnSignUp: true,
+      // Existing accounts created before email delivery was configured need a
+      // way to recover without a separate support flow. A blocked sign-in
+      // sends a fresh one-time verification link.
+      sendOnSignIn: true,
       autoSignInAfterVerification: true,
     },
     socialProviders: googleEnabled ? {
