@@ -100,7 +100,7 @@
   letter-spacing: -0.075em;
   margin: 24px 0;
 }
-.authStory p {
+.authStory p:not(.eyebrow) {
   font-size: 20px;
   line-height: 1.5;
   max-width: 460px;
@@ -167,6 +167,35 @@
   background: #fff;
   color: #17152f;
   box-shadow: 0 2px 12px rgba(23, 21, 47, 0.08);
+}
+.tabs :global(.segment) {
+  border: 0;
+  border-radius: 999px;
+  min-height: 48px;
+  padding: 0 18px;
+  background: transparent;
+  color: #5f5b68;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+.tabs :global(.segment:hover) {
+  background: #ffe7f1;
+  color: #17152f;
+}
+.tabs :global(.segmentActive) {
+  background: #17152f;
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(23, 21, 47, 0.14);
+}
+.tabs :global(.segmentActive:hover) {
+  background: #17152f;
+  color: #fff;
+}
+.tabs :global(.segment:focus-visible) {
+  outline: 2px solid #ff3d8b;
+  outline-offset: 2px;
 }
 .form {
   display: grid;

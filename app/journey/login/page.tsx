@@ -15,8 +15,8 @@ export default async function EasyTLoginPage({ searchParams }: { searchParams: P
     <div className={styles.authWrap}>
       <div className={styles.authGrid}>
         <section className={styles.authStory}>
-          <div><p className={styles.eyebrow}>Your trips, kept together</p><h1>Go further.<br/>Lose less.</h1><p>Build the plan, shape every day and keep the useful details with you while you travel.</p></div>
-          <div className={styles.storyList}><span><b>01</b> Living visual itineraries</span><span><b>02</b> Plans that update with you</span><span><b>03</b> One home for every trip</span></div>
+          <div><p className={styles.eyebrow}>EasyT · travel planning</p><h1>Plan with confidence.<br/>Travel with context.</h1></div>
+          <div className={styles.storyList}><span><b>01</b> A map for every day</span><span><b>02</b> Real places, not placeholders</span><span><b>03</b> Useful details when you need them</span></div>
         </section>
         <LoginForm callbackURL={callbackURL} googleEnabled={googleEnabled} configured={configured} showSetupNotice={setup === "required"} />
       </div>
