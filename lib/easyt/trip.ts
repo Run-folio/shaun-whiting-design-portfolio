@@ -53,8 +53,20 @@ export type TripRecommendation = {
   rule: string;
   severity: "info" | "warning" | "critical";
   message: string;
+  evidence: string;
+  affectedDays: number[];
+  confidence: "high" | "medium";
+  checkedAt: string;
   proposedChange: Record<string, unknown> | null;
   status: "open" | "applied" | "dismissed";
+};
+
+export type TripChange = {
+  id: string;
+  recommendationId: string;
+  action: "apply" | "undo";
+  summary: string;
+  changedAt: string;
 };
 
 export type TripBrief = {
@@ -83,6 +95,7 @@ export type EasyTTrip = {
   legs: TripLeg[];
   planItems: PlanItem[];
   recommendations: TripRecommendation[];
+  changeHistory?: TripChange[];
   createdAt: string;
   updatedAt: string;
 };

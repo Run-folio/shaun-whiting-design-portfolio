@@ -29,7 +29,8 @@ type SavedDayRestaurant = {
 };
 
 type SavedTasteFinder = {
-  answers: Answers;
+  answers?: Answers;
+  answersByStop?: Record<string, Answers>;
   selections: Record<string, SavedDayRestaurant>;
 };
 
@@ -61,6 +62,7 @@ export function JourneyRestaurantFinder({ stopId, city, dayId, onSelectRestauran
   const diningContext = journeyDiningContext[stopId];
   const dayNote = diningContext?.notes[dayId];
   const [answers, setAnswers] = useState<Answers>({});
+  const [answersByStop, setAnswersByStop] = useState<Record<string, Answers>>({});
   const [savedSelections, setSavedSelections] = useState<Record<string, SavedDayRestaurant>>({});
   const [storageReady, setStorageReady] = useState(false);
   const [resultIndex, setResultIndex] = useState(0);
@@ -77,9 +79,10 @@ export function JourneyRestaurantFinder({ stopId, city, dayId, onSelectRestauran
       const stored = window.localStorage.getItem(tasteFinderStorageKey);
       if (stored) {
         const saved = JSON.parse(stored) as Partial<SavedTasteFinder> & { selections?: Record<string, SavedDayRestaurant | string> };
-        if (saved.answers) setAnswers(saved.answers);
+        if (saved.answersByStop) setAnswersByStop(saved.answersByStop);
+        else if (saved.answers) setAnswersByStop({ [stopId]: saved.answers });
         if (saved.selections) {
-          const fallbackMeal = saved.answers?.meal ?? "dinner";
+          const fallbackMeal = saved.answersByStop?.[stopId]?.meal ?? saved.answers?.meal ?? "dinner";
           setSavedSelections(Object.fromEntries(Object.entries(saved.selections).map(([savedDayId, selection]) => [
             savedDayId,
             typeof selection === "string" ? { name: selection, meal: fallbackMeal } : selection,
@@ -96,11 +99,16 @@ export function JourneyRestaurantFinder({ stopId, city, dayId, onSelectRestauran
   useEffect(() => {
     if (!storageReady) return;
     try {
-      window.localStorage.setItem(tasteFinderStorageKey, JSON.stringify({ answers, selections: savedSelections } satisfies SavedTasteFinder));
+      window.localStorage.setItem(tasteFinderStorageKey, JSON.stringify({ answersByStop, selections: savedSelections } satisfies SavedTasteFinder));
     } catch {
       // Keep the interaction usable even when persistence is unavailable.
     }
-  }, [answers, savedSelections, storageReady]);
+  }, [answersByStop, savedSelections, storageReady]);
+
+  useEffect(() => {
+    setAnswers(answersByStop[stopId] ?? {});
+    setResultIndex(0);
+  }, [answersByStop, stopId]);
 
   useEffect(() => setResultIndex(0), [stopId, dayId]);
 
@@ -130,6 +138,7 @@ export function JourneyRestaurantFinder({ stopId, city, dayId, onSelectRestauran
 
   const saveAnswers = (next: Answers) => {
     setAnswers(next);
+    setAnswersByStop((current) => ({ ...current, [stopId]: next }));
     setSavedSelections((current) => {
       const updated = { ...current };
       delete updated[dayId];

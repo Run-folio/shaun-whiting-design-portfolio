@@ -112,8 +112,8 @@ export default function EasyTNavigation({
 
       <Link
         className={styles.brand}
-        href="/journey/dashboard"
-        aria-label="EasyT — My trips"
+        href="/journey/home"
+        aria-label="EasyT — home"
       >
         <span>Easy</span>
         <b>T</b>
