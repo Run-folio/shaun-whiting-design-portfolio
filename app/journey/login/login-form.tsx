@@ -14,13 +14,15 @@ export default function LoginForm({
   googleEnabled,
   configured,
   showSetupNotice,
+  initialMode,
 }: {
   callbackURL: string;
   googleEnabled: boolean;
   configured: boolean;
   showSetupNotice: boolean;
+  initialMode?: "sign-in" | "sign-up";
 }) {
-  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [mode, setMode] = useState<"sign-in" | "sign-up">(initialMode ?? "sign-in");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [signupSent, setSignupSent] = useState(false);
@@ -51,7 +53,7 @@ export default function LoginForm({
       onChange={(next) => { setMode(next); setError(""); }}
       options={[
         { label: "Sign in", value: "sign-in" },
-        { label: "Create account", value: "sign-up" },
+        { label: "Sign up", value: "sign-up" },
       ]}
     />
     {!signupSent && <form className={styles.form} onSubmit={submit}>

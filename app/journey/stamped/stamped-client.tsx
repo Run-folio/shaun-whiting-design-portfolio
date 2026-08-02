@@ -8,7 +8,7 @@ import styles from "./stamped.module.css";
 
 type Status = "visited" | "want";
 type Country = { id: string; name: string; continent: string; aliases?: string[] };
-type Props = { userKey: string };
+type Props = { userKey?: string; authenticated?: boolean };
 
 const list = (value: string) => value.split("|");
 const groups: Record<string, string[]> = {
@@ -27,24 +27,31 @@ const flagCodes: Record<string, string> = { Argentina: "🇦🇷", Australia: "�
 const flagIso: Record<string, string> = Object.fromEntries("Algeria:DZ|Angola:AO|Benin:BJ|Botswana:BW|Burkina Faso:BF|Burundi:BI|Cabo Verde:CV|Cameroon:CM|Central African Republic:CF|Chad:TD|Comoros:KM|Democratic Republic of the Congo:CD|Djibouti:DJ|Equatorial Guinea:GQ|Eritrea:ER|Eswatini:SZ|Ethiopia:ET|Gabon:GA|Gambia:GM|Guinea:GN|Guinea-Bissau:GW|Ivory Coast:CI|Lesotho:LS|Liberia:LR|Libya:LY|Madagascar:MG|Malawi:MW|Mali:ML|Mauritania:MR|Mauritius:MU|Mozambique:MZ|Namibia:NA|Niger:NE|Nigeria:NG|Republic of the Congo:CG|Seychelles:SC|Sierra Leone:SL|Somalia:SO|South Sudan:SS|Sudan:SD|Togo:TG|Zambia:ZM|Antigua and Barbuda:AG|Barbados:BB|Belize:BZ|Bolivia:BO|Dominica:DM|Dominican Republic:DO|El Salvador:SV|Grenada:GD|Guyana:GY|Haiti:HT|Honduras:HN|Nicaragua:NI|Paraguay:PY|Saint Kitts and Nevis:KN|Saint Lucia:LC|Saint Vincent and the Grenadines:VC|Suriname:SR|Trinidad and Tobago:TT|Venezuela:VE|Afghanistan:AF|Armenia:AM|Azerbaijan:AZ|Bahrain:BH|Bangladesh:BD|Bhutan:BT|Brunei:BN|Cambodia:KH|Cyprus:CY|Georgia:GE|Iran:IR|Iraq:IQ|Jordan:JO|Kazakhstan:KZ|Kuwait:KW|Kyrgyzstan:KG|Lebanon:LB|Mongolia:MN|Myanmar:MM|North Korea:KP|Oman:OM|Pakistan:PK|Palestine:PS|Qatar:QA|Saudi Arabia:SA|Sri Lanka:LK|Syria:SY|Tajikistan:TJ|Turkmenistan:TM|United Arab Emirates:AE|Uzbekistan:UZ|Yemen:YE|Albania:AL|Andorra:AD|Belarus:BY|Bosnia and Herzegovina:BA|Bulgaria:BG|Estonia:EE|Kosovo:XK|Latvia:LV|Liechtenstein:LI|Lithuania:LT|Luxembourg:LU|Malta:MT|Moldova:MD|Monaco:MC|Montenegro:ME|North Macedonia:MK|Romania:RO|Russia:RU|San Marino:SM|Serbia:RS|Slovakia:SK|Slovenia:SI|Vatican City:VA|Kiribati:KI|Marshall Islands:MH|Micronesia:FM|Nauru:NR|Palau:PW|Papua New Guinea:PG|Samoa:WS|Solomon Islands:SB|Tonga:TO|Tuvalu:TV|Vanuatu:VU".split("|").map((entry) => entry.split(":")));
 const flagFor = (name: string) => { const direct = flagCodes[name.replace(/\s+/g, "")] || flagCodes[name]; if (direct) return direct; const code = flagIso[name]; return code ? [...code].map((char) => String.fromCodePoint(char.charCodeAt(0) + 127397)).join("") : "🌐"; };
 
-export default function StampedClient({ userKey }: Props) {
+export default function StampedClient({ userKey, authenticated }: Props) {
+  const isAuthenticated = authenticated ?? Boolean(userKey);
+  const storageKey = `easyt-stamped-${userKey ?? "guest"}`;
   const [statuses, setStatuses] = useState<Record<string, Status>>(seed);
   const [continent, setContinent] = useState("All");
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [dbLoaded, setDbLoaded] = useState(false);
+  const [savePrompt, setSavePrompt] = useState(false);
   useEffect(() => {
-    try { const saved = window.localStorage.getItem(`easyt-stamped-${userKey}`); if (saved) setStatuses(JSON.parse(saved)); } catch { /* use defaults */ }
     let cancelled = false;
+    try { const saved = window.localStorage.getItem(storageKey); if (saved) setStatuses(JSON.parse(saved)); } catch { /* use defaults */ }
+    if (!isAuthenticated) {
+      setDbLoaded(true);
+      return () => { cancelled = true; };
+    }
     fetch("/api/easyt/stamped", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
       .then((data) => { if (!cancelled && data?.statuses) setStatuses(data.statuses); })
       .catch(() => undefined)
       .finally(() => { if (!cancelled) setDbLoaded(true); });
     return () => { cancelled = true; };
-  }, [userKey]);
-  useEffect(() => { if (dbLoaded) window.localStorage.setItem(`easyt-stamped-${userKey}`, JSON.stringify(statuses)); }, [statuses, userKey, dbLoaded]);
+  }, [storageKey, isAuthenticated]);
+  useEffect(() => { if (dbLoaded) window.localStorage.setItem(storageKey, JSON.stringify(statuses)); }, [statuses, storageKey, dbLoaded]);
   const topo = useMemo(() => feature(worldTopology as never, worldTopology.objects.countries as never) as unknown as { features: any[] }, []);
   const projection = useMemo(() => geoNaturalEarth1().fitSize([1200, 610], topo as never), [topo]);
   const path = useMemo(() => geoPath(projection), [projection]);
@@ -66,16 +73,22 @@ export default function StampedClient({ userKey }: Props) {
   const selectedFeature = selectedCountry ? topo.features.find((feature) => (aliases[feature.properties?.name] || feature.properties?.name) === selectedCountry.name) : null;
   const selectedPoint = selectedFeature ? path.centroid(selectedFeature) : null;
   const [hovered, setHovered] = useState<string | null>(null);
-  const setStatus = (id: string, value: Status) => setStatuses((current) => {
-    const nextStatus = current[id] === value ? null : value;
-    void fetch("/api/easyt/stamped", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ countryId: id, status: nextStatus }) }).catch(() => undefined);
-    if (nextStatus === null) {
-      const next = { ...current };
-      delete next[id];
-      return next;
+  const setStatus = (id: string, value: Status) => {
+    const nextStatus = statuses[id] === value ? null : value;
+    setStatuses((current) => {
+      if (nextStatus === null) {
+        const next = { ...current };
+        delete next[id];
+        return next;
+      }
+      return { ...current, [id]: nextStatus };
+    });
+    if (isAuthenticated) {
+      void fetch("/api/easyt/stamped", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ countryId: id, status: nextStatus }) }).catch(() => undefined);
+    } else if (nextStatus) {
+      setSavePrompt(true);
     }
-    return { ...current, [id]: nextStatus };
-  });
+  };
   const visitedCount = Object.values(statuses).filter((value) => value === "visited").length;
   const calloutWidth = selectedCountry ? Math.min(440, Math.max(300, 176 + selectedCountry.name.length * 7.5)) : 300;
   const calloutHeight = selectedCountry && selectedCountry.name.length > 22 ? 136 : 112;
@@ -83,6 +96,7 @@ export default function StampedClient({ userKey }: Props) {
 
   return <div className={styles.shell}>
     <section className={styles.intro}><div><p className={styles.eyebrow}>EASYT · STAMPED</p><h1>Your world, marked.</h1><p>Keep a living record of where you’ve been, and the places still calling.</p></div><div className={styles.stat}><strong>{visitedCount}</strong><span>countries visited</span></div></section>
+    {!isAuthenticated && savePrompt && <div className={styles.savePrompt} role="status"><div><strong>Keep your stamps</strong><span>Create a free account to save this map and use it on every device.</span></div><a href="/journey/login?mode=sign-up&next=%2Fjourney%2Fstamped">Create account</a><button type="button" onClick={() => setSavePrompt(false)} aria-label="Dismiss save prompt">Dismiss</button></div>}
     <div className={styles.workspace}>
       <section className={styles.mapPanel} aria-label="World map">
         <div className={styles.mapHeader}><span>Tap a country to update its stamp</span><div className={styles.legend}><span><i className={styles.dotVisited} />Visited</span><span><i className={styles.dotWant} />Want to visit</span></div></div>
