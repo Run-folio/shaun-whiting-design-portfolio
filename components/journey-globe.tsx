@@ -6,6 +6,7 @@ import { feature } from "topojson-client";
 import worldTopology from "world-atlas/countries-50m.json";
 import { PointerEvent as ReactPointerEvent, WheelEvent, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { JourneyImage, JourneyLeg, JourneyRestaurant, JourneyStop, RestaurantMeal } from "@/lib/journey";
+import type { PlannerMapPin } from "@/lib/easyt/trip";
 
 const width = 1440;
 const height = 760;
@@ -145,10 +146,11 @@ function TransportGlyph({ mode, angle = 0 }: { mode: JourneyLeg["mode"]; angle?:
   return <BusFront {...props} />;
 }
 
-export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeItems, previewImage, detailImageSrc, dayPlace, restaurant, onSelect, variant = "story" }: { stops: JourneyStop[]; legs: JourneyLeg[]; selectedId: string; selectedDayId: string; activeItems: string[]; previewImage?: JourneyImage; detailImageSrc?: string; dayPlace?: JourneyMapPlace; restaurant?: { restaurant: JourneyRestaurant; meal?: RestaurantMeal }; onSelect: (id: string) => void; variant?: "story" | "planner" }) {
+export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeItems, previewImage, detailImageSrc, dayPlace, restaurant, plannerPins = [], pinPlacementMode = false, onMapPinDrop, onPlannerPinSelect, onSelect, variant = "story" }: { stops: JourneyStop[]; legs: JourneyLeg[]; selectedId: string; selectedDayId: string; activeItems: string[]; previewImage?: JourneyImage; detailImageSrc?: string; dayPlace?: JourneyMapPlace; restaurant?: { restaurant: JourneyRestaurant; meal?: RestaurantMeal }; plannerPins?: PlannerMapPin[]; pinPlacementMode?: boolean; onMapPinDrop?: (coordinates: [number, number]) => void; onPlannerPinSelect?: (pin: PlannerMapPin) => void; onSelect: (id: string) => void; variant?: "story" | "planner" }) {
   const [routeOpen, setRouteOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [restaurantOpen, setRestaurantOpen] = useState(false);
+  const [openPlannerPin, setOpenPlannerPin] = useState<PlannerMapPin | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const mappedStops = useMemo(() => stops.filter(hasCoordinates), [stops]);
   const selected = mappedStops.find((stop) => stop.id === selectedId) ?? mappedStops[0];
@@ -241,7 +243,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const picturedPlaces = currentPlaces.filter((place) => place.image && (Boolean(dayPlace) || (place.image.src !== detailImageSrc && [place.name, ...(place.aliases ?? [])].some((term) => dayCopy.includes(normalized(term))))));
   const restaurantPoint = restaurant ? projection(restaurant.restaurant.coordinates) : null;
 
-  useEffect(() => { setRouteOpen(false); setSelectedPlace(null); setRestaurantOpen(false); }, [selectedDayId, selectedId]);
+  useEffect(() => { setRouteOpen(false); setSelectedPlace(null); setRestaurantOpen(false); setOpenPlannerPin(null); }, [selectedDayId, selectedId]);
 
   function writeView(next: View) {
     viewRef.current = next;
@@ -373,8 +375,18 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const selectedPlaceMapUrl = selectedPlace ? placeMapUrl(selectedPlace, selected) : "";
   const selectedPlaceMapProvider = selected.country === "China" ? "Amap" : "Google Maps";
 
-  return <div className="journey-map" aria-label={variant === "planner" ? "Interactive journey map" : "Interactive Pacific journey map"}>
-    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={variant === "planner" ? "Interactive geographic route map" : "Geographic Pacific route from Guatemala to Los Angeles, Japan, China and Hong Kong"} onWheel={handleWheel} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onPointerLeave={handlePointerUp}>
+  const placePinAt = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (!pinPlacementMode || !onMapPinDrop || dragRef.current) return;
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const screenPoint: [number, number] = [((event.clientX - rect.left) / rect.width) * width, ((event.clientY - rect.top) / rect.height) * height];
+    const point: [number, number] = [(screenPoint[0] - viewRef.current.x) / viewRef.current.scale, (screenPoint[1] - viewRef.current.y) / viewRef.current.scale];
+    const coordinates = projection.invert?.(point);
+    if (coordinates && Number.isFinite(coordinates[0]) && Number.isFinite(coordinates[1])) onMapPinDrop([coordinates[0], coordinates[1]]);
+  };
+
+  return <div className={`journey-map ${pinPlacementMode ? "is-pin-placement" : ""}`} aria-label={variant === "planner" ? "Interactive journey map" : "Interactive Pacific journey map"}>
+    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={variant === "planner" ? "Interactive geographic route map" : "Geographic Pacific route from Guatemala to Los Angeles, Japan, China and Hong Kong"} onWheel={handleWheel} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onPointerLeave={handlePointerUp} onDoubleClick={placePinAt}>
       <defs>
         <linearGradient id="ocean" x1="0" x2="1" y1="0" y2="1"><stop stopColor="#f9f9f7" /><stop offset="1" stopColor="#eceff3" /></linearGradient>
         <filter id="traveller-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
@@ -416,6 +428,18 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
               </g></g>;
           })}
         </g>
+        {variant === "planner" ? <g className="journey-map__planner-pins">
+          {plannerPins.map((pin) => {
+            const point = projection([pin.longitude, pin.latitude]);
+            if (!point) return null;
+            return <g key={pin.id} className={`journey-map__planner-pin is-${pin.category} ${openPlannerPin?.id === pin.id ? "is-open" : ""}`} transform={`translate(${point[0]} ${point[1]})`} role="button" tabIndex={0} aria-label={`Open ${pin.title} pin details`} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); setOpenPlannerPin(pin); onPlannerPinSelect?.(pin); }} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setOpenPlannerPin(pin); onPlannerPinSelect?.(pin); } }}>
+              <g className="journey-map__screen-scale" transform={`scale(${liveScreenScale})`}>
+                <circle r="6" />
+                <text x="10" y="3">{pin.title}</text>
+              </g>
+            </g>;
+          })}
+        </g> : null}
         <g className="journey-map__step-photos">
           {picturedPlaces.map((place, index) => {
             const point = projection(place.coordinates);
@@ -461,6 +485,17 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
             </> : null}
           </g>
         </g> : null}
+        {openPlannerPin ? (() => {
+          const point = projection([openPlannerPin.longitude, openPlannerPin.latitude]);
+          if (!point) return null;
+          const mapUrl = `https://www.google.com/maps/search/?api=1&query=${openPlannerPin.latitude},${openPlannerPin.longitude}`;
+          return <g className="journey-map__planner-pin-card" transform={`translate(${point[0]} ${point[1]})`}>
+            <g className="journey-map__screen-scale" transform={`scale(${liveScreenScale})`}>
+              <path d="M6 -6 L20 -20" />
+              <g transform="translate(20 -52)"><rect width="190" height="48" /><text x="10" y="15">{openPlannerPin.category} · DAY {openPlannerPin.dayNumber}</text><text x="10" y="31">{openPlannerPin.title.length > 26 ? `${openPlannerPin.title.slice(0, 26)}…` : openPlannerPin.title}</text><a href={mapUrl} target="_blank" rel="noreferrer"><text x="180" y="15" textAnchor="end">MAP ↗</text></a></g>
+            </g>
+          </g>;
+        })() : null}
         {activeRoute && activeRoutePoint ? <g key={`route-info-${activeRoute.leg.from}-${activeRoute.leg.to}-${selectedId}`} className={`journey-map__route-info ${routeOpen ? "is-open" : ""}`} transform={`translate(${activeRoutePoint[0].toFixed(3)} ${activeRoutePoint[1].toFixed(3)})`}>
           <g className="journey-map__screen-scale" transform={`scale(${liveScreenScale})`}>
             <g className="journey-map__route-trigger" role="button" tabIndex={0} aria-label={`${routeOpen ? "Hide" : "Show"} ${activeRoute.leg.mode} details for ${activeRoute.leg.label}`} onClick={(event) => { event.stopPropagation(); setRouteOpen((open) => !open); }} onPointerDown={(event) => event.stopPropagation()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setRouteOpen((open) => !open); } }}>

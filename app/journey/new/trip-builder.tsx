@@ -211,7 +211,7 @@ function useDismiss(open: boolean, close: () => void) {
 
 /* --------------------------------------------------------- sub-components */
 
-function Calendar({ value, onPick }: { value: string; onPick: (v: string) => void }) {
+function Calendar({ value, onPick, language = "en" }: { value: string; onPick: (v: string) => void; language?: EasyTLanguage }) {
   const [view, setView] = useState(value || iso(new Date()));
   const v = new Date(`${view}T00:00:00`);
   const offset = new Date(v.getFullYear(), v.getMonth(), 1).getDay();
@@ -223,7 +223,7 @@ function Calendar({ value, onPick }: { value: string; onPick: (v: string) => voi
     <div className={styles.calendar}>
       <div className={styles.calendarHead}>
         <button type="button" onClick={() => shift(-1)} aria-label="Previous month"><ChevronLeft /></button>
-        <strong>{new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(v)}</strong>
+        <strong>{new Intl.DateTimeFormat(language === "es" ? "es" : "en", { month: "long", year: "numeric" }).format(v)}</strong>
         <button type="button" onClick={() => shift(1)} aria-label="Next month"><ChevronRight /></button>
       </div>
       <div className={styles.calendarWeekdays}>
@@ -273,6 +273,17 @@ function RadioGroup<T extends string>({ label, help, value, options, onChange }:
 export default function TripBuilder() {
   const [language, setLanguage] = useState<EasyTLanguage>("en");
   const copy = easytCopy[language].builder;
+  const ui = language === "es" ? {
+    previousMonth: "Mes anterior", nextMonth: "Mes siguiente", draft: "Borrador · editable", editBrief: "Editar resumen",
+    dayByDay: "Día a día", source: "Fuente ↗", previousDay: "← Día anterior", nextDay: "Siguiente día →",
+    savingChanges: "Guardando cambios…", savedDevice: "Guardado en este dispositivo", exploreMap: "Explora el mapa primero y guárdalo en una cuenta cuando estés listo.", openMap: "Abrir mapa →",
+    addOrigin: "Añade tu ciudad o aeropuerto de salida.", addStop: "Añade al menos una parada para continuar", typePlace: "Escribe primero una ciudad, región o lugar.", checking: "Comprobando este lugar…", unavailable: "No pudimos comprobar este lugar ahora. Inténtalo de nuevo.",
+    verifyOrigin: "No pudimos verificar ese punto de partida.", originUnavailable: "No pudimos comprobar ese punto de partida ahora.", startDate: "Fecha de inicio", endDate: "Fecha de fin", pickDate: "Elige una fecha", typeIt: "O escríbela",
+    day: "día", days: "días", split: "Elige exactamente cómo repartir tu tiempo entre destinos en el siguiente paso.", addStops: "Añade paradas y se repartirán entre ellas.", selected: "seleccionados", finding: "Buscando lugares y actividades reales cerca de", noSuggestions: "Aún no hay sugerencias fiables. Comprueba la ubicación o inténtalo de nuevo.",
+    yourTime: "TU TIEMPO", shapeDays: "Organiza tus días", allocation: "Hemos sugerido una distribución inicial según tus lugares. Mueve un control y EasyT reajustará el resto.", total: "días en total", suggested: "sugeridos", budget: "Presupuesto", budgetHelp: "Se usa para elegir dónde dormir y comer durante la investigación.", value: "Buena relación calidad-precio", valueNote: "Cómodo, sin excesos.", mid: "Gama media", midNote: "Algunos caprichos.", high: "Sin límite", highNote: "Lo mejor disponible.", route: "RUTA HASTA AHORA", departure: "Salida", routeEmpty: "Añade una parada y la ruta aparecerá aquí.", daysBudget: "PRESUPUESTO DE DÍAS", full: "COMPLETO", room: "DÍAS DISPONIBLES", overBy: "EXCESO DE", available: "días disponibles", committed: "comprometidos", open: "libres", overHint: "Hay más lugares seleccionados de los que permiten las fechas. Quita un lugar, elimina una parada o añade días.", selectedPlaces: "LUGARES SELECCIONADOS", nothingSelected: "Aún no hay nada seleccionado. El paso 03 concreta el viaje.", removePlace: "Quitar lugar", placesSelected: "lugares seleccionados", daysTotal: "días en total"
+  } : {
+    previousMonth: "Previous month", nextMonth: "Next month", draft: "Draft · editable", editBrief: "Edit brief", dayByDay: "Day by day", source: "Source ↗", previousDay: "← Previous day", nextDay: "Next day →", savingChanges: "Saving changes…", savedDevice: "Saved on this device", exploreMap: "Explore the map first, then save it to an account when you are ready.", openMap: "Open map view →", addOrigin: "Add the city or airport you're leaving from.", addStop: "Add at least one stop to continue", typePlace: "Type a city, region or landmark first.", checking: "Checking this place…", unavailable: "We couldn't check that place just now. Please try again.", verifyOrigin: "We couldn't verify that starting point.", originUnavailable: "We couldn't check that starting point just now.", startDate: "Start date", endDate: "End date", pickDate: "Pick a date", typeIt: "Or type it", day: "day", days: "days", split: "Choose exactly how your time is split between destinations in the next step.", addStops: "Add stops and this splits across them.", selected: "selected", finding: "Finding real places, landmarks and activities around", noSuggestions: "No reliable suggestions loaded yet. Check the location or try again shortly.", yourTime: "YOUR TIME", shapeDays: "Shape the days", allocation: "We've suggested a starting split from your selected places. Move a slider and EasyT rebalances the rest.", total: "days total", suggested: "suggested", budget: "Budget band", budgetHelp: "Used to pick where to sleep and eat during research.", value: "Good value", valueNote: "Comfortable, not precious.", mid: "Mid-range", midNote: "Some splurges.", high: "No ceiling", highNote: "Best available.", route: "ROUTE SO FAR", departure: "Departure", routeEmpty: "Add a stop and the route builds here as you go.", daysBudget: "DAYS BUDGET", full: "FULL", room: "ROOM LEFT", overBy: "OVER BY", available: "days available", committed: "committed", open: "open", overHint: "More is selected than the dates allow. Remove a place, drop a stop, or add days.", selectedPlaces: "SELECTED PLACES", nothingSelected: "Nothing selected yet. Step 03 is where the trip gets specific.", removePlace: "Remove place", placesSelected: "places selected", daysTotal: "days total"
+  };
   const [tripId, setTripId] = useState(() => `trip-${crypto.randomUUID()}`);
   const [createdAt, setCreatedAt] = useState(() => new Date().toISOString());
   const [hydrated, setHydrated] = useState(false);
@@ -378,7 +389,7 @@ export default function TripBuilder() {
     [stops],
   );
   const originMissing = originTouched && (!origin.trim() || Boolean(originError));
-  const gate = step === 0 ? (!origin.trim() ? "Add where you're starting from" : !stops.length ? "Add at least one stop to continue" : "") : "";
+  const gate = step === 0 ? (!origin.trim() ? ui.addOrigin : !stops.length ? ui.addStop : "") : "";
 
   /** A transparent default: selected activity volume influences the recommended split. */
   const recommendedDays = useMemo(() => {
@@ -424,33 +435,33 @@ export default function TripBuilder() {
 
   const addStop = async (name?: string) => {
     const value = (name ?? stopInput).trim();
-    if (!value) return setStopError("Type a city, region or landmark first.");
+    if (!value) return setStopError(ui.typePlace);
     if (stops.some((s) => s.name.toLowerCase() === value.toLowerCase())) return setStopError(`${value} is already in your route.`);
-    setStopError("Checking this place…");
+    setStopError(ui.checking);
     try {
       const response = await fetch(`/api/journey-geocode?place=${encodeURIComponent(value)}`);
       const payload = await response.json() as { result?: { name?: string; country?: string; coordinates?: [number, number] } | null };
-      if (!payload.result?.coordinates || !payload.result.country) return setStopError(`We couldn't verify “${value}”. Try a city, region or landmark with its country.`);
+      if (!payload.result?.coordinates || !payload.result.country) return setStopError(language === "es" ? `No pudimos verificar “${value}”. Prueba una ciudad, región o lugar con su país.` : `We couldn't verify “${value}”. Try a city, region or landmark with its country.`);
       const resolvedName = payload.result.name?.split(",")[0]?.trim() || value;
       const id = `${resolvedName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
       setStops((current) => [...current, { id, name: resolvedName, country: payload.result!.country!, coordinates: payload.result!.coordinates }]);
       setStopInput(""); setStopError("");
     } catch {
-      setStopError("We couldn't check that place just now. Please try again.");
+      setStopError(ui.unavailable);
     }
   };
 
   const validateOrigin = async () => {
-    if (!origin.trim()) { setOriginTouched(true); setOriginError("Add the city or airport you're leaving from."); return false; }
+    if (!origin.trim()) { setOriginTouched(true); setOriginError(ui.addOrigin); return false; }
     try {
       const response = await fetch(`/api/journey-geocode?place=${encodeURIComponent(origin.trim())}`);
       const payload = await response.json() as { result?: { name?: string; coordinates?: [number, number] } | null };
-      if (!payload.result?.coordinates) { setOriginTouched(true); setOriginError("We couldn't verify that starting point."); return false; }
+      if (!payload.result?.coordinates) { setOriginTouched(true); setOriginError(ui.verifyOrigin); return false; }
       setOriginCoordinates(payload.result.coordinates);
       setOriginError("");
       return true;
     } catch {
-      setOriginError("We couldn't check that starting point just now.");
+      setOriginError(ui.originUnavailable);
       return false;
     }
   };
@@ -509,22 +520,22 @@ export default function TripBuilder() {
       <div className={styles.shellWide}>
         <div className={styles.draftHead}>
           <div>
-            <p className={styles.eyebrow}>Draft · editable</p>
+            <p className={styles.eyebrow}>{ui.draft}</p>
             <h2>{origin} to {stops.map((s) => s.name).join(" & ")}</h2>
           </div>
-          <button type="button" className={styles.primary} onClick={() => { setGenerated(false); setStep(3); }}>Edit brief</button>
+          <button type="button" className={styles.primary} onClick={() => { setGenerated(false); setStep(3); }}>{ui.editBrief}</button>
         </div>
 
         <div className={styles.draftSummary}>
           <span><CalendarDays /> {totalDays} days</span>
           <span><Clock /> {stops.length} destinations · custom split</span>
-          <span><MapPin /> {selected.length} selected places</span>
+          <span><MapPin /> {selected.length} {ui.placesSelected}</span>
         </div>
 
         <div className={styles.draftBody}>
           <div className={styles.timeline}>
             <div className={styles.timelineHead}>
-              <strong>Day by day</strong>
+              <strong>{ui.dayByDay}</strong>
               <small>{draft.length} DAYS</small>
             </div>
             {draft.map((day, i) => (
@@ -552,7 +563,7 @@ export default function TripBuilder() {
             {activeImage ? (
               <figure className={styles.dayImage}>
                 <img src={activeImage.src} alt={activeImage.alt} />
-                <figcaption><span>{activeImage.caption}</span><a href={activeImage.sourceUrl} target="_blank" rel="noreferrer">Source ↗</a></figcaption>
+                <figcaption><span>{activeImage.caption}</span><a href={activeImage.sourceUrl} target="_blank" rel="noreferrer">{ui.source}</a></figcaption>
               </figure>
             ) : (
               <div className={`${styles.dayImage} ${styles.dayImageFallback}`} role="img" aria-label={`Image for ${active.title}`}>
@@ -566,18 +577,18 @@ export default function TripBuilder() {
               ))}
             </ol>
             <div className={styles.dayNav}>
-              <button type="button" disabled={index === 0} onClick={() => setActiveDay(index - 1)}>← Previous day</button>
-              <button type="button" disabled={index >= draft.length - 1} onClick={() => setActiveDay(index + 1)}>Next day →</button>
+              <button type="button" disabled={index === 0} onClick={() => setActiveDay(index - 1)}>{ui.previousDay}</button>
+              <button type="button" disabled={index >= draft.length - 1} onClick={() => setActiveDay(index + 1)}>{ui.nextDay}</button>
             </div>
           </section>
         </div>
 
         <div className={styles.draftFoot}>
-          <p><strong>{saveState === "saving" ? "Saving changes…" : "Saved on this device"}</strong> · Explore the map first, then save it to an account when you are ready.</p>
+          <p><strong>{saveState === "saving" ? ui.savingChanges : ui.savedDevice}</strong> · {ui.exploreMap}</p>
           <button type="button" className={styles.primary} onClick={() => {
             saveActiveTrip(activeTripDocument);
             window.location.assign(`/journey/plan?trip=${encodeURIComponent(activeTripDocument.id)}`);
-          }}>Open map view →</button>
+          }}>{ui.openMap}</button>
         </div>
       </div>
     );
@@ -610,7 +621,7 @@ export default function TripBuilder() {
                   onChange={(e) => { setOrigin(e.target.value); setOriginTouched(true); setOriginCoordinates(undefined); setOriginError(""); }}
                   onBlur={() => { if (origin.trim() && !originCoordinates) void validateOrigin(); }} />
                 <small className={originMissing ? styles.hintError : styles.hint}>
-                  {originError || (originMissing ? "Add the city or airport you're leaving from." : "")}
+                  {originError || (originMissing ? ui.addOrigin : "")}
                 </small>
               </div>
 
@@ -651,7 +662,7 @@ export default function TripBuilder() {
                     <GripVertical className={styles.grip} aria-hidden />
                     <div>
                       <strong>{stop.name}</strong>
-                      <small>{(picks[stop.id] ?? []).length} places selected</small>
+                      <small>{(picks[stop.id] ?? []).length} {ui.placesSelected}</small>
                     </div>
                     <button
                       type="button"
@@ -671,22 +682,22 @@ export default function TripBuilder() {
             <div className={styles.stack} ref={pickerRef}>
               <div className={styles.dateRow}>
                 {([
-                  { key: "start" as const, label: "Start date", value: startDate, set: (v: string) => { setStartDate(v); if (v > endDate) setEndDate(v); } },
-                  { key: "end" as const, label: "End date", value: endDate, set: (v: string) => setEndDate(v < startDate ? startDate : v) },
+                  { key: "start" as const, label: ui.startDate, value: startDate, set: (v: string) => { setStartDate(v); if (v > endDate) setEndDate(v); } },
+                  { key: "end" as const, label: ui.endDate, value: endDate, set: (v: string) => setEndDate(v < startDate ? startDate : v) },
                 ]).map((field) => (
                   <div key={field.key} className={`${styles.card} ${picker === field.key ? styles.cardOpen : ""}`}>
                     <button type="button" className={styles.cardTrigger} aria-expanded={picker === field.key}
                       onClick={() => setPicker(picker === field.key ? null : field.key)}>
                       <span className={styles.cardLabel}><CalendarDays /> {field.label}</span>
                       <span className={styles.cardValue}>
-                        <strong>{fmtLong(field.value) || "Pick a date"}</strong>
+                        <strong>{fmtLong(field.value) || ui.pickDate}</strong>
                         <ChevronDown />
                       </span>
                     </button>
                     {picker === field.key && (
                       <div className={styles.popover}>
-                        <Calendar value={field.value} onPick={(v) => { field.set(v); setPicker(null); }} />
-                        <label className={styles.typeIt}>Or type it
+                        <Calendar language={language} value={field.value} onPick={(v) => { field.set(v); setPicker(null); }} />
+                        <label className={styles.typeIt}>{ui.typeIt}
                           <input defaultValue={fmtLong(field.value)}
                             onChange={(e) => { const v = parseTyped(e.target.value); if (v) field.set(v); }} />
                         </label>
@@ -696,8 +707,8 @@ export default function TripBuilder() {
                 ))}
               </div>
               <p className={styles.lengthNote}>
-                <strong>{totalDays} {totalDays === 1 ? "day" : "days"}</strong>
-                <span>{stops.length ? "Choose exactly how your time is split between destinations in the next step." : "Add stops and this splits across them."}</span>
+                <strong>{totalDays} {totalDays === 1 ? ui.day : ui.days}</strong>
+                <span>{stops.length ? ui.split : ui.addStops}</span>
               </p>
             </div>
           )}
@@ -724,8 +735,8 @@ export default function TripBuilder() {
                         <small className={titles.length ? styles.countOn : ""}>{titles.length} selected</small>
                       </div>
                       <div className={styles.placeList}>
-                        {discovering[stop.id] && <p className={styles.railEmptyText}>Finding real places, landmarks and activities around {stop.name}…</p>}
-                        {!discovering[stop.id] && !list.length && <p className={styles.railEmptyText}>No reliable suggestions loaded yet. Check the location or try again shortly.</p>}
+                        {discovering[stop.id] && <p className={styles.railEmptyText}>{ui.finding} {stop.name}…</p>}
+                        {!discovering[stop.id] && !list.length && <p className={styles.railEmptyText}>{ui.noSuggestions}</p>}
                         {list.map((place) => {
                           const on = titles.includes(place.title);
                           const image = placeImageFor(place, stop);
@@ -740,7 +751,7 @@ export default function TripBuilder() {
                                 <strong>{place.title}</strong>
                                 <span>{place.description}</span>
                               </span>
-                              <span className={styles.placeCost}>{on ? "−" : "+"}{half(place.cost)} day</span>
+                              <span className={styles.placeCost}>{on ? "−" : "+"}{half(place.cost)} {ui.day}</span>
                             </button>
                           );
                         })}
@@ -757,11 +768,11 @@ export default function TripBuilder() {
               <section className={styles.allocationPanel} aria-labelledby="day-allocation-title">
                 <div className={styles.allocationHead}>
                   <div>
-                    <p>YOUR TIME</p>
-                    <h3 id="day-allocation-title">Shape the days</h3>
-                    <span>We&apos;ve suggested a starting split from your selected places. Move a slider and EasyT rebalances the rest.</span>
+                    <p>{ui.yourTime}</p>
+                    <h3 id="day-allocation-title">{ui.shapeDays}</h3>
+                    <span>{ui.allocation}</span>
                   </div>
-                  <strong>{totalDays} days total</strong>
+                  <strong>{totalDays} {ui.daysTotal}</strong>
                 </div>
                 <div className={styles.allocationList}>
                   {stops.map((stop) => {
@@ -769,35 +780,35 @@ export default function TripBuilder() {
                     const suggestion = recommendedDays[stop.id] ?? 1;
                     return (
                       <label className={styles.allocationRow} key={stop.id}>
-                        <span><strong>{stop.name}</strong><small>{(picks[stop.id] ?? []).length} selected places · suggested {suggestion} {suggestion === 1 ? "day" : "days"}</small></span>
+                        <span><strong>{stop.name}</strong><small>{(picks[stop.id] ?? []).length} {ui.placesSelected} · {ui.suggested} {suggestion} {suggestion === 1 ? ui.day : ui.days}</small></span>
                         <input type="range" min="1" max={Math.max(1, totalDays - Math.max(0, stops.length - 1))} value={days}
                           onChange={(event) => updateAllocatedDays(stop.id, Number(event.target.value))}
                           aria-label={`${stop.name}: ${days} days`} />
-                        <b>{days}<small>{days === 1 ? "day" : "days"}</small></b>
+                        <b>{days}<small>{days === 1 ? ui.day : ui.days}</small></b>
                       </label>
                     );
                   })}
                 </div>
               </section>
-              <RadioGroup label="Budget band" help="Used to pick where to sleep and eat during research."
+              <RadioGroup label={ui.budget} help={ui.budgetHelp}
                 value={budget} onChange={setBudget}
                 options={[
-                  { value: "value", label: "Good value", note: "Comfortable, not precious." },
-                  { value: "mid", label: "Mid-range", note: "Some splurges." },
-                  { value: "high", label: "No ceiling", note: "Best available." },
+                  { value: "value", label: ui.value, note: ui.valueNote },
+                  { value: "mid", label: ui.mid, note: ui.midNote },
+                  { value: "high", label: ui.high, note: ui.highNote },
                 ]} />
             </div>
           )}
         </div>
 
-        <aside className={styles.rail} aria-label="Trip so far">
+        <aside className={styles.rail} aria-label={ui.route}>
           <div className={styles.railBlock}>
-            <small className={styles.railLabel}>ROUTE SO FAR</small>
+            <small className={styles.railLabel}>{ui.route}</small>
             <div className={styles.railRoute}>
-              {[{ name: origin.trim() || "Add your origin", note: "Departure", origin: true },
+              {[{ name: origin.trim() || (language === "es" ? "Añade tu origen" : "Add your origin"), note: ui.departure, origin: true },
                 ...stops.map((stop) => ({
                   name: stop.name,
-                  note: `${(picks[stop.id] ?? []).length} selected · ${allocation[stop.id] ?? 1} ${(allocation[stop.id] ?? 1) === 1 ? "day" : "days"}`,
+                  note: `${(picks[stop.id] ?? []).length} ${ui.selected} · ${allocation[stop.id] ?? 1} ${(allocation[stop.id] ?? 1) === 1 ? ui.day : ui.days}`,
                   origin: false,
                 }))].map((node, i, list) => (
                 <div key={`${node.name}-${i}`} className={styles.railNode}>
@@ -811,37 +822,37 @@ export default function TripBuilder() {
                   </span>
                 </div>
               ))}
-              {!stops.length && <p className={styles.railEmpty}>Add a stop and the route builds here as you go.</p>}
+              {!stops.length && <p className={styles.railEmpty}>{ui.routeEmpty}</p>}
             </div>
           </div>
 
           <div className={styles.railBlock}>
             <div className={styles.railBudgetHead}>
-              <small className={styles.railLabel}>DAYS BUDGET</small>
+              <small className={styles.railLabel}>{ui.daysBudget}</small>
               <small className={over ? styles.railOver : ""}>
-                {over ? `OVER BY ${half(committed - totalDays)}` : openDays === 0 ? "FULL" : "ROOM LEFT"}
+                {over ? `${ui.overBy} ${half(committed - totalDays)}` : openDays === 0 ? ui.full : ui.room}
               </small>
             </div>
             <div className={styles.budgetTrack}>
               <span className={over ? styles.budgetFillOver : styles.budgetFill}
                 style={{ width: `${Math.min(100, (committed / Math.max(1, totalDays)) * 100)}%` }} />
             </div>
-            <p className={styles.budgetLine}>{totalDays} days available · {half(committed)} committed · {half(openDays)} open</p>
-            {over && <p className={styles.railOver}>More is selected than the dates allow. Remove a place, drop a stop, or add days.</p>}
+            <p className={styles.budgetLine}>{totalDays} {ui.available} · {half(committed)} {ui.committed} · {half(openDays)} {ui.open}</p>
+            {over && <p className={styles.railOver}>{ui.overHint}</p>}
           </div>
 
           <div className={styles.railBlock}>
-            <small className={styles.railLabel}>SELECTED PLACES</small>
+            <small className={styles.railLabel}>{ui.selectedPlaces}</small>
             {selected.length ? (
               <div className={styles.chips}>
                 {selected.map((entry) => (
                   <span key={`${entry.stopId}-${entry.title}`} className={styles.chip}>
                     {entry.title}
-                    <button type="button" onClick={() => togglePick(entry.stopId, entry.title)} aria-label="Remove place"><X /></button>
+                    <button type="button" onClick={() => togglePick(entry.stopId, entry.title)} aria-label={ui.removePlace}><X /></button>
                   </span>
                 ))}
               </div>
-            ) : <p className={styles.railEmptyText}>Nothing selected yet. Step 03 is where the trip gets specific.</p>}
+            ) : <p className={styles.railEmptyText}>{ui.nothingSelected}</p>}
           </div>
         </aside>
       </div>
@@ -849,7 +860,7 @@ export default function TripBuilder() {
       <div className={styles.wizardFoot}>
         <button type="button" className={styles.ghost} disabled={step === 0} onClick={() => setStep(Math.max(0, step - 1))}>{copy.back}</button>
         <div className={styles.footRight}>
-          <small className={styles.saveState}>{saveState === "saving" ? "Saving…" : "Saved on this device"}</small>
+          <small className={styles.saveState}>{saveState === "saving" ? ui.savingChanges : ui.savedDevice}</small>
           {gate && <small className={styles.gate}>{gate}</small>}
           <button type="button" className={styles.primary} disabled={Boolean(gate)}
             onClick={async () => {

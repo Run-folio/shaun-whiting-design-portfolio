@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Building2, Castle, Flower2, House, Landmark, Mountain, PawPrint, PersonStanding, Plane, Plus, Torus, Utensils, Waves, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, Building2, Castle, Flower2, GripVertical, House, Landmark, MapPin, Mountain, PawPrint, PersonStanding, Plane, Plus, StickyNote, Torus, Trash2, Utensils, Waves, type LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { JourneyGlobe, type JourneyMapPlace } from "@/components/journey-globe";
 import { JourneyCarousel } from "@/components/journey-carousel";
@@ -14,7 +14,7 @@ import { journeyCalendar, journeyDayMedia, journeyDetails, journeyMedia, march20
 import { getCountryIntelligence } from "@/lib/country-intelligence";
 import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
 import { authClient } from "@/lib/auth-client";
-import type { EasyTTrip } from "@/lib/easyt/trip";
+import type { EasyTTrip, PlannerMapPin, PlannerPinCategory } from "@/lib/easyt/trip";
 import { estimateLeg } from "@/lib/easyt/planner";
 import { applyRecommendation, recommendationImpact, reviewTrip, undoRecommendation } from "@/lib/easyt/review";
 import styles from "./journey.module.css";
@@ -296,6 +296,18 @@ export default function JourneyPage() {
   const [placeMedia, setPlaceMedia] = useState<Record<string, { image?: string; description?: string; sourceUrl?: string; coordinates?: [number, number] }>>({});
   const [cloudSaveState, setCloudSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [autoSaveRequested, setAutoSaveRequested] = useState(false);
+  const [draggedDayId, setDraggedDayId] = useState<string | null>(null);
+  const [draggedActivity, setDraggedActivity] = useState<{ dayNumber: number; index: number } | null>(null);
+  const [activityDraft, setActivityDraft] = useState("");
+  const [noteDraft, setNoteDraft] = useState("");
+  const [pinDraft, setPinDraft] = useState("");
+  const [pinCategory, setPinCategory] = useState<PlannerPinCategory>("activity");
+  const [pinPlacementMode, setPinPlacementMode] = useState(false);
+  const [pinCoordinates, setPinCoordinates] = useState<[number, number] | null>(null);
+  const [selectedPlannerPin, setSelectedPlannerPin] = useState<PlannerMapPin | null>(null);
+  const [plannerWarning, setPlannerWarning] = useState("");
+  const [lastPlannerTrip, setLastPlannerTrip] = useState<EasyTTrip | null>(null);
+  const [undoMessage, setUndoMessage] = useState("");
   const trackRef = useRef<HTMLDivElement>(null);
   const hasMounted = useRef(false);
   const journey = useMemo(() => {
@@ -316,6 +328,23 @@ export default function JourneyPage() {
   );
   const selectedDay = journey.calendar.find((day) => day.id === selectedDayId) ?? journey.calendar[0];
   const selectedDayIndex = journey.calendar.findIndex((day) => day.id === selectedDay.id);
+  const selectedPlanItem = customTrip?.planItems.find((item) => item.dayNumber === selectedDayIndex + 1);
+  const selectedActivities = selectedPlanItem?.notes ?? selectedDay.items;
+  const selectedDayNotes = customTrip?.brief.dayNotes?.[selectedDayIndex + 1] ?? [];
+  const selectedScheduleSignals = useMemo(() => {
+    const signals: string[] = [];
+    if (selectedActivities.length >= 4) signals.push(`${selectedActivities.length} activities: keep travel tight.`);
+    const hours = Number.parseInt(selectedDay.travel?.duration ?? "", 10);
+    if (Number.isFinite(hours) && hours >= 4) signals.push(`Long transfer: allow at least ${hours + 1} hours door to door.`);
+    return signals;
+  }, [selectedActivities.length, selectedDay.travel?.duration]);
+  const localStreetMapUrl = useMemo(() => {
+    if (!selected.coordinates) return null;
+    const [longitude, latitude] = selected.coordinates;
+    const delta = .025;
+    const bbox = [longitude - delta, latitude - delta, longitude + delta, latitude + delta].join(",");
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${latitude}%2C${longitude}`;
+  }, [selected.coordinates]);
   const reviewRecommendations = useMemo(() => customTrip ? reviewTrip(customTrip).map((item) => ({ ...item, status: customTrip.recommendations.find((saved) => saved.id === item.id)?.status ?? item.status })) : [], [customTrip]);
   const customPlace = useMemo(() => {
     if (!customBrief) return undefined;
@@ -345,6 +374,125 @@ export default function JourneyPage() {
   const handleRestaurantSelect = useCallback((restaurant?: JourneyRestaurant, meal?: RestaurantMeal) => {
     setSelectedRestaurant(restaurant ? { restaurant, meal } : undefined);
   }, []);
+
+  const updatePlannerTrip = useCallback((update: (trip: EasyTTrip) => EasyTTrip, message = "Edit saved") => {
+    if (!customTrip) return;
+    const base: EasyTTrip = {
+      ...customTrip,
+      brief: {
+        ...customTrip.brief,
+        dayNotes: { ...(customTrip.brief.dayNotes ?? {}) },
+        customActivities: { ...(customTrip.brief.customActivities ?? {}) },
+        mapPins: [...(customTrip.brief.mapPins ?? [])],
+      },
+      planItems: customTrip.planItems.map((item) => ({ ...item, notes: [...item.notes] })),
+    };
+    const next = { ...update(base), updatedAt: new Date().toISOString() };
+    setLastPlannerTrip(customTrip);
+    setUndoMessage(message);
+    setCustomTrip(next);
+    setCustomBrief(customBriefFromEasyT(next));
+    saveActiveTrip(next);
+    setCloudSaveState("idle");
+  }, [customTrip]);
+
+  const undoPlannerEdit = () => {
+    if (!lastPlannerTrip) return;
+    setCustomTrip(lastPlannerTrip);
+    setCustomBrief(customBriefFromEasyT(lastPlannerTrip));
+    saveActiveTrip(lastPlannerTrip);
+    setCloudSaveState("idle");
+    setLastPlannerTrip(null);
+    setUndoMessage("");
+  };
+
+  const moveDay = useCallback((fromDayId: string, toDayId: string) => {
+    if (!customTrip || fromDayId === toDayId) return;
+    const sourceIndex = journey.calendar.findIndex((day) => day.id === fromDayId);
+    const targetIndex = journey.calendar.findIndex((day) => day.id === toDayId);
+    if (sourceIndex < 0 || targetIndex < 0) return;
+    updatePlannerTrip((trip) => {
+      const ordered = [...trip.planItems].sort((a, b) => a.dayNumber - b.dayNumber);
+      const [moved] = ordered.splice(sourceIndex, 1);
+      ordered.splice(targetIndex, 0, moved);
+      const notes = trip.brief.dayNotes ?? {};
+      const customActivities = trip.brief.customActivities ?? {};
+      const reorderedNotes = Object.fromEntries(ordered.map((item, index) => [index + 1, notes[item.dayNumber] ?? []]));
+      const reorderedActivities = Object.fromEntries(ordered.map((item, index) => [index + 1, customActivities[item.dayNumber] ?? []]));
+      return {
+        ...trip,
+        brief: { ...trip.brief, dayNotes: reorderedNotes, customActivities: reorderedActivities },
+        planItems: ordered.map((item, index) => ({
+          ...item,
+          dayNumber: index + 1,
+          date: new Date(+new Date(`${trip.startDate}T00:00:00`) + index * 86400000).toISOString().slice(0, 10),
+        })),
+      };
+    }, "Day order updated");
+    setPlannerWarning("Day order changed. EasyT has recalculated the route; check the highlighted transfers before booking.");
+  }, [customTrip, journey.calendar, updatePlannerTrip]);
+
+  const moveActivity = useCallback((from: { dayNumber: number; index: number }, to: { dayNumber: number; index: number }) => {
+    updatePlannerTrip((trip) => {
+      const planItems = trip.planItems.map((item) => ({ ...item, notes: [...item.notes] }));
+      const source = planItems.find((item) => item.dayNumber === from.dayNumber);
+      const target = planItems.find((item) => item.dayNumber === to.dayNumber);
+      if (!source || !target || !source.notes[from.index]) return trip;
+      const [activity] = source.notes.splice(from.index, 1);
+      const targetIndex = source === target && from.index < to.index ? to.index - 1 : to.index;
+      target.notes.splice(Math.max(0, targetIndex), 0, activity);
+      const customActivities = { ...(trip.brief.customActivities ?? {}) };
+      const sourceCustom = [...(customActivities[from.dayNumber] ?? [])];
+      if (sourceCustom.includes(activity)) {
+        const customIndex = sourceCustom.indexOf(activity);
+        sourceCustom.splice(customIndex, 1);
+        customActivities[from.dayNumber] = sourceCustom;
+        customActivities[to.dayNumber] = [...(customActivities[to.dayNumber] ?? []), activity];
+      }
+      return { ...trip, brief: { ...trip.brief, customActivities }, planItems };
+    }, "Activity moved");
+    setPlannerWarning(from.dayNumber === to.dayNumber ? "Activity order updated." : "Activity moved to a different day. EasyT has recalculated the travel sequence.");
+  }, [updatePlannerTrip]);
+
+  const addActivity = () => {
+    const title = activityDraft.trim();
+    if (!title || !selectedPlanItem) return;
+    updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, customActivities: { ...(trip.brief.customActivities ?? {}), [selectedPlanItem.dayNumber]: [...(trip.brief.customActivities?.[selectedPlanItem.dayNumber] ?? []), title] } }, planItems: trip.planItems.map((item) => item.dayNumber === selectedPlanItem.dayNumber ? { ...item, notes: [...item.notes, title] } : item) }));
+    setActivityDraft("");
+  };
+
+  const addDayNote = () => {
+    const note = noteDraft.trim();
+    if (!note || !selectedPlanItem) return;
+    updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, dayNotes: { ...(trip.brief.dayNotes ?? {}), [selectedPlanItem.dayNumber]: [...(trip.brief.dayNotes?.[selectedPlanItem.dayNumber] ?? []), note] } } }));
+    setNoteDraft("");
+  };
+
+  const addPin = () => {
+    const title = pinDraft.trim();
+    if (!title || !selected.coordinates || !selectedPlanItem) return;
+    const offset = ((customTrip?.brief.mapPins?.length ?? 0) + 1) * 0.003;
+    const coordinates = pinCoordinates ?? [selected.coordinates[0] + offset, selected.coordinates[1] - offset] as [number, number];
+    updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: [...(trip.brief.mapPins ?? []), { id: `pin-${Date.now()}`, title, category: pinCategory, dayNumber: selectedPlanItem.dayNumber, longitude: coordinates[0], latitude: coordinates[1] }] } }), "Map pin added");
+    setPinDraft("");
+    setPinCoordinates(null);
+    setPinPlacementMode(false);
+  };
+
+  const saveLocalVenue = useCallback((venue: { name: string; coordinates: [number, number] }, category: "restaurant" | "stay") => {
+    if (!customTrip || !selectedPlanItem) return;
+    const id = `venue-${selectedPlanItem.dayNumber}-${category}-${venue.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+    if (customTrip.brief.mapPins?.some((pin) => pin.id === id)) return;
+    updatePlannerTrip((trip) => ({
+      ...trip,
+      brief: {
+        ...trip.brief,
+        customActivities: { ...(trip.brief.customActivities ?? {}), [selectedPlanItem.dayNumber]: [...(trip.brief.customActivities?.[selectedPlanItem.dayNumber] ?? []), venue.name] },
+        mapPins: [...(trip.brief.mapPins ?? []), { id, title: venue.name, category, dayNumber: selectedPlanItem.dayNumber, longitude: venue.coordinates[0], latitude: venue.coordinates[1] }],
+      },
+      planItems: trip.planItems.map((item) => item.dayNumber === selectedPlanItem.dayNumber ? { ...item, notes: item.notes.includes(venue.name) ? item.notes : [...item.notes, venue.name] } : item),
+    }), `${category === "restaurant" ? "Restaurant" : "Stay"} added to the day`);
+  }, [customTrip, selectedPlanItem, updatePlannerTrip]);
 
   const changeRecommendation = useCallback((recommendationId: string, action: "apply" | "undo") => {
     if (!customTrip) return;
@@ -540,6 +688,10 @@ export default function JourneyPage() {
         detailImageSrc={images[0]?.src}
         dayPlace={customMapPlace}
         restaurant={selectedRestaurant}
+        plannerPins={customTrip?.brief.mapPins ?? []}
+        pinPlacementMode={pinPlacementMode}
+        onMapPinDrop={(coordinates) => { setPinCoordinates(coordinates); setPinPlacementMode(false); }}
+        onPlannerPinSelect={setSelectedPlannerPin}
         variant={isCustomJourney ? "planner" : "story"}
         onSelect={(id) => {
           setIsPlaying(false);
@@ -573,6 +725,16 @@ export default function JourneyPage() {
                 <button
                   key={day.id}
                   data-day-id={day.id}
+                  draggable={Boolean(isPlanningPreview && customTrip)}
+                  onDragStart={() => { setDraggedDayId(day.id); setDraggedActivity(null); }}
+                  onDragOver={(event) => { if (isPlanningPreview && customTrip) event.preventDefault(); }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    if (draggedActivity) moveActivity(draggedActivity, { dayNumber: index + 1, index: 999 });
+                    else if (draggedDayId) moveDay(draggedDayId, day.id);
+                    setDraggedDayId(null); setDraggedActivity(null);
+                  }}
+                  onDragEnd={() => { setDraggedDayId(null); setDraggedActivity(null); }}
                   onClick={() => { setIsPlaying(false); setSelectedDayId(day.id); setSelectedId(day.stopId); }}
                   className={`${styles.stop} ${active ? styles.active : ""}`}
                   aria-current={active ? "step" : undefined}
@@ -622,6 +784,12 @@ export default function JourneyPage() {
         </motion.div>
       </section>
 
+      {isPlanningPreview && customTrip && localStreetMapUrl ? <aside className={styles.localStreetMap} aria-label={`Street map of ${selected.city}`}>
+        <div><span>LOCAL MAP DETAIL</span><strong>{selected.city}</strong><a href={`https://www.openstreetmap.org/?mlat=${selected.coordinates?.[1]}&mlon=${selected.coordinates?.[0]}#map=15/${selected.coordinates?.[1]}/${selected.coordinates?.[0]}`} target="_blank" rel="noreferrer">Open map ↗</a></div>
+        <iframe title={`OpenStreetMap detail for ${selected.city}`} src={localStreetMapUrl} loading="lazy" />
+        <small>© OpenStreetMap contributors · Street detail for the active day</small>
+      </aside> : null}
+
       <aside className={styles.itineraryPanel} aria-live="polite">
         <motion.div
           key={selectedDay.id}
@@ -637,7 +805,44 @@ export default function JourneyPage() {
             {reviewRecommendations.length ? <div className={styles.reviewList}>{reviewRecommendations.map((item) => <article key={item.id} className={`${styles.reviewItem} ${styles[`review${item.severity[0].toUpperCase()}${item.severity.slice(1)}`]} ${item.status !== "open" ? styles.reviewResolved : ""}`}><div><b>{item.status === "open" ? item.severity : item.status}</b><strong>{item.message}</strong></div><p>{item.evidence}</p><small>Affects {item.affectedDays.length ? item.affectedDays.map((day) => `day ${day}`).join(", ") : "the overall plan"} · {item.confidence} confidence</small><p className={styles.reviewImpact}>{recommendationImpact(item)}</p><div className={styles.reviewActions}>{item.status === "open" ? <button type="button" onClick={() => changeRecommendation(item.id, "apply")}>Apply</button> : <button type="button" onClick={() => changeRecommendation(item.id, "undo")}>Undo</button>}</div></article>)}</div> : <p className={styles.reviewEmpty}>The route currently has coverage for every day and no long road transfer signal. Live schedules and closures still need checking before booking.</p>}
           </section> : null}
           {selectedDay.travel ? <div className={styles.dayTravel}><Plane /><div><small>{selectedDay.travel.mode === "flight" ? "Travel connection" : "Local transfer"}</small><strong>{selectedDay.travel.from ? `${selectedDay.travel.from} → ${selectedDay.city}` : selectedDay.travel.detail}</strong><span>{selectedDay.travel.duration} · {selectedDay.travel.detail}</span></div></div> : null}
-          <ol>
+          {isPlanningPreview && customTrip && selectedPlanItem ? <>
+            <p className={styles.editingHint}><GripVertical /> Drag days in the timeline, or activities below. Suggestions stay intact unless you remove them.</p>
+            {plannerWarning ? <p className={styles.plannerWarning}>{plannerWarning}</p> : null}
+            <section className={styles.scheduleHealth} aria-label="Schedule health">
+              <div><span>SCHEDULE HEALTH</span><strong>{selectedScheduleSignals.length ? "Needs a quick check" : "Comfortable pace"}</strong></div>
+              <p>{selectedScheduleSignals.length ? selectedScheduleSignals.join(" ") : "No long transfer or crowded activity signal for this day."}</p>
+            </section>
+            <ol className={styles.editableActivities}>
+              {selectedActivities.map((item, index) => {
+                const isCustom = (customTrip.brief.customActivities?.[selectedPlanItem.dayNumber] ?? []).includes(item);
+                return <li key={`${item}-${index}`} draggable
+                onDragStart={() => { setDraggedActivity({ dayNumber: selectedPlanItem.dayNumber, index }); setDraggedDayId(null); }}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => { event.preventDefault(); if (draggedActivity) moveActivity(draggedActivity, { dayNumber: selectedPlanItem.dayNumber, index }); setDraggedActivity(null); }}
+                onDragEnd={() => setDraggedActivity(null)}>
+                <b>{String(index + 1).padStart(2, "0")}</b><GripVertical className={styles.activityGrip} />{isCustom ? <input className={styles.customActivityInput} value={item} onChange={(event) => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, customActivities: { ...(trip.brief.customActivities ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.customActivities?.[selectedPlanItem.dayNumber] ?? []).map((activity) => activity === item ? event.target.value : activity) } }, planItems: trip.planItems.map((plan) => plan.dayNumber === selectedPlanItem.dayNumber ? { ...plan, notes: plan.notes.map((activity, activityIndex) => activityIndex === index ? event.target.value : activity) } : plan) }))} aria-label="Edit your custom activity" /> : <span>{item}</span>}{isCustom ? <small className={styles.yourActivity}>YOURS</small> : null}
+                <button type="button" className={styles.removeActivity} onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, customActivities: { ...(trip.brief.customActivities ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.customActivities?.[selectedPlanItem.dayNumber] ?? []).filter((activity) => activity !== item) } }, planItems: trip.planItems.map((plan) => plan.dayNumber === selectedPlanItem.dayNumber ? { ...plan, notes: plan.notes.filter((_, activityIndex) => activityIndex !== index) } : plan) }))} aria-label={`Remove ${item}`}><Trash2 /></button>
+              </li>;
+              })}
+            </ol>
+            <form className={styles.addActivity} onSubmit={(event) => { event.preventDefault(); addActivity(); }}>
+              <input value={activityDraft} onChange={(event) => setActivityDraft(event.target.value)} placeholder="Add a custom activity" aria-label="Add a custom activity" />
+              <button type="submit" disabled={!activityDraft.trim()}><Plus /> Add</button>
+            </form>
+            <section className={styles.notesToSelf} aria-label="Notes to self">
+              <div><StickyNote /><span><small>NOTES TO SELF</small><strong>For this day only</strong></span></div>
+              {selectedDayNotes.map((note, index) => <p key={`${note}-${index}`}>{note}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, dayNotes: { ...(trip.brief.dayNotes ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.dayNotes?.[selectedPlanItem.dayNumber] ?? []).filter((_, noteIndex) => noteIndex !== index) } } }))} aria-label="Remove note"><Trash2 /></button></p>)}
+              <form onSubmit={(event) => { event.preventDefault(); addDayNote(); }}><input value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Add a note to yourself" /><button type="submit" disabled={!noteDraft.trim()}>Add note</button></form>
+            </section>
+            <section className={styles.pinComposer} aria-label="Add a map pin">
+              <div><MapPin /><span><small>MAP PINS</small><strong>Add to this day</strong></span></div>
+              <div className={styles.pinCategories}>{(["restaurant", "stay", "activity", "transport", "custom"] as PlannerPinCategory[]).map((category) => <button key={category} type="button" aria-pressed={pinCategory === category} onClick={() => setPinCategory(category)}>{category}</button>)}</div>
+              <div className={styles.pinPlacement}><button type="button" aria-pressed={pinPlacementMode} onClick={() => { setPinPlacementMode((active) => !active); setPinCoordinates(null); }}>{pinPlacementMode ? "Click map…" : "Place on map"}</button>{pinCoordinates ? <span>Map location selected</span> : <small>or add near {selected.city}</small>}</div>
+              <form onSubmit={(event) => { event.preventDefault(); addPin(); }}><input value={pinDraft} onChange={(event) => setPinDraft(event.target.value)} placeholder="Name this place" /><button type="submit" disabled={!pinDraft.trim() || !selected.coordinates}>Pin</button></form>
+              {(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).map((pin) => <p key={pin.id}><i className={`${styles.pinDot} ${styles[`pin${pin.category[0].toUpperCase()}${pin.category.slice(1)}`]}`} />{pin.title}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== pin.id) } }))} aria-label={`Remove ${pin.title}`}><Trash2 /></button></p>)}
+              {selectedPlannerPin ? <div className={styles.selectedPinDetail}><small>SELECTED PIN</small><strong>{selectedPlannerPin.title}</strong><span>{selectedPlannerPin.category} · Day {selectedPlannerPin.dayNumber}</span><button type="button" onClick={() => { updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== selectedPlannerPin.id) } }), "Map pin removed"); setSelectedPlannerPin(null); }}>Remove selected pin</button></div> : null}
+            </section>
+          </> : <ol>
             {selectedDay.items.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, "0")}</b><span>{item}</span></li>)}
             {selectedRestaurant ? <li className={styles.savedRestaurant}>
               <b>{String(selectedDay.items.length + 1).padStart(2, "0")}</b>
@@ -651,14 +856,14 @@ export default function JourneyPage() {
                 <ArrowUpRight />
               </a>
             </li> : null}
-          </ol>
+          </ol>}
           {selectedDayIndex < journey.calendar.length - 1 ? <button type="button" className={styles.nextDay} onClick={() => {
             const nextDay = journey.calendar[selectedDayIndex + 1];
             setIsPlaying(false);
             setSelectedDayId(nextDay.id);
             setSelectedId(nextDay.stopId);
           }}><small>Next</small><span>{journey.calendar[selectedDayIndex + 1].date}</span><strong>{journey.calendar[selectedDayIndex + 1].city} →</strong></button> : null}
-          {isCustomJourney && selected.coordinates ? <><JourneyLocalFinder kind="restaurant" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} /><JourneyLocalFinder kind="stay" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} /></> : !isCustomJourney ? <JourneyRestaurantFinder stopId={selected.id} city={selected.city} dayId={selectedDay.id} onSelectRestaurant={handleRestaurantSelect} /> : null}
+          {isCustomJourney && selected.coordinates ? <><JourneyLocalFinder kind="restaurant" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} onSavePlace={saveLocalVenue} /><JourneyLocalFinder kind="stay" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onSavePlace={saveLocalVenue} /></> : !isCustomJourney ? <JourneyRestaurantFinder stopId={selected.id} city={selected.city} dayId={selectedDay.id} onSelectRestaurant={handleRestaurantSelect} /> : null}
         </motion.div>
       </aside>
 
@@ -667,6 +872,7 @@ export default function JourneyPage() {
         <strong>{isPlaying ? "Pause journey" : "Play journey"}</strong>
         <small>{selectedDayIndex + 1} / {journey.calendar.length}</small>
       </button>
+      {isPlanningPreview && lastPlannerTrip ? <div className={styles.undoToast} role="status"><span>{undoMessage}</span><button type="button" onClick={undoPlannerEdit}>Undo</button></div> : null}
       {cloudSaveState === "error" ? <p className={styles.savePlanError}>Couldn’t save this trip just now. Your plan is still safe on this device.</p> : null}
 
     </main>

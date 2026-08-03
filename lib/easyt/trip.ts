@@ -78,6 +78,23 @@ export type TripBrief = {
   budgetBand: BudgetBand;
   selectedPlaces: Record<string, string[]>;
   dayAllocations?: Record<string, number>;
+  /** Traveller-authored notes kept with a single calendar day. */
+  dayNotes?: Record<number, string[]>;
+  /** Only traveller-authored itinerary rows are editable; generated suggestions remain read-only. */
+  customActivities?: Record<number, string[]>;
+  /** Pins are intentionally lightweight: they are part of the editable map, not a separate places database. */
+  mapPins?: PlannerMapPin[];
+};
+
+export type PlannerPinCategory = "restaurant" | "stay" | "activity" | "transport" | "custom";
+
+export type PlannerMapPin = {
+  id: string;
+  title: string;
+  category: PlannerPinCategory;
+  dayNumber: number;
+  latitude: number;
+  longitude: number;
 };
 
 export type EasyTTrip = {
