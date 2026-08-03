@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { Archive, Copy, Edit3, Gift, MoreHorizontal, RotateCcw, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { EasyTTrip } from "@/lib/easyt/trip";
 import { EasyTSegmentedControl } from "@/components/easyt/easyt-controls";
 import { EasyTFeedback } from "@/components/easyt/easyt-feedback";
+import { loadActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
 import styles from "../account.module.css";
 
 export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
@@ -20,6 +21,16 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
   const [giftError, setGiftError] = useState("");
   const [claimUrl, setClaimUrl] = useState("");
   const [delivered, setDelivered] = useState(false);
+
+  useEffect(() => {
+    const localTrip = loadActiveTrip();
+    if (!localTrip) return;
+    const migrationKey = `easyt-trip-migrated-${localTrip.id}`;
+    if (window.localStorage.getItem(migrationKey)) return;
+    void saveTripToEasyT(localTrip)
+      .then(() => { window.localStorage.setItem(migrationKey, "1"); router.refresh(); })
+      .catch(() => undefined);
+  }, [router]);
 
   const runAction = async (
     id: string,

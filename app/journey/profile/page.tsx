@@ -9,6 +9,7 @@ import EasyTNavigation from "../easyt-navigation";
 import ProfileForm from "./profile-form";
 import styles from "../account.module.css";
 import { isEasyTAuthConfigured } from "@/lib/easyt/auth-environment";
+import { easytCopy } from "@/lib/easyt/i18n";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Profile · EasyT" };
@@ -20,6 +21,7 @@ export default async function EasyTProfilePage() {
   if (!session?.user) redirect("/journey/login?next=/journey/profile");
   await ensureEasyTUser(session.user.id, session.user.email, session.user.name);
   const preferences = await getEasyTUserPreferences(session.user.id);
+  const copy = easytCopy[preferences.language].account;
 
   return (
     <main className={styles.page}>
@@ -32,8 +34,8 @@ export default async function EasyTProfilePage() {
         }}
       />
       <section className={styles.profileWrap}>
-        <p className={styles.eyebrow}>Account settings</p>
-        <h1>Your profile.</h1>
+        <p className={styles.eyebrow}>{copy.settings}</p>
+        <h1>{copy.profileTitle}</h1>
         <ProfileForm
           name={session.user.name || ""}
           email={session.user.email}

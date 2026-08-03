@@ -19,6 +19,7 @@ import { tripFromBuilder } from "@/lib/easyt/trip";
 import { buildCredibleItinerary, type PlannedDay, type PlannerPlace } from "@/lib/easyt/planner";
 import { journeyMedia, type JourneyImage } from "@/lib/journey";
 import styles from "./trip-builder.module.css";
+import { easytCopy, languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
 
 /* ---------------------------------------------------------------- data */
 
@@ -270,6 +271,8 @@ function RadioGroup<T extends string>({ label, help, value, options, onChange }:
 /* ------------------------------------------------------------- main */
 
 export default function TripBuilder() {
+  const [language, setLanguage] = useState<EasyTLanguage>("en");
+  const copy = easytCopy[language].builder;
   const [tripId, setTripId] = useState(() => `trip-${crypto.randomUUID()}`);
   const [createdAt, setCreatedAt] = useState(() => new Date().toISOString());
   const [hydrated, setHydrated] = useState(false);
@@ -304,6 +307,9 @@ export default function TripBuilder() {
   const pickerRef = useDismiss(Boolean(picker), () => setPicker(null));
 
   useEffect(() => {
+    setLanguage(languageFromStorage());
+    const updateLanguage = (event: Event) => setLanguage((event as CustomEvent<EasyTLanguage>).detail);
+    window.addEventListener("easyt-language-change", updateLanguage);
     let active = true;
     const applySaved = (saved: ReturnType<typeof loadActiveTrip>) => {
       if (!saved || !active) return;
@@ -338,7 +344,7 @@ export default function TripBuilder() {
       if (active) setHydrated(true);
     };
     void hydrate();
-    return () => { active = false; };
+    return () => { active = false; window.removeEventListener("easyt-language-change", updateLanguage); };
   }, []);
 
   useEffect(() => {
@@ -582,13 +588,16 @@ export default function TripBuilder() {
   return (
     <div className={styles.shellWide}>
       <nav className={styles.steps} aria-label="Trip brief progress">
-        {STEPS.map((s, i) => (
-          <button type="button" key={s.label} onClick={() => setStep(i)}
+        {copy.steps.map((label, i) => {
+          const notes = [copy.routeFirst, copy.datesSetLength, copy.spendDays, copy.howFeels];
+          return (
+          <button type="button" key={label} onClick={() => setStep(i)}
             className={`${styles.stepTab} ${i === step ? styles.stepTabOn : ""} ${i < step ? styles.stepTabDone : ""}`}>
             <b>{i < step ? "✓" : pad(i + 1)}</b>
-            <span><span>{s.label}</span><small>{s.note}</small></span>
+            <span><span>{label}</span><small>{notes[i]}</small></span>
           </button>
-        ))}
+          );
+        })}
       </nav>
 
       <div className={styles.wizardBody}>
@@ -596,8 +605,8 @@ export default function TripBuilder() {
           {step === 0 && (
             <div className={styles.stack}>
               <div className={`${styles.card} ${originMissing ? styles.cardError : ""}`}>
-                <span className={styles.cardLabel}><Plane /> Starting from</span>
-                <input value={origin} placeholder="City or airport" aria-label="Starting from"
+                <span className={styles.cardLabel}><Plane /> {copy.startFrom}</span>
+                <input value={origin} placeholder={copy.cityAirport} aria-label={copy.startFrom}
                   onChange={(e) => { setOrigin(e.target.value); setOriginTouched(true); setOriginCoordinates(undefined); setOriginError(""); }}
                   onBlur={() => { if (origin.trim() && !originCoordinates) void validateOrigin(); }} />
                 <small className={originMissing ? styles.hintError : styles.hint}>
@@ -606,8 +615,8 @@ export default function TripBuilder() {
               </div>
 
               <div className={`${styles.card} ${stopError ? styles.cardError : ""}`}>
-                <span className={styles.cardLabel}><MapPin /> Add a destination</span>
-                <input value={stopInput} placeholder="City, region or landmark" aria-label="Add a destination"
+                <span className={styles.cardLabel}><MapPin /> {copy.addDestination}</span>
+                <input value={stopInput} placeholder={copy.destinationPlaceholder} aria-label={copy.addDestination}
                   onChange={(e) => { setStopInput(e.target.value); setStopError(""); }}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addStop(); } }} />
                 <small className={stopError ? styles.hintError : styles.hint}>
@@ -838,7 +847,7 @@ export default function TripBuilder() {
       </div>
 
       <div className={styles.wizardFoot}>
-        <button type="button" className={styles.ghost} disabled={step === 0} onClick={() => setStep(Math.max(0, step - 1))}>Back</button>
+        <button type="button" className={styles.ghost} disabled={step === 0} onClick={() => setStep(Math.max(0, step - 1))}>{copy.back}</button>
         <div className={styles.footRight}>
           <small className={styles.saveState}>{saveState === "saving" ? "Saving…" : "Saved on this device"}</small>
           {gate && <small className={styles.gate}>{gate}</small>}
@@ -848,7 +857,7 @@ export default function TripBuilder() {
               if (step === 0 && !(await validateOrigin())) return;
               if (step === 3) { setGenerated(true); setActiveDay(0); } else setStep(step + 1);
             }}>
-            {step === 3 ? "Build the draft" : "Continue"} →
+            {step === 3 ? copy.buildDraft : copy.continue} →
           </button>
         </div>
       </div>

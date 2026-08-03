@@ -18,5 +18,6 @@
 .savePrompt span{font-size:13px;color:#686779}
 .savePrompt a,.savePrompt button{border-radius:999px;padding:10px 14px;font:inherit;font-size:13px;white-space:nowrap}
 .savePrompt a{background:#17152f;color:white;text-decoration:none}
+.rowActions span{border-color:#555563;color:#555563;background:#f2f2f3;transition:color .18s,background .18s,border-color .18s}.rowActions span:first-child{color:#555563}.rowActions span:last-child{color:#555563}.row:has(.visitedLabel) .rowActions span:first-child,.row:has(.wantLabel) .rowActions span:last-child{color:#fff;background:#65ae34;border-color:#65ae34}.rowActions span:hover{background:#e7e7e9}
 .savePrompt button{border:1px solid #d7d5dc;background:white;color:#17152f;cursor:pointer}
 @media(max-width:560px){.savePrompt{align-items:stretch;flex-direction:column}.savePrompt a,.savePrompt button{text-align:center}}

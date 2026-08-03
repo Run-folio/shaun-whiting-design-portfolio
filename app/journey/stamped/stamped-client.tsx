@@ -37,19 +37,42 @@ export default function StampedClient({ userKey, authenticated }: Props) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [dbLoaded, setDbLoaded] = useState(false);
   const [savePrompt, setSavePrompt] = useState(false);
+  const [language, setLanguage] = useState<"en" | "es">("en");
+  const labels = language === "es"
+    ? { eyebrow: "EASYT · SELLOS", title: "Tu mundo, marcado.", intro: "Guarda un registro vivo de los lugares donde has estado y de los que aún te esperan.", visited: "países visitados", guest: "Explorando como invitado · tus cambios se quedan en este dispositivo.", signIn: "Inicia sesión", keep: "Guarda tus sellos", keepText: "Crea una cuenta gratis para guardar este mapa en todos tus dispositivos.", create: "Crear cuenta", dismiss: "Cerrar", mapHint: "Toca un país para actualizar tu sello", visitedLabel: "Visitado", wantLabel: "Quiero ir" }
+    : { eyebrow: "EASYT · STAMPED", title: "Your world, marked.", intro: "Keep a living record of where you’ve been, and the places still calling.", visited: "countries visited", guest: "Exploring as a guest · your changes stay on this device.", signIn: "Sign in", keep: "Keep your stamps", keepText: "Create a free account to save this map and use it on every device.", create: "Create account", dismiss: "Dismiss", mapHint: "Tap a country to update its stamp", visitedLabel: "Visited", wantLabel: "Want to visit" };
   useEffect(() => {
+    setLanguage(window.localStorage.getItem("easyt-language") === "es" ? "es" : "en");
+    const updateLanguage = (event: Event) => setLanguage((event as CustomEvent<"en" | "es">).detail);
+    window.addEventListener("easyt-language-change", updateLanguage);
     let cancelled = false;
+    let localGuestStatuses: Record<string, Status> = {};
     try { const saved = window.localStorage.getItem(storageKey); if (saved) setStatuses(JSON.parse(saved)); } catch { /* use defaults */ }
     if (!isAuthenticated) {
       setDbLoaded(true);
-      return () => { cancelled = true; };
+      return () => { cancelled = true; window.removeEventListener("easyt-language-change", updateLanguage); };
     }
+    try {
+      const guestSaved = window.localStorage.getItem("easyt-stamped-guest");
+      if (guestSaved) localGuestStatuses = JSON.parse(guestSaved) as Record<string, Status>;
+    } catch { /* guest migration remains best effort */ }
     fetch("/api/easyt/stamped", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
-      .then((data) => { if (!cancelled && data?.statuses) setStatuses(data.statuses); })
+      .then(async (data) => {
+        if (cancelled || !data?.statuses) return;
+        const merged = { ...localGuestStatuses, ...data.statuses };
+        setStatuses(merged);
+        const migratedKey = `easyt-stamped-migrated-${userKey ?? "account"}`;
+        if (Object.keys(localGuestStatuses).length && !window.localStorage.getItem(migratedKey)) {
+          await Promise.all(Object.entries(localGuestStatuses).map(([countryId, status]) =>
+            data.statuses[countryId] ? Promise.resolve() : fetch("/api/easyt/stamped", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ countryId, status }) }),
+          ));
+          window.localStorage.setItem(migratedKey, "1");
+        }
+      })
       .catch(() => undefined)
       .finally(() => { if (!cancelled) setDbLoaded(true); });
-    return () => { cancelled = true; };
+    return () => { cancelled = true; window.removeEventListener("easyt-language-change", updateLanguage); };
   }, [storageKey, isAuthenticated]);
   useEffect(() => { if (dbLoaded) window.localStorage.setItem(storageKey, JSON.stringify(statuses)); }, [statuses, storageKey, dbLoaded]);
   const topo = useMemo(() => feature(worldTopology as never, worldTopology.objects.countries as never) as unknown as { features: any[] }, []);
@@ -95,13 +118,13 @@ export default function StampedClient({ userKey, authenticated }: Props) {
   const calloutHeight = selectedCountry && selectedCountry.name.length > 22 ? 136 : 112;
   const calloutX = selectedPoint ? Math.max(8, Math.min(selectedPoint[0] - calloutWidth / 2, 1200 - calloutWidth - 8)) : 8;
 
-  return <div className={styles.shell}>
-    <section className={styles.intro}><div><p className={styles.eyebrow}>EASYT · STAMPED</p><h1>Your world, marked.</h1><p>Keep a living record of where you’ve been, and the places still calling.</p></div><div className={styles.stat}><strong>{visitedCount}</strong><span>countries visited</span></div></section>
-    {!isAuthenticated && <p className={styles.guestNote}>Exploring as a guest · your changes stay on this device. <a href="/journey/login?next=%2Fjourney%2Fstamped">Sign in</a></p>}
-    {!isAuthenticated && savePrompt && <div className={styles.savePrompt} role="status"><div><strong>Keep your stamps</strong><span>Create a free account to save this map and use it on every device.</span></div><a href="/journey/login?mode=sign-up&next=%2Fjourney%2Fstamped">Create account</a><button type="button" onClick={() => setSavePrompt(false)} aria-label="Dismiss save prompt">Dismiss</button></div>}
+ return <div className={styles.shell}>
+    <section className={styles.intro}><div><p className={styles.eyebrow}>{labels.eyebrow}</p><h1>{labels.title}</h1><p>{labels.intro}</p></div><div className={styles.stat}><strong>{visitedCount}</strong><span>{labels.visited}</span></div></section>
+    {!isAuthenticated && <p className={styles.guestNote}>{labels.guest} <a href="/journey/login?next=%2Fjourney%2Fstamped">{labels.signIn}</a></p>}
+    {!isAuthenticated && savePrompt && <div className={styles.savePrompt} role="status"><div><strong>{labels.keep}</strong><span>{labels.keepText}</span></div><a href="/journey/login?mode=sign-up&next=%2Fjourney%2Fstamped">{labels.create}</a><button type="button" onClick={() => setSavePrompt(false)} aria-label={labels.dismiss}>{labels.dismiss}</button></div>}
     <div className={styles.workspace}>
       <section className={styles.mapPanel} aria-label="World map">
-        <div className={styles.mapHeader}><span>Tap a country to update its stamp</span><div className={styles.legend}><span><i className={styles.dotVisited} />Visited</span><span><i className={styles.dotWant} />Want to visit</span></div></div>
+        <div className={styles.mapHeader}><span>{labels.mapHint}</span><div className={styles.legend}><span><i className={styles.dotVisited} />{labels.visitedLabel}</span><span><i className={styles.dotWant} />{labels.wantLabel}</span></div></div>
         <svg className={styles.map} viewBox="0 0 1200 610" role="img" aria-label="Interactive world map" onClick={() => setSelected(null)}>
           {topo.features.map((feature, index) => { const name = aliases[feature.properties?.name] || feature.properties?.name; const item = countries.find((entry) => entry.name === name); const status = item ? statuses[item.id] : undefined; return <path key={feature.id || index} d={path(feature) || ""} onMouseEnter={() => item && setHovered(item.id)} onMouseLeave={() => setHovered(null)} onClick={(event) => { event.stopPropagation(); if (item) setSelected(item.id); }} className={`${styles.country} ${status === "visited" ? styles.visited : ""} ${status === "want" ? styles.want : ""} ${selected === item?.id ? styles.countrySelected : ""}`} style={status === "visited" ? { fill: colors[item?.continent || "Other"] } : undefined} />; })}
           {hovered && !selectedCountry ? (() => { const country = countries.find((entry) => entry.id === hovered); const feature = topo.features.find((entry) => (aliases[entry.properties?.name] || entry.properties?.name) === country?.name); const point = feature ? path.centroid(feature) : null; return country && point ? <foreignObject x={Math.max(8, Math.min(point[0] - 92, 980))} y={Math.max(8, Math.min(point[1] - 42, 550))} width="220" height="54" className={styles.svgLabel}><div><span>{flagFor(country.name)}</span> {country.name}<small>{statuses[country.id] === "visited" ? "Visited" : statuses[country.id] === "want" ? "Want to visit" : "Not yet"}</small></div></foreignObject> : null; })() : null}
