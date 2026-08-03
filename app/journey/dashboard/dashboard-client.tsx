@@ -8,6 +8,7 @@ import type { EasyTTrip } from "@/lib/easyt/trip";
 import { EasyTSegmentedControl } from "@/components/easyt/easyt-controls";
 import { EasyTFeedback } from "@/components/easyt/easyt-feedback";
 import { loadActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
+import { easytCopy, languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
 import styles from "../account.module.css";
 
 export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
@@ -21,6 +22,15 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
   const [giftError, setGiftError] = useState("");
   const [claimUrl, setClaimUrl] = useState("");
   const [delivered, setDelivered] = useState(false);
+  const [language, setLanguage] = useState<EasyTLanguage>("en");
+  const copy = easytCopy[language].dashboard;
+
+  useEffect(() => {
+    setLanguage(languageFromStorage());
+    const updateLanguage = (event: Event) => setLanguage((event as CustomEvent<EasyTLanguage>).detail);
+    window.addEventListener("easyt-language-change", updateLanguage);
+    return () => window.removeEventListener("easyt-language-change", updateLanguage);
+  }, []);
 
   useEffect(() => {
     const localTrip = loadActiveTrip();
@@ -47,7 +57,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
   };
 
   const remove = async (id: string) => {
-    if (!window.confirm("Remove this saved trip?")) return;
+    if (!window.confirm(language === "es" ? "¿Eliminar este viaje guardado?" : "Remove this saved trip?")) return;
     setWorking(id);
     const response = await fetch(`/api/easyt/trips/${encodeURIComponent(id)}`, {
       method: "DELETE",
@@ -77,7 +87,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
     const payload = (await response.json()) as { error?: string; claimUrl?: string; delivered?: boolean };
     if (!response.ok || !payload.claimUrl) {
       setGiftState("idle");
-      setGiftError(payload.error || "Unable to create invitation.");
+      setGiftError(payload.error || (language === "es" ? "No se pudo crear la invitación." : "Unable to create invitation."));
       return;
     }
     setClaimUrl(payload.claimUrl);
@@ -96,13 +106,13 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
   return (
     <>
       <EasyTSegmentedControl
-        ariaLabel="Trip status"
+        ariaLabel={language === "es" ? "Estado del viaje" : "Trip status"}
         className={styles.tripViews}
         value={view}
         onChange={setView}
         options={[
-          { label: "Active", value: "active", count: activeTrips.length },
-          { label: "Archived", value: "archived", count: archivedTrips.length },
+          { label: copy.active, value: "active", count: activeTrips.length },
+          { label: copy.archived, value: "archived", count: archivedTrips.length },
         ]}
       />
       <div className={styles.tripGrid}>
@@ -114,18 +124,17 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
             <Link
               className={styles.tripCardLink}
               href={`/journey/plan?trip=${encodeURIComponent(trip.id)}`}
-              aria-label={`Open ${trip.title}`}
+              aria-label={`${language === "es" ? "Abrir" : "Open"} ${trip.title}`}
             >
               <div className={styles.tripMeta}>
-                <span>{trip.status}</span>
+                <span>{trip.status === "archived" ? copy.archived : copy.active}</span>
                 <span>
                   {trip.startDate} → {trip.endDate}
                 </span>
               </div>
               <h2>{trip.title}</h2>
               <p className={styles.tripStops}>
-                {trip.stops.map((stop) => stop.name).join(" → ") ||
-                  "Your route is waiting."}
+                {trip.stops.map((stop) => stop.name).join(" → ") || copy.routeWaiting}
               </p>
             </Link>
             <div className={styles.tripFooter}>
@@ -135,7 +144,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
                   href={`/journey/new?trip=${encodeURIComponent(trip.id)}`}
                 >
                   <Edit3 aria-hidden="true" />
-                  Edit trip
+                  {copy.edit}
                 </Link>
               </div>
               <details className={styles.tripMenu}>
@@ -149,7 +158,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
                       onClick={() => runAction(trip.id, "restore")}
                     >
                       <RotateCcw aria-hidden="true" />
-                      Restore
+                      {copy.restore}
                     </button>
                   ) : (
                     <button
@@ -157,7 +166,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
                       onClick={() => runAction(trip.id, "archive")}
                     >
                       <Archive aria-hidden="true" />
-                      Archive
+                      {copy.archive}
                     </button>
                   )}
                   <button
@@ -165,11 +174,11 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
                     onClick={() => runAction(trip.id, "duplicate")}
                   >
                     <Copy aria-hidden="true" />
-                    Duplicate
+                    {copy.duplicate}
                   </button>
                   <button type="button" onClick={() => openGift(trip)}>
                     <Gift aria-hidden="true" />
-                    Gift this trip
+                    {copy.gift}
                   </button>
                   <button
                     type="button"
@@ -177,7 +186,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
                     onClick={() => remove(trip.id)}
                   >
                     <Trash2 aria-hidden="true" />
-                    Delete
+                    {copy.delete}
                   </button>
                 </div>
               </details>
@@ -188,13 +197,13 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
           <div className={styles.empty}>
             <h2>
               {view === "archived"
-                ? "Nothing archived."
-                : "Your first trip starts here."}
+                ? copy.emptyArchived
+                : copy.emptyActive}
             </h2>
             <p className={styles.muted}>
               {view === "archived"
-                ? "Trips you archive will stay safely available here."
-                : "Use “New trip” in the header to turn a few destinations into a plan you can actually travel with."}
+                ? copy.archivedHint
+                : copy.activeHint}
             </p>
           </div>
         )}
@@ -202,29 +211,29 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
       {gifting ? (
         <div className={styles.giftOverlay} role="presentation" onMouseDown={() => setGifting(null)}>
           <section className={styles.giftDialog} role="dialog" aria-modal="true" aria-labelledby="gift-title" onMouseDown={(event) => event.stopPropagation()}>
-            <button className={styles.giftClose} type="button" onClick={() => setGifting(null)} aria-label="Close gift dialog"><X aria-hidden="true" /></button>
+            <button className={styles.giftClose} type="button" onClick={() => setGifting(null)} aria-label={language === "es" ? "Cerrar diálogo" : "Close gift dialog"}><X aria-hidden="true" /></button>
             <span className={styles.giftDialogIcon}><Gift aria-hidden="true" /></span>
-            <p className={styles.eyebrow}>Gift an editable copy</p>
-            <h2 id="gift-title">Share {gifting.title}</h2>
+            <p className={styles.eyebrow}>{copy.giftTitle}</p>
+            <h2 id="gift-title">{language === "es" ? "Compartir" : "Share"} {gifting.title}</h2>
             {giftState === "complete" ? (
               <div className={styles.giftComplete}>
-                <p>{delivered ? "Invitation sent. They can claim an editable copy from their email." : "Your invitation is ready. Copy the private claim link to send it yourself."}</p>
-                <input value={claimUrl} readOnly aria-label="Gift claim link" />
-                <button type="button" className={styles.primaryLink} onClick={copyClaimUrl}>Copy claim link</button>
+                <p>{delivered ? copy.inviteSent : copy.inviteReady}</p>
+                <input value={claimUrl} readOnly aria-label={language === "es" ? "Enlace para reclamar" : "Gift claim link"} />
+                <button type="button" className={styles.primaryLink} onClick={copyClaimUrl}>{copy.copyLink}</button>
               </div>
             ) : (
               <>
-                <p className={styles.muted}>They’ll receive their own draft. Your plan is never changed.</p>
+                <p className={styles.muted}>{copy.draftHint}</p>
                 <label className={styles.field}>
-                  <span>Recipient email</span>
+                  <span>{copy.recipient}</span>
                   <input type="email" value={giftEmail} onChange={(event) => setGiftEmail(event.target.value)} placeholder="friend@example.com" autoComplete="email" />
                 </label>
                 <label className={styles.field}>
-                  <span>Note (optional)</span>
-                  <textarea value={giftNote} onChange={(event) => setGiftNote(event.target.value)} placeholder="A little head start for our next adventure…" maxLength={500} />
+                  <span>{copy.note}</span>
+                  <textarea value={giftNote} onChange={(event) => setGiftNote(event.target.value)} placeholder={language === "es" ? "Un pequeño adelanto para nuestra próxima aventura…" : "A little head start for our next adventure…"} maxLength={500} />
                 </label>
                 {giftError ? <p className={styles.syncError}>{giftError}</p> : null}
-                <button type="button" className={styles.primaryLink} onClick={sendGift} disabled={giftState === "sending"}>{giftState === "sending" ? "Creating invite…" : "Create invitation"}</button>
+                <button type="button" className={styles.primaryLink} onClick={sendGift} disabled={giftState === "sending"}>{giftState === "sending" ? copy.creatingInvite : copy.createInvite}</button>
               </>
             )}
           </section>

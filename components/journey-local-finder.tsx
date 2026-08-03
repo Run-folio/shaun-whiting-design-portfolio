@@ -10,7 +10,7 @@ type MealPace = "quick" | "relaxed" | "occasion";
 type MealMood = "local" | "comfort" | "surprise";
 type StayStyle = "simple" | "character" | "comfort";
 
-export function JourneyLocalFinder({ kind, city, country, dayId, coordinates, onRestaurantSelect }: { kind: "restaurant" | "stay"; city: string; country: string; dayId: string; coordinates: [number, number]; onRestaurantSelect?: (restaurant?: JourneyRestaurant, meal?: RestaurantMeal) => void }) {
+export function JourneyLocalFinder({ kind, city, country, dayId, coordinates, onRestaurantSelect, onSavePlace }: { kind: "restaurant" | "stay"; city: string; country: string; dayId: string; coordinates: [number, number]; onRestaurantSelect?: (restaurant?: JourneyRestaurant, meal?: RestaurantMeal) => void; onSavePlace?: (place: { name: string; coordinates: [number, number] }, kind: "restaurant" | "stay") => void }) {
   const [meal, setMeal] = useState<RestaurantMeal | undefined>();
   const [pace, setPace] = useState<MealPace | undefined>();
   const [mood, setMood] = useState<MealMood | undefined>();
@@ -54,6 +54,10 @@ export function JourneyLocalFinder({ kind, city, country, dayId, coordinates, on
     if (kind !== "restaurant" || !saved || !onRestaurantSelect) return onRestaurantSelect?.();
     onRestaurantSelect({ name: saved.name, area: city, summary: saved.address, order: "Confirm current opening hours", pace: [pace ?? "quick"], craving: ["signature"], spend: ["mid"], meal: [meal ?? "dinner"], dish: ["local"], coordinates: saved.coordinates, fit: `Saved for this specific ${city} day.`, mapsUrl: saved.mapsUrl }, meal ?? "dinner");
   }, [city, kind, meal, onRestaurantSelect, pace, saved]);
+
+  useEffect(() => {
+    if (saved) onSavePlace?.({ name: saved.name, coordinates: saved.coordinates }, kind);
+  }, [kind, onSavePlace, saved]);
 
   const candidates = useMemo(() => {
     if (!isReady) return [];
