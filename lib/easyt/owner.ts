@@ -10,6 +10,14 @@ export type EasyTOwner = {
   name: string | null;
 };
 
+export function isEasyTAdmin(email: string) {
+  const admins = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  return admins.includes(email.trim().toLowerCase());
+}
+
 export async function requireEasyTOwner(): Promise<EasyTOwner> {
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user?.id || !session.user.email) throw new Error("Unauthorized");
