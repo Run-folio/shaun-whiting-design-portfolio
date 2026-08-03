@@ -16,6 +16,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { clearActiveTrip } from "@/lib/easyt/storage";
 import { EasyTLinkButton } from "@/components/easyt/easyt-controls";
+import { easytCopy, type EasyTLanguage } from "@/lib/easyt/i18n";
 import styles from "./easyt-navigation.module.css";
 
 type EasyTNavigationProps = {
@@ -23,30 +24,7 @@ type EasyTNavigationProps = {
   account?: { name?: string | null; email: string; language?: Language };
 };
 
-const copy = {
-  en: {
-    prototype: "Prototype",
-    trips: "My trips",
-    newTrip: "New trip",
-    stamped: "Stamps",
-    account: "Account",
-    profile: "Profile",
-    language: "Language",
-    signOut: "Sign out",
-  },
-  es: {
-    prototype: "Prototipo",
-    trips: "Mis viajes",
-    newTrip: "Nuevo viaje",
-    stamped: "Sellos",
-    account: "Cuenta",
-    profile: "Perfil",
-    language: "Idioma",
-    signOut: "Cerrar sesión",
-  },
-} as const;
-
-type Language = keyof typeof copy;
+type Language = EasyTLanguage;
 
 export default function EasyTNavigation({
   current,
@@ -71,6 +49,7 @@ export default function EasyTNavigation({
     setLanguage(next);
     window.localStorage.setItem("easyt-language", next);
     document.documentElement.lang = next;
+    window.dispatchEvent(new CustomEvent("easyt-language-change", { detail: next }));
     if (activeAccount) {
       void fetch("/api/easyt/profile", {
         method: "PATCH",
@@ -86,7 +65,7 @@ export default function EasyTNavigation({
     router.refresh();
   };
 
-  const labels = copy[language];
+  const labels = easytCopy[language].nav;
   const activeAccount =
     account ||
     (session?.user
@@ -104,10 +83,10 @@ export default function EasyTNavigation({
           if (window.history.length > 1) router.back();
           else router.push("/journey/dashboard");
         }}
-        aria-label="Go back"
+        aria-label={labels.back}
       >
         <ArrowLeft aria-hidden="true" />
-        <span>Back</span>
+        <span>{labels.back}</span>
       </button>
 
       <Link

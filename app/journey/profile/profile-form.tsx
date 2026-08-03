@@ -8,6 +8,7 @@ import {
   EasyTSelect,
 } from "@/components/easyt/easyt-controls";
 import styles from "../account.module.css";
+import { easytCopy } from "@/lib/easyt/i18n";
 
 export default function ProfileForm({
   name: initialName,
@@ -22,10 +23,14 @@ export default function ProfileForm({
   const [language, setLanguage] = useState(initialLanguage);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const copy = easytCopy[language];
 
   useEffect(() => {
     window.localStorage.setItem("easyt-language", initialLanguage);
     document.documentElement.lang = initialLanguage;
+    const updateLanguage = (event: Event) => setLanguage((event as CustomEvent<"en" | "es">).detail);
+    window.addEventListener("easyt-language-change", updateLanguage);
+    return () => window.removeEventListener("easyt-language-change", updateLanguage);
   }, [initialLanguage]);
 
   const save = async (event: FormEvent) => {
@@ -60,13 +65,13 @@ export default function ProfileForm({
   return (
     <div className={styles.profileGrid}>
       <form className={styles.profileCard} onSubmit={save}>
-        <h2>Personal details</h2>
-        <EasyTField label="Name" value={name} onChange={(event) => setName(event.target.value)} />
-        <EasyTField label="Email" value={email} disabled readOnly />
-        <EasyTButton type="submit" loading={saving}>Save profile</EasyTButton>
+        <h2>{copy.account.personal}</h2>
+        <EasyTField label={copy.account.name} value={name} onChange={(event) => setName(event.target.value)} />
+        <EasyTField label={copy.account.email} value={email} disabled readOnly />
+        <EasyTButton type="submit" loading={saving}>{copy.account.saveProfile}</EasyTButton>
       </form>
       <section className={styles.profileCard}>
-        <h2>Preferences</h2>
+        <h2>{copy.account.preferences}</h2>
         <EasyTSelect
           label="Language"
           value={language}
@@ -75,10 +80,7 @@ export default function ProfileForm({
           <option value="en">English</option>
           <option value="es">Español</option>
         </EasyTSelect>
-        <p className={styles.muted}>
-          Your navigation language follows your EasyT account. Full trip
-          translation can follow as the product grows.
-        </p>
+        <p className={styles.muted}>{copy.account.languageHint}</p>
       </section>
       {message ? (
         <p className={styles.profileMessage} role="status">
