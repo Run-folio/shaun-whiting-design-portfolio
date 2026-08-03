@@ -117,6 +117,33 @@ export async function createEasyTFeedback(input: {
   `;
 }
 
+export type EasyTFeedbackRow = {
+  id: string;
+  ownerId: string | null;
+  ownerEmail: string | null;
+  rating: number;
+  comment: string | null;
+  surface: string;
+  createdAt: string;
+};
+
+export async function listEasyTFeedback(): Promise<EasyTFeedbackRow[]> {
+  const sql = getEasyTDatabase();
+  return (await sql`
+    select feedback.id,
+      feedback.owner_id as "ownerId",
+      users.email as "ownerEmail",
+      feedback.rating,
+      feedback.comment,
+      feedback.surface,
+      feedback.created_at as "createdAt"
+    from easyt_feedback feedback
+    left join easyt_users users on users.id = feedback.owner_id
+    order by feedback.created_at desc
+    limit 500
+  `) as EasyTFeedbackRow[];
+}
+
 export async function listTripsForOwner(ownerId: string): Promise<EasyTTrip[]> {
   const sql = getEasyTDatabase();
   const rows = (await sql`
