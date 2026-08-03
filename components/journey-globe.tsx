@@ -146,7 +146,7 @@ function TransportGlyph({ mode, angle = 0 }: { mode: JourneyLeg["mode"]; angle?:
   return <BusFront {...props} />;
 }
 
-export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeItems, previewImage, detailImageSrc, dayPlace, restaurant, plannerPins = [], pinPlacementMode = false, onMapPinDrop, onPlannerPinSelect, onSelect, variant = "story" }: { stops: JourneyStop[]; legs: JourneyLeg[]; selectedId: string; selectedDayId: string; activeItems: string[]; previewImage?: JourneyImage; detailImageSrc?: string; dayPlace?: JourneyMapPlace; restaurant?: { restaurant: JourneyRestaurant; meal?: RestaurantMeal }; plannerPins?: PlannerMapPin[]; pinPlacementMode?: boolean; onMapPinDrop?: (coordinates: [number, number]) => void; onPlannerPinSelect?: (pin: PlannerMapPin) => void; onSelect: (id: string) => void; variant?: "story" | "planner" }) {
+export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeItems, previewImage, detailImageSrc, dayPlace, restaurant, plannerPins = [], pinPlacementMode = false, onMapPinDrop, onPlannerPinSelect, onZoomIntoDetail, onSelect, variant = "story" }: { stops: JourneyStop[]; legs: JourneyLeg[]; selectedId: string; selectedDayId: string; activeItems: string[]; previewImage?: JourneyImage; detailImageSrc?: string; dayPlace?: JourneyMapPlace; restaurant?: { restaurant: JourneyRestaurant; meal?: RestaurantMeal }; plannerPins?: PlannerMapPin[]; pinPlacementMode?: boolean; onMapPinDrop?: (coordinates: [number, number]) => void; onPlannerPinSelect?: (pin: PlannerMapPin) => void; onZoomIntoDetail?: () => void; onSelect: (id: string) => void; variant?: "story" | "planner" }) {
   const [routeOpen, setRouteOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [restaurantOpen, setRestaurantOpen] = useState(false);
@@ -205,6 +205,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const wheelFrameRef = useRef(0);
   const wheelTargetRef = useRef<View | null>(null);
   const mountedRef = useRef(false);
+  const detailOpenedRef = useRef(false);
 
   useLayoutEffect(() => {
     if (!mountedRef.current) {
@@ -282,7 +283,18 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
     return { scale, x: anchorX - (anchorX - current.x) * ratio, y: anchorY - (anchorY - current.y) * ratio };
   }
 
+  function openLocalDetailIfNeeded(nextScale: number) {
+    // One deliberate zoom step from the branded route overview should take a
+    // traveller into the useful, street-level planning mode for that stop.
+    const threshold = Math.max(1.55, routeView.scale * 1.3);
+    if (variant !== "planner" || !onZoomIntoDetail || detailOpenedRef.current || nextScale < threshold) return false;
+    detailOpenedRef.current = true;
+    onZoomIntoDetail();
+    return true;
+  }
+
   function zoomAt(nextScale: number, anchorX = focusPoint[0], anchorY = focusPoint[1]) {
+    if (openLocalDetailIfNeeded(nextScale)) return;
     animateTo(zoomedView(viewRef.current, nextScale, anchorX, anchorY));
   }
 
@@ -295,6 +307,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
     cancelAnimationFrame(transitionFrameRef.current);
     const base = wheelTargetRef.current ?? viewRef.current;
     wheelTargetRef.current = zoomedView(base, base.scale * Math.exp(-event.deltaY * 0.001), anchorX, anchorY);
+    if (openLocalDetailIfNeeded(wheelTargetRef.current.scale)) return;
     if (wheelFrameRef.current) return;
     const smoothWheel = () => {
       const target = wheelTargetRef.current;
@@ -353,6 +366,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
         const anchorX = ((centerX - rect.left) / rect.width) * width;
         const anchorY = ((centerY - rect.top) / rect.height) * height;
         const next = zoomedView(viewRef.current, pinchRef.current.scale * (distance / pinchRef.current.distance), anchorX, anchorY);
+        if (openLocalDetailIfNeeded(next.scale)) return;
         writeView(next);
       }
       event.preventDefault();

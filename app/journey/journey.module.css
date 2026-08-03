@@ -132,7 +132,8 @@
 .journey :global(.planner-map__pin:hover){transform:rotate(-45deg) scale(1.14)}
 .journey :global(.planner-map__pin.is-restaurant){background:#287952}.journey :global(.planner-map__pin.is-stay){background:#6446a6}.journey :global(.planner-map__pin.is-activity){background:#d57418}.journey :global(.planner-map__pin.is-transport){background:#2767b2}.journey :global(.planner-map__pin.is-custom){background:#ff3d8b}
 .journey :global(.planner-map__draft-pin){display:grid;width:34px;height:34px;place-items:center;color:#ff3d8b;background:#fff;border:2px dashed #ff3d8b;border-radius:50% 50% 50% 0;box-shadow:0 5px 15px rgba(255,61,139,.25);font:800 17px/1 sans-serif;pointer-events:none;transform:rotate(-45deg)}.journey :global(.planner-map__draft-pin span){transform:rotate(45deg)}
-.mapModeControl{position:absolute;z-index:9;top:174px;right:clamp(20px,3.5vw,52px);display:grid;gap:5px;justify-items:end;padding:8px 9px;background:rgba(255,255,255,.92);border:1px solid rgba(31,29,61,.14);border-radius:8px;box-shadow:0 8px 26px rgba(31,29,61,.1);backdrop-filter:blur(10px)}.mapModeControl small{color:var(--signal);font:750 6.5px var(--font-geist-mono,monospace);letter-spacing:.12em}.mapModeControl button{min-height:26px;padding:0 9px;color:#fff;background:var(--accent);border:0;border-radius:999px;font:700 8px var(--font-geist-mono,monospace);cursor:pointer}.mapModeControl button:hover{background:var(--signal)}
+.mapOverviewLayer,.mapDetailLayer{position:absolute;inset:0;z-index:0}.mapOverviewLayer{opacity:1;transition:opacity .34s ease}.mapLayerHidden{opacity:0;pointer-events:none}.mapLayerActive{opacity:1}.mapDetailLayer{animation:map-detail-in .34s ease both}@keyframes map-detail-in{from{opacity:0;transform:scale(1.012)}to{opacity:1;transform:scale(1)}}
+.mapModeControl{display:grid;gap:5px;justify-items:center;padding:8px 10px;background:rgba(255,255,255,.94);border:1px solid rgba(31,29,61,.14);border-radius:12px;box-shadow:0 10px 28px rgba(31,29,61,.14);backdrop-filter:blur(10px)}.mapModeControl small{color:var(--signal);font:750 6.5px var(--font-geist-mono,monospace);letter-spacing:.12em}.mapModeControl button{min-height:30px;padding:0 11px;color:#fff;background:var(--accent);border:0;border-radius:999px;font:700 8px var(--font-geist-mono,monospace);cursor:pointer}.mapModeControl button:hover{background:var(--signal)}
 
 /* One connected navigation and timeline bar */
 .topbar{position:relative;z-index:8;background:rgba(255,255,255,.94);border-bottom:1px solid #dedfe3;box-shadow:0 6px 20px rgba(31,29,61,.035);backdrop-filter:blur(16px)}
@@ -141,11 +142,11 @@
 .titleLockup{min-width:0;max-width:min(42vw,560px);overflow:hidden;text-align:center;font-family:Geist,Inter,"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;font-size:18px;font-weight:340;line-height:1;letter-spacing:-.025em;text-transform:none;text-overflow:ellipsis;white-space:nowrap}
 .titleLockup>span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .titleLockup small{display:block;margin-top:7px;font-family:"Geist Mono","JetBrains Mono",SFMono-Regular,Menlo,monospace;font-size:8px;font-weight:600;line-height:1;letter-spacing:.14em;color:rgba(0,0,0,.48);text-transform:uppercase}
-.playButton{position:absolute;z-index:10;left:50%;bottom:24px;display:grid;grid-template-columns:24px auto auto;align-items:center;gap:9px;min-width:190px;padding:8px 10px 8px 8px;color:#fff;background:var(--accent);border:1px solid rgba(255,255,255,.65);border-radius:999px;box-shadow:0 10px 30px rgba(31,29,61,.24);font-family:var(--font-geist-mono,monospace);cursor:pointer;transform:translateX(-50%);transition:background .2s,box-shadow .2s,transform .2s}
+.bottomControls{position:absolute;z-index:10;bottom:24px;left:50%;display:flex;align-items:center;gap:9px;transform:translateX(-50%)}.playButton{position:relative;display:grid;grid-template-columns:24px auto auto;align-items:center;gap:9px;min-width:190px;padding:8px 10px 8px 8px;color:#fff;background:var(--accent);border:1px solid rgba(255,255,255,.65);border-radius:999px;box-shadow:0 10px 30px rgba(31,29,61,.24);font-family:var(--font-geist-mono,monospace);cursor:pointer;transition:background .2s,box-shadow .2s,transform .2s}
 .playButton>span{display:grid;width:24px;height:24px;place-items:center;border-radius:50%;color:var(--accent);background:#fff;font-size:8px}
 .playButton strong{font-size:9px;font-weight:700;letter-spacing:.035em}
 .playButton small{justify-self:end;padding-left:7px;color:rgba(255,255,255,.6);font-size:7px;border-left:1px solid rgba(255,255,255,.18)}
-.playButton:hover{background:#000;box-shadow:0 13px 34px rgba(31,29,61,.3);transform:translateX(-50%) translateY(-2px)}
+.playButton:hover{background:#000;box-shadow:0 13px 34px rgba(31,29,61,.3);transform:translateY(-2px)}
 .playButton.playing{background:var(--signal)}
 .timeline{padding:0 clamp(12px,3.4vw,56px) 9px}
 .track{display:grid;overflow-x:auto;scrollbar-width:none;padding:12px 0 10px;scroll-padding-inline:50%;scroll-behavior:smooth;overscroll-behavior-inline:contain;touch-action:pan-x;overscroll-behavior-y:none}
@@ -168,6 +169,7 @@
 
 /* Connected itinerary card */
 .destination{position:absolute;z-index:6;left:clamp(20px,3.5vw,52px);top:194px;width:min(390px,calc(100vw - 40px));max-height:calc(100svh - 272px);padding:20px 22px 21px;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:smooth;scrollbar-width:thin;background:rgba(255,255,255,.95);border:1px solid #dcdde1;border-radius:12px;box-shadow:0 12px 28px -12px rgba(0,0,0,.17);backdrop-filter:blur(14px)}
+.destinationWithPinDock{max-height:calc(100svh - 374px)}
 .destinationIntro{position:relative}
 .destinationLine{position:absolute;left:-22px;top:0;bottom:-3px;width:3px;background:var(--signal)}
 .introTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
@@ -284,6 +286,7 @@
 .detailSections details[open] summary span{transform:rotate(45deg)}
 .detailSections details p{max-width:350px;margin:0 0 11px;color:rgba(0,0,0,.62);font-size:12px;line-height:1.55}
 .itineraryPanel{position:absolute;z-index:6;right:clamp(20px,3.5vw,52px);top:194px;width:290px;max-height:calc(100svh - 272px);padding:20px;overflow-y:auto;scrollbar-width:thin;background:rgba(255,255,255,.95);border:1px solid #dcdde1;border-radius:12px;box-shadow:0 12px 28px -12px rgba(0,0,0,.17);backdrop-filter:blur(14px)}
+.pinDock,.finderDock{position:absolute;z-index:8;width:290px;background:rgba(255,255,255,.96);border:1px solid #dcdde1;border-radius:12px;box-shadow:0 12px 28px -12px rgba(0,0,0,.2);backdrop-filter:blur(14px)}.pinDock{bottom:24px;left:clamp(20px,3.5vw,52px)}.pinDock details{padding:0}.pinDock summary{display:flex;align-items:center;gap:8px;min-height:54px;padding:10px 12px;cursor:pointer;list-style:none}.pinDock summary::-webkit-details-marker{display:none}.pinDock summary>svg{width:18px;color:var(--signal)}.pinDock summary span{display:grid;gap:1px;margin-right:auto}.pinDock summary small{color:var(--signal);font:700 6.5px var(--font-geist-mono,monospace);letter-spacing:.1em}.pinDock summary strong{color:var(--accent);font:650 10px var(--font-geist-sans,Geist,Inter,sans-serif)}.pinDock summary b{display:grid;width:22px;height:22px;place-items:center;color:var(--accent);background:var(--mist);border-radius:50%;font:700 8px var(--font-geist-mono,monospace)}.pinDock details[open] summary{border-bottom:1px solid rgba(31,29,61,.1)}.pinDock .pinComposer{margin:0;border:0;border-radius:0 0 12px 12px}.finderDock{right:clamp(20px,3.5vw,52px);bottom:24px;max-height:min(350px,calc(100svh - 340px));padding:0 12px 12px;overflow:auto}.finderDock .restaurantFinder{margin:12px 0 0}
 .itineraryEyebrow{margin:0;color:var(--signal);font:700 9px var(--font-geist-mono,monospace);letter-spacing:.12em;text-transform:uppercase}
 .itineraryEyebrow span{display:inline-block;width:3px;height:3px;margin:0 6px 2px;border-radius:50%;background:var(--signal)}
 .itineraryPanel h2{margin:16px 0 4px;color:var(--ink);font-size:26px;font-weight:420;line-height:1.02;letter-spacing:-.04em}
@@ -331,8 +334,10 @@
   .segment{left:19px;width:calc(100% - 5px)}
   .stop strong{font-size:11px}
   .journey :global(.journey-map){inset:142px 0 auto;height:304px;border-bottom:1px solid rgba(31,29,61,.14);touch-action:none}
+  .journey :global(.planner-map){inset:142px 0 auto;height:304px;border-bottom:1px solid rgba(31,29,61,.14);touch-action:pan-x pan-y}
   .vignette,.grain{display:none}
   .destination{position:relative;left:auto;top:auto;width:calc(100% - 28px);max-width:620px;max-height:none;margin:16px auto 0;padding:17px 18px 18px 21px;overflow:visible;border-radius:10px}
+  .destinationWithPinDock{max-height:none}
   .destinationLine{left:-21px}
   .destinationTitle h1{font-size:43px}
   .introTop{gap:9px}
@@ -342,14 +347,15 @@
   .highlights{max-width:300px}
   .detailSections{display:none}
   .itineraryPanel{display:block;position:relative;right:auto;top:auto;width:calc(100% - 28px);max-width:620px;max-height:none;margin:12px auto 0;padding:18px;overflow:visible;border-radius:10px}
+  .pinDock,.finderDock{position:relative;right:auto;bottom:auto;left:auto;width:calc(100% - 28px);max-width:620px;max-height:none;margin:12px auto 0;overflow:visible}.finderDock{padding:0 18px 18px}.pinDock summary{min-height:52px}.pinDock .pinComposer{padding:10px 18px 18px}
   .itineraryPanel h2{font-size:25px}
   .itineraryPanel li{padding:12px 0;font-size:12px}
   .itineraryPanel{padding-bottom:22px}.editingHint{font-size:9px}.mobileDayMove{display:flex;align-items:center;gap:6px;margin-top:10px;padding:8px;background:#f7f7f5;border:1px solid rgba(31,29,61,.1)}.mobileDayMove span{margin-right:auto;color:rgba(31,29,61,.5);font:700 6.5px var(--font-geist-mono,monospace);letter-spacing:.08em}.mobileDayMove button{display:flex;align-items:center;gap:3px;min-height:28px;padding:0 7px;color:var(--accent);background:#fff;border:1px solid rgba(31,29,61,.14);border-radius:4px;font:700 7px var(--font-geist-mono,monospace)}.mobileDayMove button:disabled{opacity:.35}.mobileDayMove svg{width:11px}.mobileActivityMove{display:flex;gap:2px}.mobileActivityMove button{display:grid;width:22px;height:22px;place-items:center;padding:0;color:var(--accent);background:#f7f7f5;border:1px solid rgba(31,29,61,.11);border-radius:3px}.mobileActivityMove button:disabled{opacity:.3}.mobileActivityMove svg{width:10px}.itineraryPanel .editableActivities li{grid-template-columns:18px 11px minmax(0,1fr) auto auto 18px;gap:4px}.activityGrip{display:none}.yourActivity{display:none}.removeActivity{width:22px;height:22px}.customActivityInput{font-size:12px}
-  .playButton{position:fixed;bottom:12px;min-width:184px}
+  .bottomControls{position:fixed;bottom:12px;width:calc(100% - 24px);justify-content:center;gap:7px}.playButton{min-width:0}.playButton small{display:none}
   .undoToast{position:fixed;bottom:60px}
   .journey :global(.journey-map__controls){top:12px}
   .journey :global(.journey-map__zoom-readout){top:22px}
-  .mapModeControl{top:12px;right:62px}.mapModeControl small{display:none}
+  .mapModeControl{max-width:calc(100vw - 225px);padding:7px 8px}.mapModeControl small{display:none}.mapModeControl button{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .journey :global(.journey-map__ocean-label){font-size:11px}
   .journey :global(.journey-map__stop-label){font-size:9px}
   .journey :global(.journey-map__place text){font-size:9px}
@@ -368,6 +374,8 @@
   .myTripsLink{padding-inline:10px}.createTripLink span{display:none}.createTripLink{width:34px;padding:0;justify-content:center}
   .journey{padding-top:428px}
   .journey :global(.journey-map){height:286px}
+  .journey :global(.planner-map){height:286px}
+  .bottomControls{width:calc(100% - 18px);gap:5px}.mapModeControl{max-width:calc(100vw - 194px)}.mapModeControl button{padding:0 8px}
   .titleLockup{max-width:46vw;font-size:13px}
   .destinationTitle{gap:9px}
   .destinationTitle h1{font-size:40px}
