@@ -335,6 +335,7 @@ export default function JourneyPage() {
   const selectedPlanItem = customTrip?.planItems.find((item) => item.dayNumber === selectedDayIndex + 1);
   const selectedActivities = selectedPlanItem?.notes ?? selectedDay.items;
   const selectedDayNotes = customTrip?.brief.dayNotes?.[selectedDayIndex + 1] ?? [];
+  useEffect(() => { setSelectedPlannerPin(null); }, [selectedDayId]);
   const selectedScheduleSignals = useMemo(() => {
     const signals: string[] = [];
     if (selectedActivities.length >= 4) signals.push(`${selectedActivities.length} activities: keep travel tight.`);
@@ -710,24 +711,7 @@ export default function JourneyPage() {
     <main className={styles.journey}>
       {isPlanningPreview && isCustomJourney ? (
         <>
-          {mapMode === "detail" ? (
-            <JourneyPlannerMap
-              stops={journey.stops}
-              legs={journey.legs}
-              selectedId={selectedId}
-              plannerPins={customTrip?.brief.mapPins ?? []}
-              draftPinCoordinates={pinCoordinates}
-              pinPlacementMode={pinPlacementMode}
-              onMapPinDrop={(coordinates) => { setPinCoordinates(coordinates); setPinPlacementMode(false); }}
-              onPlannerPinSelect={setSelectedPlannerPin}
-              onSelect={(id) => {
-                setIsPlaying(false);
-                setSelectedId(id);
-                const matchingDay = journey.calendar.find((day) => day.stopId === id);
-                if (matchingDay) setSelectedDayId(matchingDay.id);
-              }}
-            />
-          ) : (
+          <div className={`${styles.mapOverviewLayer} ${mapMode === "overview" ? styles.mapLayerActive : styles.mapLayerHidden}`}>
             <JourneyGlobe
               stops={journey.stops}
               legs={journey.legs}
@@ -742,6 +726,7 @@ export default function JourneyPage() {
               pinPlacementMode={pinPlacementMode}
               onMapPinDrop={(coordinates) => { setPinCoordinates(coordinates); setPinPlacementMode(false); }}
               onPlannerPinSelect={setSelectedPlannerPin}
+              onZoomIntoDetail={() => setMapMode("detail")}
               variant="planner"
               onSelect={(id) => {
                 setIsPlaying(false);
@@ -750,13 +735,25 @@ export default function JourneyPage() {
                 if (matchingDay) setSelectedDayId(matchingDay.id);
               }}
             />
-          )}
-          <div className={styles.mapModeControl}>
-            <small>{mapMode === "overview" ? "TRIP OVERVIEW" : "LOCAL DETAIL"}</small>
-            <button type="button" onClick={() => setMapMode((mode) => mode === "overview" ? "detail" : "overview")}>
-              {mapMode === "overview" ? `Zoom into ${selected.city}` : "View trip overview"}
-            </button>
           </div>
+          {mapMode === "detail" ? <div className={styles.mapDetailLayer}>
+            <JourneyPlannerMap
+              stops={journey.stops}
+              legs={journey.legs}
+              selectedId={selectedId}
+              plannerPins={(customTrip?.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem?.dayNumber)}
+              draftPinCoordinates={pinCoordinates}
+              pinPlacementMode={pinPlacementMode}
+              onMapPinDrop={(coordinates) => { setPinCoordinates(coordinates); setPinPlacementMode(false); }}
+              onPlannerPinSelect={setSelectedPlannerPin}
+              onSelect={(id) => {
+                setIsPlaying(false);
+                setSelectedId(id);
+                const matchingDay = journey.calendar.find((day) => day.stopId === id);
+                if (matchingDay) setSelectedDayId(matchingDay.id);
+              }}
+            />
+          </div> : null}
         </>
       ) : (
         <>
@@ -830,7 +827,7 @@ export default function JourneyPage() {
         </nav>
       </header>
 
-      <section className={styles.destination} aria-live="polite">
+      <section className={`${styles.destination} ${isPlanningPreview && isCustomJourney ? styles.destinationWithPinDock : ""}`} aria-live="polite">
         <motion.div
           key={selected.id}
           initial={hasMounted.current ? { opacity: 0, x: -7, filter: "blur(2px)" } : false}
@@ -914,14 +911,6 @@ export default function JourneyPage() {
               {selectedDayNotes.map((note, index) => <p key={`${note}-${index}`}>{note}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, dayNotes: { ...(trip.brief.dayNotes ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.dayNotes?.[selectedPlanItem.dayNumber] ?? []).filter((_, noteIndex) => noteIndex !== index) } } }))} aria-label="Remove note"><Trash2 /></button></p>)}
               <form onSubmit={(event) => { event.preventDefault(); addDayNote(); }}><input value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Add a note to yourself" /><button type="submit" disabled={!noteDraft.trim()}>Add note</button></form>
             </section>
-            <section className={styles.pinComposer} aria-label="Add a map pin">
-              <div><MapPin /><span><small>MAP PINS</small><strong>Add to this day</strong></span></div>
-              <div className={styles.pinCategories}>{(["restaurant", "stay", "activity", "transport", "custom"] as PlannerPinCategory[]).map((category) => <button key={category} type="button" aria-pressed={pinCategory === category} onClick={() => setPinCategory(category)}>{category}</button>)}</div>
-              <div className={styles.pinPlacement}><button type="button" aria-pressed={pinPlacementMode} onClick={() => { setPinPlacementMode((active) => !active); setPinCoordinates(null); }}>{pinPlacementMode ? "Click map…" : "Place on map"}</button>{pinCoordinates ? <span>Map location selected</span> : <small>or add near {selected.city}</small>}</div>
-              <form onSubmit={(event) => { event.preventDefault(); addPin(); }}><input value={pinDraft} onChange={(event) => setPinDraft(event.target.value)} placeholder="Name this place" /><button type="submit" disabled={!pinDraft.trim() || !selected.coordinates}>Pin</button></form>
-              {(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).map((pin) => <p key={pin.id}><i className={`${styles.pinDot} ${styles[`pin${pin.category[0].toUpperCase()}${pin.category.slice(1)}`]}`} />{pin.title}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== pin.id) } }))} aria-label={`Remove ${pin.title}`}><Trash2 /></button></p>)}
-              {selectedPlannerPin ? <div className={styles.selectedPinDetail}><small>SELECTED PIN</small><strong>{selectedPlannerPin.title}</strong><span>{selectedPlannerPin.category} · Day {selectedPlannerPin.dayNumber}</span><button type="button" onClick={() => { updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== selectedPlannerPin.id) } }), "Map pin removed"); setSelectedPlannerPin(null); }}>Remove selected pin</button></div> : null}
-            </section>
           </> : <ol>
             {selectedDay.items.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, "0")}</b><span>{item}</span></li>)}
             {selectedRestaurant ? <li className={styles.savedRestaurant}>
@@ -943,15 +932,41 @@ export default function JourneyPage() {
             setSelectedDayId(nextDay.id);
             setSelectedId(nextDay.stopId);
           }}><small>Next</small><span>{journey.calendar[selectedDayIndex + 1].date}</span><strong>{journey.calendar[selectedDayIndex + 1].city} →</strong></button> : null}
-          {isCustomJourney && selected.coordinates ? <><JourneyLocalFinder kind="restaurant" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} onSavePlace={saveLocalVenue} /><JourneyLocalFinder kind="stay" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onSavePlace={saveLocalVenue} /></> : !isCustomJourney ? <JourneyRestaurantFinder stopId={selected.id} city={selected.city} dayId={selectedDay.id} onSelectRestaurant={handleRestaurantSelect} /> : null}
+          {!isCustomJourney ? <JourneyRestaurantFinder stopId={selected.id} city={selected.city} dayId={selectedDay.id} onSelectRestaurant={handleRestaurantSelect} /> : null}
         </motion.div>
       </aside>
 
-      <button className={`${styles.playButton} ${isPlaying ? styles.playing : ""}`} onClick={() => setIsPlaying((playing) => !playing)} aria-label={isPlaying ? "Pause journey sequence" : "Play journey sequence"}>
-        <span>{isPlaying ? "Ⅱ" : "▶"}</span>
-        <strong>{isPlaying ? "Pause journey" : "Play journey"}</strong>
-        <small>{selectedDayIndex + 1} / {journey.calendar.length}</small>
-      </button>
+      {isPlanningPreview && customTrip && selectedPlanItem ? <aside className={styles.pinDock} aria-label="Map pins">
+        <details>
+          <summary><MapPin /><span><small>MAP PINS</small><strong>Add to this day</strong></span><b>{(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).length}</b></summary>
+          <div className={styles.pinComposer}>
+            <div className={styles.pinCategories}>{(["restaurant", "stay", "activity", "transport", "custom"] as PlannerPinCategory[]).map((category) => <button key={category} type="button" aria-pressed={pinCategory === category} onClick={() => setPinCategory(category)}>{category}</button>)}</div>
+            <div className={styles.pinPlacement}><button type="button" aria-pressed={pinPlacementMode} onClick={() => { setPinPlacementMode((active) => !active); setPinCoordinates(null); }}>{pinPlacementMode ? "Click map…" : "Place on map"}</button>{pinCoordinates ? <span>Map location selected</span> : <small>or add near {selected.city}</small>}</div>
+            <form onSubmit={(event) => { event.preventDefault(); addPin(); }}><input value={pinDraft} onChange={(event) => setPinDraft(event.target.value)} placeholder="Name this place" /><button type="submit" disabled={!pinDraft.trim() || !selected.coordinates}>Pin</button></form>
+            {(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).map((pin) => <p key={pin.id}><i className={`${styles.pinDot} ${styles[`pin${pin.category[0].toUpperCase()}${pin.category.slice(1)}`]}`} />{pin.title}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== pin.id) } }))} aria-label={`Remove ${pin.title}`}><Trash2 /></button></p>)}
+            {selectedPlannerPin ? <div className={styles.selectedPinDetail}><small>SELECTED PIN</small><strong>{selectedPlannerPin.title}</strong><span>{selectedPlannerPin.category} · Day {selectedPlannerPin.dayNumber}</span><button type="button" onClick={() => { updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== selectedPlannerPin.id) } }), "Map pin removed"); setSelectedPlannerPin(null); }}>Remove selected pin</button></div> : null}
+          </div>
+        </details>
+      </aside> : null}
+
+      {isPlanningPreview && isCustomJourney && selected.coordinates ? <aside className={styles.finderDock} aria-label="Find places for this day">
+        <JourneyLocalFinder kind="restaurant" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} onSavePlace={saveLocalVenue} />
+        <JourneyLocalFinder kind="stay" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onSavePlace={saveLocalVenue} />
+      </aside> : null}
+
+      <div className={styles.bottomControls}>
+        {isPlanningPreview && isCustomJourney ? <div className={styles.mapModeControl}>
+          <small>{mapMode === "overview" ? "TRIP OVERVIEW" : "LOCAL DETAIL"}</small>
+          <button type="button" onClick={() => setMapMode((mode) => mode === "overview" ? "detail" : "overview")}>
+            {mapMode === "overview" ? `Zoom into ${selected.city}` : "View trip overview"}
+          </button>
+        </div> : null}
+        <button className={`${styles.playButton} ${isPlaying ? styles.playing : ""}`} onClick={() => setIsPlaying((playing) => !playing)} aria-label={isPlaying ? "Pause journey sequence" : "Play journey sequence"}>
+          <span>{isPlaying ? "Ⅱ" : "▶"}</span>
+          <strong>{isPlaying ? "Pause journey" : "Play journey"}</strong>
+          <small>{selectedDayIndex + 1} / {journey.calendar.length}</small>
+        </button>
+      </div>
       {isPlanningPreview && lastPlannerTrip ? <div className={styles.undoToast} role="status"><span>{undoMessage}</span><button type="button" onClick={undoPlannerEdit}>Undo</button></div> : null}
       {exportState === "error" ? <p className={styles.savePlanError}>{exportError || "The PDF could not be prepared."}</p> : null}
       {cloudSaveState === "error" ? <p className={styles.savePlanError}>Couldn’t save this trip just now. Your plan is still safe on this device.</p> : null}

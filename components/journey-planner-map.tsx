@@ -62,7 +62,9 @@ export function JourneyPlannerMap({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const firstStop = stops.find((stop) => stop.coordinates)?.coordinates ?? [-90.5069, 14.6349];
+    const firstStop = stops.find((stop) => stop.id === selectedId && stop.coordinates)?.coordinates
+      ?? stops.find((stop) => stop.coordinates)?.coordinates
+      ?? [-90.5069, 14.6349];
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: mapStyle,
@@ -106,21 +108,15 @@ export function JourneyPlannerMap({
 
       if (!hasInitialisedViewRef.current && mappedStops.length) {
         hasInitialisedViewRef.current = true;
-        if (mappedStops.length === 1) map.jumpTo({ center: mappedStops[0].coordinates, zoom: 11 });
-        else {
-          const bounds = mappedStops.reduce(
-            (current, stop) => current.extend(stop.coordinates),
-            new maplibregl.LngLatBounds(mappedStops[0].coordinates, mappedStops[0].coordinates),
-          );
-          map.fitBounds(bounds, { padding: { top: 100, right: 130, bottom: 120, left: 390 }, maxZoom: 11, duration: 0 });
-        }
+        const activeStop = mappedStops.find((stop) => stop.id === selectedId) ?? mappedStops[0];
+        map.jumpTo({ center: activeStop.coordinates, zoom: 11 });
       }
     };
 
     if (map.isStyleLoaded()) drawRoute();
     else map.once("load", drawRoute);
     return () => { map.off("load", drawRoute); };
-  }, [legs, stops]);
+  }, [legs, selectedId, stops]);
 
   useEffect(() => {
     const map = mapRef.current;
