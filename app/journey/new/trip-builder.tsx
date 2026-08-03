@@ -291,6 +291,7 @@ export default function TripBuilder() {
   const [step, setStep] = useState(0);
   const [generated, setGenerated] = useState(false);
   const [activeDay, setActiveDay] = useState(0);
+  const [draftImages, setDraftImages] = useState<Record<string, JourneyImage>>({});
 
   const today = useMemo(() => iso(new Date()), []);
   const oneWeekLater = useMemo(() => { const date = new Date(); date.setDate(date.getDate() + 6); return iso(date); }, []);
@@ -509,9 +510,36 @@ export default function TripBuilder() {
     return () => window.clearTimeout(timer);
   }, [hydrated, activeTripDocument]);
 
+  // Generated itineraries are not limited to the small editorial media pack.
+  // Resolve a real contextual image for every planned day, then retain the
+  // local media pack as a fast first choice when it exists.
+  useEffect(() => {
+    if (!generated || !draft.length) return;
+    let active = true;
+    const controller = new AbortController();
+    void Promise.all(draft.map(async (day) => {
+      if (dayImageFor(day, Number(day.number) - 1)) return null;
+      const stop = stops.find((candidate) => candidate.name === day.destination);
+      const title = day.placeTitle ?? day.destination;
+      const response = await fetch(`/api/journey-place?title=${encodeURIComponent(title)}&area=${encodeURIComponent(day.destination)}&country=${encodeURIComponent(stop?.country ?? "")}`, { signal: controller.signal });
+      const payload = await response.json() as { place?: { image?: string; sourceUrl?: string } | null };
+      if (!payload.place?.image) return null;
+      return [day.number, {
+        src: payload.place.image,
+        alt: title,
+        caption: day.destination,
+        sourceUrl: payload.place.sourceUrl ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`,
+      } satisfies JourneyImage] as const;
+    })).then((results) => {
+      if (!active) return;
+      setDraftImages((current) => ({ ...current, ...Object.fromEntries(results.filter((result): result is readonly [string, JourneyImage] => Boolean(result))) }));
+    }).catch(() => undefined);
+    return () => { active = false; controller.abort(); };
+  }, [draft, generated, stops]);
+
   const index = Math.min(activeDay, Math.max(0, draft.length - 1));
   const active = draft[index];
-  const activeImage = active ? dayImageFor(active, index) : null;
+  const activeImage = active ? dayImageFor(active, index) ?? draftImages[active.number] ?? null : null;
 
   /* ------------------------------------------------------------ draft view */
 

@@ -4,7 +4,7 @@ import { geoGraticule10, geoInterpolate, geoMercator, geoNaturalEarth1, geoPath 
 import { BusFront, ExternalLink, MapPin, Minus, Plane, Plus, Scan, TrainFront, Utensils, X } from "lucide-react";
 import { feature } from "topojson-client";
 import worldTopology from "world-atlas/countries-50m.json";
-import { PointerEvent as ReactPointerEvent, WheelEvent, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, WheelEvent, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { JourneyImage, JourneyLeg, JourneyRestaurant, JourneyStop, RestaurantMeal } from "@/lib/journey";
 import type { PlannerMapPin } from "@/lib/easyt/trip";
 
@@ -195,6 +195,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   }, [mappedStops, projection, targetView, variant]);
   const viewRef = useRef<View>(targetView);
   const dragRef = useRef<{ pointerId: number; x: number; y: number; origin: View } | null>(null);
+  const didPanRef = useRef(false);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; centerX: number; centerY: number; scale: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -321,6 +322,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
     cancelAnimationFrame(wheelFrameRef.current);
     wheelFrameRef.current = 0;
     wheelTargetRef.current = null;
+    didPanRef.current = false;
     pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointersRef.current.size >= 2) {
       const points = [...pointersRef.current.values()];
@@ -359,6 +361,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
     const drag = dragRef.current;
     const rect = svgRef.current?.getBoundingClientRect();
     if (!drag || drag.pointerId !== event.pointerId || !rect) return;
+    if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 7) didPanRef.current = true;
     writeView({ ...drag.origin, x: drag.origin.x + ((event.clientX - drag.x) / rect.width) * width, y: drag.origin.y + ((event.clientY - drag.y) / rect.height) * height });
   }
 
@@ -375,8 +378,8 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   const selectedPlaceMapUrl = selectedPlace ? placeMapUrl(selectedPlace, selected) : "";
   const selectedPlaceMapProvider = selected.country === "China" ? "Amap" : "Google Maps";
 
-  const placePinAt = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (!pinPlacementMode || !onMapPinDrop || dragRef.current) return;
+  const placePinAt = (event: ReactPointerEvent<SVGSVGElement> | ReactMouseEvent<SVGSVGElement>) => {
+    if (!pinPlacementMode || !onMapPinDrop || dragRef.current || didPanRef.current) return;
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return;
     const screenPoint: [number, number] = [((event.clientX - rect.left) / rect.width) * width, ((event.clientY - rect.top) / rect.height) * height];
@@ -385,8 +388,8 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
     if (coordinates && Number.isFinite(coordinates[0]) && Number.isFinite(coordinates[1])) onMapPinDrop([coordinates[0], coordinates[1]]);
   };
 
-  return <div className={`journey-map ${pinPlacementMode ? "is-pin-placement" : ""}`} aria-label={variant === "planner" ? "Interactive journey map" : "Interactive Pacific journey map"}>
-    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={variant === "planner" ? "Interactive geographic route map" : "Geographic Pacific route from Guatemala to Los Angeles, Japan, China and Hong Kong"} onWheel={handleWheel} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onPointerLeave={handlePointerUp} onDoubleClick={placePinAt}>
+  return <div className={`journey-map ${pinPlacementMode ? "is-pin-placement" : ""}`} data-pin-hint={isMobile ? "Tap map to place this pin" : "Double-click the map to place this pin"} aria-label={variant === "planner" ? "Interactive journey map" : "Interactive Pacific journey map"}>
+    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={variant === "planner" ? "Interactive geographic route map" : "Geographic Pacific route from Guatemala to Los Angeles, Japan, China and Hong Kong"} onWheel={handleWheel} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onPointerLeave={handlePointerUp} onClick={(event) => { if (pinPlacementMode && isMobile) placePinAt(event); }} onDoubleClick={(event) => { if (!isMobile) placePinAt(event); }}>
       <defs>
         <linearGradient id="ocean" x1="0" x2="1" y1="0" y2="1"><stop stopColor="#f9f9f7" /><stop offset="1" stopColor="#eceff3" /></linearGradient>
         <filter id="traveller-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
