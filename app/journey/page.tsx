@@ -474,9 +474,17 @@ export default function JourneyPage() {
     const pin: PlannerMapPin = { id: `pin-${Date.now()}`, title, category: pinCategory, dayNumber: selectedPlanItem.dayNumber, longitude: coordinates[0], latitude: coordinates[1] };
     updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: [...(trip.brief.mapPins ?? []), pin] } }), "Map pin added");
     setSelectedPlannerPin(pin);
+    setMapMode("detail");
     setPinDraft("");
     setPinCoordinates(null);
     setPinPlacementMode(false);
+  };
+
+  const selectPlannerPin = (pin: PlannerMapPin) => {
+    setSelectedPlannerPin(pin);
+    // A pin must always lead somewhere visible. The detailed map will centre
+    // on its exact coordinates, including pins added on a different day.
+    setMapMode("detail");
   };
 
   const saveLocalVenue = useCallback((venue: { name: string; coordinates: [number, number] }, category: "restaurant" | "stay") => {
@@ -725,7 +733,7 @@ export default function JourneyPage() {
               plannerPins={customTrip?.brief.mapPins ?? []}
               pinPlacementMode={pinPlacementMode}
               onMapPinDrop={(coordinates) => { setPinCoordinates(coordinates); setPinPlacementMode(false); }}
-              onPlannerPinSelect={setSelectedPlannerPin}
+              onPlannerPinSelect={selectPlannerPin}
               onZoomIntoDetail={() => setMapMode("detail")}
               variant="planner"
               onSelect={(id) => {
@@ -741,11 +749,12 @@ export default function JourneyPage() {
               stops={journey.stops}
               legs={journey.legs}
               selectedId={selectedId}
-              plannerPins={(customTrip?.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem?.dayNumber)}
+              plannerPins={customTrip?.brief.mapPins ?? []}
+              focusCoordinates={selectedPlannerPin ? [selectedPlannerPin.longitude, selectedPlannerPin.latitude] : null}
               draftPinCoordinates={pinCoordinates}
               pinPlacementMode={pinPlacementMode}
               onMapPinDrop={(coordinates) => { setPinCoordinates(coordinates); setPinPlacementMode(false); }}
-              onPlannerPinSelect={setSelectedPlannerPin}
+              onPlannerPinSelect={selectPlannerPin}
               onSelect={(id) => {
                 setIsPlaying(false);
                 setSelectedId(id);
@@ -861,7 +870,7 @@ export default function JourneyPage() {
         </motion.div>
       </section>
 
-      <aside className={styles.itineraryPanel} aria-live="polite">
+      <aside className={`${styles.itineraryPanel} ${isPlanningPreview && isCustomJourney ? styles.itineraryWithFinder : ""}`} aria-live="polite">
         <motion.div
           key={selectedDay.id}
           initial={hasMounted.current ? { opacity: 0, x: 8 } : false}
@@ -941,7 +950,7 @@ export default function JourneyPage() {
           <summary><MapPin /><span><small>MAP PINS</small><strong>Add to this day</strong></span><b>{(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).length}</b></summary>
           <div className={styles.pinComposer}>
             <div className={styles.pinCategories}>{(["restaurant", "stay", "activity", "transport", "custom"] as PlannerPinCategory[]).map((category) => <button key={category} type="button" aria-pressed={pinCategory === category} onClick={() => setPinCategory(category)}>{category}</button>)}</div>
-            <div className={styles.pinPlacement}><button type="button" aria-pressed={pinPlacementMode} onClick={() => { setPinPlacementMode((active) => !active); setPinCoordinates(null); }}>{pinPlacementMode ? "Click map…" : "Place on map"}</button>{pinCoordinates ? <span>Map location selected</span> : <small>or add near {selected.city}</small>}</div>
+            <div className={styles.pinPlacement}><button type="button" aria-pressed={pinPlacementMode} onClick={() => { setMapMode("detail"); setPinPlacementMode((active) => !active); setPinCoordinates(null); }}>{pinPlacementMode ? "Click map…" : "Place on map"}</button>{pinCoordinates ? <span>Map location selected</span> : <small>opens the detailed map</small>}</div>
             <form onSubmit={(event) => { event.preventDefault(); addPin(); }}><input value={pinDraft} onChange={(event) => setPinDraft(event.target.value)} placeholder="Name this place" /><button type="submit" disabled={!pinDraft.trim() || !selected.coordinates}>Pin</button></form>
             {(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).map((pin) => <p key={pin.id}><i className={`${styles.pinDot} ${styles[`pin${pin.category[0].toUpperCase()}${pin.category.slice(1)}`]}`} />{pin.title}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== pin.id) } }))} aria-label={`Remove ${pin.title}`}><Trash2 /></button></p>)}
             {selectedPlannerPin ? <div className={styles.selectedPinDetail}><small>SELECTED PIN</small><strong>{selectedPlannerPin.title}</strong><span>{selectedPlannerPin.category} · Day {selectedPlannerPin.dayNumber}</span><button type="button" onClick={() => { updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== selectedPlannerPin.id) } }), "Map pin removed"); setSelectedPlannerPin(null); }}>Remove selected pin</button></div> : null}
@@ -950,6 +959,7 @@ export default function JourneyPage() {
       </aside> : null}
 
       {isPlanningPreview && isCustomJourney && selected.coordinates ? <aside className={styles.finderDock} aria-label="Find places for this day">
+        <header><small>ON THE GO</small><strong>Find nearby places</strong></header>
         <JourneyLocalFinder kind="restaurant" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} onSavePlace={saveLocalVenue} />
         <JourneyLocalFinder kind="stay" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onSavePlace={saveLocalVenue} />
       </aside> : null}

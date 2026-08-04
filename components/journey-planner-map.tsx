@@ -11,6 +11,7 @@ type JourneyPlannerMapProps = {
   legs: JourneyLeg[];
   selectedId: string;
   plannerPins: PlannerMapPin[];
+  focusCoordinates: [number, number] | null;
   draftPinCoordinates: [number, number] | null;
   pinPlacementMode: boolean;
   onMapPinDrop: (coordinates: [number, number]) => void;
@@ -47,6 +48,7 @@ export function JourneyPlannerMap({
   legs,
   selectedId,
   plannerPins,
+  focusCoordinates,
   draftPinCoordinates,
   pinPlacementMode,
   onMapPinDrop,
@@ -109,14 +111,17 @@ export function JourneyPlannerMap({
       if (!hasInitialisedViewRef.current && mappedStops.length) {
         hasInitialisedViewRef.current = true;
         const activeStop = mappedStops.find((stop) => stop.id === selectedId) ?? mappedStops[0];
-        map.jumpTo({ center: activeStop.coordinates, zoom: 11 });
+        // On first mount the focus effect can run before the map is ready.
+        // Start at the pin itself so opening/adding a pin never leaves it
+        // outside the visible map.
+        map.jumpTo({ center: focusCoordinates ?? activeStop.coordinates, zoom: focusCoordinates ? 14 : 11 });
       }
     };
 
     if (map.isStyleLoaded()) drawRoute();
     else map.once("load", drawRoute);
     return () => { map.off("load", drawRoute); };
-  }, [legs, selectedId, stops]);
+  }, [focusCoordinates, legs, selectedId, stops]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -194,6 +199,16 @@ export function JourneyPlannerMap({
     if (!map || !stop?.coordinates || !hasInitialisedViewRef.current) return;
     map.easeTo({ center: stop.coordinates, zoom: Math.max(map.getZoom(), 11), duration: 550 });
   }, [selectedId, stops]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !focusCoordinates || !hasInitialisedViewRef.current) return;
+    map.easeTo({
+      center: focusCoordinates,
+      zoom: Math.max(map.getZoom(), 14),
+      duration: 550,
+    });
+  }, [focusCoordinates]);
 
   return <div ref={containerRef} className="planner-map" aria-label="Interactive trip map" />;
 }

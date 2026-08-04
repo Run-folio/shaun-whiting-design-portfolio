@@ -179,7 +179,12 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
   }, [focusPoint, isMobile, selected.id, selectedPoint[0], selectedPoint[1]]);
   const routeView = useMemo(() => {
     if (variant !== "planner" || mappedStops.length < 2) return targetView;
-    const points = mappedStops.map((stop) => projection(stop.coordinates)).filter((point): point is [number, number] => Boolean(point));
+    // Pins are part of the traveller's plan too. Keeping them in the fitted
+    // overview prevents an added pin from landing outside the visible map.
+    const points = [
+      ...mappedStops.map((stop) => projection(stop.coordinates)),
+      ...plannerPins.map((pin) => projection([pin.longitude, pin.latitude])),
+    ].filter((point): point is [number, number] => Boolean(point));
     if (points.length < 2) return targetView;
     const minX = Math.min(...points.map(([x]) => x));
     const maxX = Math.max(...points.map(([x]) => x));
@@ -192,7 +197,7 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
     const centreX = (minX + maxX) / 2;
     const centreY = (minY + maxY) / 2;
     return { x: (safe.left + safe.right) / 2 - centreX * scale, y: (safe.top + safe.bottom) / 2 - centreY * scale, scale };
-  }, [mappedStops, projection, targetView, variant]);
+  }, [mappedStops, plannerPins, projection, targetView, variant]);
   const viewRef = useRef<View>(targetView);
   const dragRef = useRef<{ pointerId: number; x: number; y: number; origin: View } | null>(null);
   const didPanRef = useRef(false);
@@ -212,7 +217,10 @@ export function JourneyGlobe({ stops, legs, selectedId, selectedDayId, activeIte
       mountedRef.current = true;
       writeView(variant === "planner" ? routeView : targetView);
     } else {
-      animateTo(targetView, 880);
+      // Keep the planner's branded overview fitted to the complete plan (and
+      // its pins) after any update. The prior active-city target could leave
+      // a valid pin just outside the canvas.
+      animateTo(variant === "planner" ? routeView : targetView, 880);
     }
     return () => cancelAnimationFrame(transitionFrameRef.current);
   }, [selectedId, routeView, targetView, variant]);
