@@ -8,6 +8,18 @@ import { EasyTTrip, isEasyTTrip } from "./trip";
 type TripDocumentRow = { document: unknown };
 export type EasyTUserPreferences = { language: "en" | "es" };
 
+export type EasyTEmailEvent = {
+  id: string;
+  providerId: string | null;
+  recipientEmail: string;
+  subject: string;
+  template: string;
+  status: string;
+  errorMessage: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type GiftRow = {
   id: string;
   trip_id: string;
@@ -33,6 +45,43 @@ export type EasyTGiftPreview = {
   status: GiftRow["status"];
   expiresAt: string;
 };
+
+export async function createEasyTEmailEvent(input: {
+  providerId?: string | null;
+  recipientEmail: string;
+  subject: string;
+  template: string;
+  status: string;
+  errorMessage?: string | null;
+  metadata?: Record<string, unknown>;
+}) {
+  const sql = getEasyTDatabase();
+  const id = randomUUID();
+  await sql`
+    insert into easyt_email_events (id, provider_id, recipient_email, subject, template, status, error_message, metadata)
+    values (${id}, ${input.providerId ?? null}, ${input.recipientEmail}, ${input.subject}, ${input.template}, ${input.status}, ${input.errorMessage ?? null}, ${JSON.stringify(input.metadata ?? {})})
+  `;
+  return id;
+}
+
+export async function updateEasyTEmailEvent(input: { providerId: string; status: string; occurredAt?: string }) {
+  const sql = getEasyTDatabase();
+  await sql`
+    update easyt_email_events
+    set status = ${input.status}, updated_at = ${input.occurredAt ?? new Date().toISOString()}
+    where provider_id = ${input.providerId}
+  `;
+}
+
+export async function listEasyTEmailEvents(limit = 250): Promise<EasyTEmailEvent[]> {
+  const sql = getEasyTDatabase();
+  const rows = (await sql`
+    select id, provider_id as "providerId", recipient_email as "recipientEmail", subject, template,
+      status, error_message as "errorMessage", created_at as "createdAt", updated_at as "updatedAt"
+    from easyt_email_events order by created_at desc limit ${Math.min(Math.max(limit, 1), 500)}
+  `) as EasyTEmailEvent[];
+  return rows;
+}
 
 const tokenHash = (token: string) =>
   createHash("sha256").update(token).digest("hex");

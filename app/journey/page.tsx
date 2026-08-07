@@ -296,6 +296,7 @@ export default function JourneyPage() {
   const [resolvedCoordinates, setResolvedCoordinates] = useState<Record<string, [number, number]>>({});
   const [placeMedia, setPlaceMedia] = useState<Record<string, { image?: string; description?: string; sourceUrl?: string; coordinates?: [number, number] }>>({});
   const [cloudSaveState, setCloudSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [exportState, setExportState] = useState<"idle" | "saving" | "error">("idle");
   const [exportError, setExportError] = useState("");
   const [autoSaveRequested, setAutoSaveRequested] = useState(false);
@@ -303,11 +304,14 @@ export default function JourneyPage() {
   const [draggedActivity, setDraggedActivity] = useState<{ dayNumber: number; index: number } | null>(null);
   const [activityDraft, setActivityDraft] = useState("");
   const [noteDraft, setNoteDraft] = useState("");
+  const [editingNote, setEditingNote] = useState<{ dayNumber: number; index: number } | null>(null);
+  const [editingNoteDraft, setEditingNoteDraft] = useState("");
   const [pinDraft, setPinDraft] = useState("");
   const [pinCategory, setPinCategory] = useState<PlannerPinCategory>("activity");
   const [pinPlacementMode, setPinPlacementMode] = useState(false);
   const [pinCoordinates, setPinCoordinates] = useState<[number, number] | null>(null);
   const [selectedPlannerPin, setSelectedPlannerPin] = useState<PlannerMapPin | null>(null);
+  const [pinEditDraft, setPinEditDraft] = useState("");
   const [mapMode, setMapMode] = useState<"overview" | "detail">("overview");
   const [plannerWarning, setPlannerWarning] = useState("");
   const [lastPlannerTrip, setLastPlannerTrip] = useState<EasyTTrip | null>(null);
@@ -392,6 +396,7 @@ export default function JourneyPage() {
     setCustomBrief(customBriefFromEasyT(next));
     saveActiveTrip(next);
     setCloudSaveState("idle");
+    setHasUnsavedChanges(true);
   }, [customTrip]);
 
   const undoPlannerEdit = () => {
@@ -400,6 +405,7 @@ export default function JourneyPage() {
     setCustomBrief(customBriefFromEasyT(lastPlannerTrip));
     saveActiveTrip(lastPlannerTrip);
     setCloudSaveState("idle");
+    setHasUnsavedChanges(true);
     setLastPlannerTrip(null);
     setUndoMessage("");
   };
@@ -466,6 +472,27 @@ export default function JourneyPage() {
     setNoteDraft("");
   };
 
+  const beginNoteEdit = (dayNumber: number, index: number, note: string) => {
+    setEditingNote({ dayNumber, index });
+    setEditingNoteDraft(note);
+  };
+
+  const saveNoteEdit = () => {
+    if (!editingNote || !editingNoteDraft.trim()) return;
+    updatePlannerTrip((trip) => ({
+      ...trip,
+      brief: {
+        ...trip.brief,
+        dayNotes: {
+          ...(trip.brief.dayNotes ?? {}),
+          [editingNote.dayNumber]: (trip.brief.dayNotes?.[editingNote.dayNumber] ?? []).map((note, index) => index === editingNote.index ? editingNoteDraft.trim() : note),
+        },
+      },
+    }), "Note updated");
+    setEditingNote(null);
+    setEditingNoteDraft("");
+  };
+
   const addPin = () => {
     const title = pinDraft.trim();
     if (!title || !pinCoordinates || !selectedPlanItem) return;
@@ -481,9 +508,18 @@ export default function JourneyPage() {
 
   const selectPlannerPin = (pin: PlannerMapPin) => {
     setSelectedPlannerPin(pin);
+    setPinEditDraft(pin.title);
     // A pin must always lead somewhere visible. The detailed map will centre
     // on its exact coordinates, including pins added on a different day.
     setMapMode("detail");
+  };
+
+  const savePinEdit = () => {
+    if (!selectedPlannerPin || !pinEditDraft.trim()) return;
+    const title = pinEditDraft.trim();
+    const nextPin = { ...selectedPlannerPin, title };
+    updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).map((pin) => pin.id === nextPin.id ? nextPin : pin) } }), "Map pin updated");
+    setSelectedPlannerPin(nextPin);
   };
 
   const saveLocalVenue = useCallback((venue: { name: string; coordinates: [number, number] }, category: "restaurant" | "stay") => {
@@ -528,6 +564,7 @@ export default function JourneyPage() {
       setCustomTrip(saved);
       setCustomBrief(customBriefFromEasyT(saved));
       setCloudSaveState("saved");
+      setHasUnsavedChanges(false);
       router.replace(`/journey/plan?trip=${encodeURIComponent(saved.id)}`);
     } catch {
       setCloudSaveState("error");
@@ -547,6 +584,7 @@ export default function JourneyPage() {
       setCustomTrip(saved);
       setCustomBrief(customBriefFromEasyT(saved));
       setCloudSaveState("saved");
+      setHasUnsavedChanges(false);
       const response = await fetch(`/api/easyt/trips/${encodeURIComponent(saved.id)}/pdf`, { cache: "no-store" });
       if (!response.ok) throw new Error("The PDF could not be prepared.");
       const blob = await response.blob();
@@ -582,6 +620,7 @@ export default function JourneyPage() {
         if (activeTrip) {
           setCustomTrip(activeTrip);
           setCustomBrief(customBriefFromEasyT(activeTrip));
+          setHasUnsavedChanges(false);
           return;
         }
         // Older local drafts remain readable during migration, but new plans no
@@ -796,8 +835,11 @@ export default function JourneyPage() {
           <nav className={styles.headerActions} aria-label="EasyT account navigation">
             <Link href="/journey/dashboard" className={styles.myTripsLink}>My trips</Link>
             {isPlanningPreview && isCustomJourney ? <button type="button" className={styles.savePlanLink} onClick={() => void savePlan()} disabled={cloudSaveState === "saving"}>
-              {cloudSaveState === "saving" ? "Saving…" : cloudSaveState === "saved" ? "Saved" : "Save trip"}
+              {cloudSaveState === "saving" ? "Saving…" : hasUnsavedChanges ? "Save trip" : "Saved"}
             </button> : null}
+            {isPlanningPreview && isCustomJourney ? <span className={`${styles.saveState} ${cloudSaveState === "error" ? styles.saveStateError : ""}`} aria-live="polite">
+              {cloudSaveState === "saving" ? "Saving to account…" : cloudSaveState === "error" ? "Couldn’t save" : hasUnsavedChanges ? session?.user ? "Unsaved changes" : "Draft on this device" : session?.user ? "Saved to account" : "Saved on this device"}
+            </span> : null}
             {isPlanningPreview && customTrip && session?.user ? <button type="button" className={styles.exportPlanLink} onClick={() => void exportPlan()} disabled={exportState === "saving"}>{exportState === "saving" ? "Preparing PDF…" : "Export PDF"}</button> : null}
             <Link href="/journey/new" className={styles.createTripLink}><Plus /> <span>New trip</span></Link>
           </nav>
@@ -916,7 +958,7 @@ export default function JourneyPage() {
             </form>
             <section className={styles.notesToSelf} aria-label="Notes to self">
               <div><StickyNote /><span><small>NOTES TO SELF</small><strong>For this day only</strong></span></div>
-              {selectedDayNotes.map((note, index) => <p key={`${note}-${index}`}>{note}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, dayNotes: { ...(trip.brief.dayNotes ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.dayNotes?.[selectedPlanItem.dayNumber] ?? []).filter((_, noteIndex) => noteIndex !== index) } } }))} aria-label="Remove note"><Trash2 /></button></p>)}
+              {selectedDayNotes.map((note, index) => editingNote?.dayNumber === selectedPlanItem.dayNumber && editingNote.index === index ? <form key={`${note}-${index}`} className={styles.editingNoteForm} onSubmit={(event) => { event.preventDefault(); saveNoteEdit(); }}><input value={editingNoteDraft} onChange={(event) => setEditingNoteDraft(event.target.value)} aria-label="Edit note" autoFocus /><button type="submit" disabled={!editingNoteDraft.trim()}>Save</button><button type="button" onClick={() => setEditingNote(null)}>Cancel</button></form> : <p key={`${note}-${index}`}><button type="button" className={styles.editNoteButton} onClick={() => beginNoteEdit(selectedPlanItem.dayNumber, index, note)}>{note}</button><button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, dayNotes: { ...(trip.brief.dayNotes ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.dayNotes?.[selectedPlanItem.dayNumber] ?? []).filter((_, noteIndex) => noteIndex !== index) } } }), "Note removed")} aria-label={`Remove note ${note}`}><Trash2 /></button></p>)}
               <form onSubmit={(event) => { event.preventDefault(); addDayNote(); }}><input value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Add a note to yourself" /><button type="submit" disabled={!noteDraft.trim()}>Add note</button></form>
             </section>
           </> : <ol>
@@ -960,7 +1002,7 @@ export default function JourneyPage() {
               <form onSubmit={(event) => { event.preventDefault(); addPin(); }}><input autoFocus value={pinDraft} onChange={(event) => setPinDraft(event.target.value)} placeholder="Name this place" /><button type="submit" disabled={!pinDraft.trim()}>Save pin</button></form>
             </> : <small className={styles.pinHint}>Click the exact spot first. You’ll choose its category and name next.</small>}
             {(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).map((pin) => <p key={pin.id}><i className={`${styles.pinDot} ${styles[`pin${pin.category[0].toUpperCase()}${pin.category.slice(1)}`]}`} />{pin.title}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== pin.id) } }))} aria-label={`Remove ${pin.title}`}><Trash2 /></button></p>)}
-            {selectedPlannerPin ? <div className={styles.selectedPinDetail}><small>SELECTED PIN</small><strong>{selectedPlannerPin.title}</strong><span>{selectedPlannerPin.category} · Day {selectedPlannerPin.dayNumber}</span><button type="button" onClick={() => { updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== selectedPlannerPin.id) } }), "Map pin removed"); setSelectedPlannerPin(null); }}>Remove selected pin</button></div> : null}
+            {selectedPlannerPin ? <div className={styles.selectedPinDetail}><small>SELECTED PIN</small><form onSubmit={(event) => { event.preventDefault(); savePinEdit(); }}><input value={pinEditDraft} onChange={(event) => setPinEditDraft(event.target.value)} aria-label="Rename selected pin" /><button type="submit" disabled={!pinEditDraft.trim()}>Save name</button></form><span>{selectedPlannerPin.category} · Day {selectedPlannerPin.dayNumber}</span><button type="button" onClick={() => { updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== selectedPlannerPin.id) } }), "Map pin removed"); setSelectedPlannerPin(null); }}>Remove selected pin</button></div> : null}
           </div>
         </details>
       </aside> : null}

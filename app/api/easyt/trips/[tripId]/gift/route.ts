@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireEasyTOwner } from "@/lib/easyt/owner";
 import { createTripGift } from "@/lib/easyt/repository";
-import { sendEasyTEmail } from "@/lib/easyt/email";
+import { sendEasyTEmail, tripGiftEmail } from "@/lib/easyt/email";
 
 export const dynamic = "force-dynamic";
 
@@ -18,17 +18,9 @@ async function sendGiftEmail(input: {
   note: string | null;
   claimUrl: string;
 }) {
-  const text = [
-    `A trip has been shared with you: ${input.tripTitle}`,
-    input.note ? `\nMessage: ${input.note}` : "",
-    `\nClaim your editable copy: ${input.claimUrl}`,
-  ].join("\n");
+  const message = tripGiftEmail({ title: input.tripTitle, note: input.note, url: input.claimUrl });
   try {
-    await sendEasyTEmail({
-      to: input.recipientEmail,
-      subject: `A trip was shared with you: ${input.tripTitle}`,
-      text,
-    });
+    await sendEasyTEmail({ to: input.recipientEmail, ...message });
     return true;
   } catch (error) {
     // The invitation remains valid even when email delivery is unavailable.

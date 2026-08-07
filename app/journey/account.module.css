@@ -606,6 +606,16 @@
 .giftRecipient { margin: 24px 0; color: #777482; font: 700 12px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .giftClaimActions { display: grid; gap: 14px; justify-items: center; margin-top: 26px; }
 .giftClaimActions .primaryLink { border: 0; cursor: pointer; }
+.emailEventList { display:grid; gap:1px; overflow:hidden; border:1px solid #e5e2e8; border-radius:18px; background:#e5e2e8; }
+.emailEventRow { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:18px; align-items:center; padding:18px 20px; background:#fff; }
+.emailEventRow > div { display:grid; gap:4px; min-width:0; }
+.emailEventRow strong { overflow:hidden; color:#211d35; font-size:14px; text-overflow:ellipsis; white-space:nowrap; }
+.emailEventRow span,.emailEventRow time { color:#777181; font:11px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace; }
+.emailEventRow time { white-space:nowrap; }
+.emailEventRow > p { grid-column:1 / -1; margin:0; color:#a62461; font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; }
+.emailStatus { padding:5px 8px; border-radius:999px; color:#246b4d; background:#e9f7ef; font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace; text-transform:capitalize; }
+.emailStatusFailed,.emailStatusBounced,.emailStatusComplained { color:#a62461; background:#fff0f5; }
+@media (max-width: 640px) { .emailEventRow { grid-template-columns:1fr auto; gap:9px; } .emailEventRow time { grid-column:1 / -1; } }
 .danger {
   min-height: 38px;
   padding: 0 14px;
