@@ -19,6 +19,7 @@ import { tripFromBuilder } from "@/lib/easyt/trip";
 import { buildCredibleItinerary, type PlannedDay, type PlannerPlace } from "@/lib/easyt/planner";
 import { journeyMedia, type JourneyImage } from "@/lib/journey";
 import styles from "./trip-builder.module.css";
+import mobilePolish from "./trip-builder-mobile.module.css";
 import { easytCopy, languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
 import { inspirationByKey } from "@/lib/easyt/inspiration";
 import { defaultTravelProfile, isTravelProfile, type TravelProfile } from "@/lib/easyt/travel-profile";
@@ -343,19 +344,21 @@ export default function TripBuilder() {
     const hydrate = async () => {
       const params = new URLSearchParams(window.location.search);
       const tripIdFromUrl = params.get("trip");
+      const showItinerary = params.get("view") === "itinerary";
       if (tripIdFromUrl) {
         try {
           const cloudTrip = await loadTripFromEasyT(tripIdFromUrl);
           if (cloudTrip) {
             applySaved(cloudTrip);
             saveActiveTrip(cloudTrip);
+            if (showItinerary) setGenerated(true);
           } else {
             const localTrip = loadActiveTrip();
-            if (localTrip?.id === tripIdFromUrl) applySaved(localTrip);
+            if (localTrip?.id === tripIdFromUrl) { applySaved(localTrip); if (showItinerary) setGenerated(true); }
           }
         } catch {
           const localTrip = loadActiveTrip();
-          if (localTrip?.id === tripIdFromUrl) applySaved(localTrip);
+          if (localTrip?.id === tripIdFromUrl) { applySaved(localTrip); if (showItinerary) setGenerated(true); }
         }
       } else {
         try {
@@ -569,7 +572,7 @@ export default function TripBuilder() {
 
   if (generated && active) {
     return (
-      <div className={styles.shellWide}>
+      <div className={`${styles.shellWide} ${mobilePolish.builder}`}>
         <div className={styles.draftHead}>
           <div>
             <p className={styles.eyebrow}>{ui.draft}</p>
@@ -636,7 +639,6 @@ export default function TripBuilder() {
         </div>
 
         <div className={styles.draftFoot}>
-          <p><strong>{saveState === "saving" ? ui.savingChanges : ui.savedDevice}</strong> · {ui.exploreMap}</p>
           <button type="button" className={styles.primary} onClick={() => {
             saveActiveTrip(activeTripDocument);
             window.location.assign(`/journey/plan?trip=${encodeURIComponent(activeTripDocument.id)}`);
@@ -649,7 +651,7 @@ export default function TripBuilder() {
   /* ---------------------------------------------------------- brief wizard */
 
   return (
-    <div className={styles.shellWide}>
+    <div className={`${styles.shellWide} ${mobilePolish.builder}`}>
       <nav className={styles.steps} aria-label="Trip brief progress">
         {copy.steps.map((label, i) => {
           const notes = [copy.routeFirst, copy.datesSetLength, copy.spendDays, copy.howFeels];

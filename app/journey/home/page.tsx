@@ -7,6 +7,7 @@ import InspirationExplorer from "./inspiration-explorer";
 import styles from "./home.module.css";
 import polish from "./home-polish.module.css";
 import stampCard from "./stamp-card.module.css";
+import ProductShowcase from "./product-showcase";
 
 export const metadata = { title: "Travel your way · EasyT" };
 
@@ -32,6 +33,8 @@ export default function EasyTHomePage() {
       </section>
 
       <InspirationExplorer />
+
+      <ProductShowcase />
 
       <section className={styles.tools}>
         <article className={`${styles.toolCard} ${styles.restaurantCard} ${polish.toolCard}`}><div className={styles.toolIcon}><Utensils aria-hidden="true" /></div><p className={styles.eyebrow}>Out and about</p><h2>Find a good place nearby.</h2><p>Choose what you need, then EasyT will search around your current location.</p><HomeRestaurantFinder /></article>

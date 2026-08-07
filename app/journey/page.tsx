@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowUp, ArrowUpRight, Building2, Castle, Flower2, GripVertical, House, Landmark, MapPin, Mountain, PawPrint, PersonStanding, Plane, Plus, StickyNote, Torus, Trash2, Utensils, Waves, type LucideIcon } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpRight, Building2, Castle, Flower2, GripVertical, House, Landmark, MapPin, Menu, Mountain, PawPrint, PersonStanding, Plane, Plus, StickyNote, Torus, Trash2, Utensils, Waves, type LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { JourneyGlobe, type JourneyMapPlace } from "@/components/journey-globe";
 import { JourneyPlannerMap } from "@/components/journey-planner-map";
@@ -20,6 +20,8 @@ import type { EasyTTrip, PlannerMapPin, PlannerPinCategory } from "@/lib/easyt/t
 import { estimateLeg } from "@/lib/easyt/planner";
 import { applyRecommendation, recommendationImpact, reviewTrip, undoRecommendation } from "@/lib/easyt/review";
 import styles from "./journey.module.css";
+import mobileNav from "./plan-mobile-nav.module.css";
+import mobileLayout from "./plan-mobile-layout.module.css";
 
 const destinationIcons: Record<string, LucideIcon> = {
   plane: Plane,
@@ -331,7 +333,7 @@ export default function JourneyPage() {
   }, [customBrief, customTrip, resolvedCoordinates, placeMedia]);
   const isCustomJourney = Boolean(customBrief);
   const editTripHref = customTrip
-    ? `/journey/new?trip=${encodeURIComponent(customTrip.id)}`
+    ? `/journey/new?trip=${encodeURIComponent(customTrip.id)}&view=itinerary`
     : "/journey/new";
   const selected = useMemo(
     () => journey.stops.find((stop) => stop.id === selectedId) ?? journey.stops[0],
@@ -757,7 +759,7 @@ export default function JourneyPage() {
   }
 
   return (
-    <main className={styles.journey}>
+    <main className={`${styles.journey} ${mobileLayout.plan}`}>
       {isPlanningPreview && isCustomJourney ? (
         <>
           <div className={`${styles.mapOverviewLayer} ${mapMode === "overview" ? styles.mapLayerActive : styles.mapLayerHidden}`}>
@@ -833,18 +835,19 @@ export default function JourneyPage() {
 
       <header className={styles.topbar}>
         <div className={styles.headerRow}>
-          {isPlanningPreview ? <Link href={editTripHref} className={styles.back}>← Edit trip</Link> : <Link href="/" className={styles.back}>← Shaun Whiting</Link>}
+          {isPlanningPreview ? <Link href={editTripHref} className={styles.back}>← Back to itinerary</Link> : <Link href="/" className={styles.back}>← Shaun Whiting</Link>}
           <div className={styles.titleLockup}><span>{journey.title}</span><small>{journey.dateRange}</small></div>
-          <nav className={styles.headerActions} aria-label="EasyT account navigation">
+          <details className={mobileNav.menu}>
+            <summary aria-label="Trip menu"><Menu aria-hidden="true" /></summary>
+            <div>
+              {isPlanningPreview ? <Link href={editTripHref}>Back to itinerary</Link> : null}
+              <Link href="/journey/dashboard">My trips</Link>
+              {isPlanningPreview && customTrip && session?.user ? <button type="button" onClick={() => void exportPlan()} disabled={exportState === "saving"}>{exportState === "saving" ? "Preparing PDF…" : "Export PDF"}</button> : null}
+            </div>
+          </details>
+          <nav className={`${styles.headerActions} ${mobileNav.actions}`} aria-label="EasyT account navigation">
             <Link href="/journey/dashboard" className={styles.myTripsLink}>My trips</Link>
-            {isPlanningPreview && isCustomJourney ? <button type="button" className={styles.savePlanLink} onClick={() => void savePlan()} disabled={cloudSaveState === "saving"}>
-              {cloudSaveState === "saving" ? "Saving…" : hasUnsavedChanges ? "Save trip" : "Saved"}
-            </button> : null}
-            {isPlanningPreview && isCustomJourney ? <span className={`${styles.saveState} ${cloudSaveState === "error" ? styles.saveStateError : ""}`} aria-live="polite">
-              {cloudSaveState === "saving" ? "Saving to account…" : cloudSaveState === "error" ? "Couldn’t save" : hasUnsavedChanges ? session?.user ? "Unsaved changes" : "Draft on this device" : session?.user ? "Saved to account" : "Saved on this device"}
-            </span> : null}
-            {isPlanningPreview && customTrip && session?.user ? <button type="button" className={styles.exportPlanLink} onClick={() => void exportPlan()} disabled={exportState === "saving"}>{exportState === "saving" ? "Preparing PDF…" : "Export PDF"}</button> : null}
-            <Link href="/journey/new" className={styles.createTripLink}><Plus /> <span>New trip</span></Link>
+            {isPlanningPreview && customTrip && session?.user ? <button type="button" className={styles.exportPlanLink} onClick={() => void exportPlan()} disabled={exportState === "saving"}>{exportState === "saving" ? "Preparing PDF…" : "Export"}</button> : null}
           </nav>
         </div>
         <nav className={styles.timeline} aria-label="Trip itinerary">

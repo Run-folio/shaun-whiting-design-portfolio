@@ -34,6 +34,5 @@ export default async function RouteOverviewPage({ params }: { params: Promise<{ 
       <p className={styles.routeLabel}>The route · {story.rhythm}</p>
       <ol className={styles.stops}>{seed.stops.map((stop, index) => <li key={stop.id}><b>0{index + 1}</b><div><p><MapPin aria-hidden="true" /> {stop.country}</p><h3>{stop.name}</h3><span>{story.notes[index]}</span></div></li>)}</ol>
     </section>
-    <section className={styles.cta}><div><p>Ready to shape it?</p><h2>Start with the route. Make the days your own.</h2></div><Link className={styles.primary} href={`/journey/new?inspire=${encodeURIComponent(seed.key)}`}>Personalise this trip <ArrowRight aria-hidden="true" /></Link></section>
   </main>;
 }

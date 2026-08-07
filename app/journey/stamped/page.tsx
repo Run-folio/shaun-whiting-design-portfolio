@@ -5,6 +5,7 @@ import { isEasyTAuthConfigured } from "@/lib/easyt/auth-environment";
 import EasyTNavigation from "../easyt-navigation";
 import StampedClient from "./stamped-client";
 import styles from "./stamped.module.css";
+import mobilePolish from "./stamped-mobile-polish.module.css";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Stamped · EasyT" };
@@ -25,7 +26,7 @@ export default async function StampedPage() {
   }
 
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} ${mobilePolish.page}`}>
       <EasyTNavigation
         current="stamped"
         account={session?.user ? { name: session.user.name, email: session.user.email, language: preferences?.language } : undefined}
