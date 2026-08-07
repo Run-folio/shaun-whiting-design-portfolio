@@ -1,15 +1,37 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { BedDouble, Coffee, Footprints, Gem, Landmark, Luggage, Sparkles, Sun, Trees, Wallet, Zap } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import {
   EasyTButton,
   EasyTField,
-  EasyTSelect,
 } from "@/components/easyt/easyt-controls";
 import styles from "../account.module.css";
 import { easytCopy } from "@/lib/easyt/i18n";
 import { type TravelProfile } from "@/lib/easyt/travel-profile";
+
+const paceOptions = [
+  { value: "slow", label: "Slow", detail: "One good thing at a time", icon: Sun },
+  { value: "balanced", label: "Balanced", detail: "Plan, then leave room", icon: Footprints },
+  { value: "full", label: "Full", detail: "Make the most of each day", icon: Zap },
+] as const;
+const priorityOptions = [
+  { value: "food", label: "Food", icon: Coffee },
+  { value: "nature", label: "Nature", icon: Trees },
+  { value: "culture", label: "Culture", icon: Landmark },
+  { value: "mix", label: "A mix", icon: Sparkles },
+] as const;
+const moveOptions = [
+  { value: "few", label: "Stay put", detail: "Fewer hotel moves", icon: BedDouble },
+  { value: "some", label: "A few", detail: "Change bases when it helps", icon: Luggage },
+  { value: "open", label: "Keep moving", detail: "Follow the best places", icon: Footprints },
+] as const;
+const comfortOptions = [
+  { value: "value", label: "Good value", icon: Wallet },
+  { value: "mid", label: "Mid-range", icon: Sparkles },
+  { value: "high", label: "Best available", icon: Gem },
+] as const;
 
 export default function ProfileForm({
   name: initialName,
@@ -50,22 +72,6 @@ export default function ProfileForm({
     );
   };
 
-  const saveLanguage = async (next: "en" | "es") => {
-    setLanguage(next);
-    window.localStorage.setItem("easyt-language", next);
-    document.documentElement.lang = next;
-    const response = await fetch("/api/easyt/profile", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ language: next }),
-    });
-    setMessage(
-      response.ok
-        ? "Language preference saved."
-        : "Language preference could not be saved.",
-    );
-  };
-
   const saveTravelProfile = async () => {
     setSaving(true);
     const response = await fetch("/api/easyt/profile", {
@@ -86,34 +92,30 @@ export default function ProfileForm({
         <EasyTField label={copy.account.email} value={email} disabled readOnly />
         <EasyTButton type="submit" loading={saving}>{copy.account.saveProfile}</EasyTButton>
       </form>
-      <section className={styles.profileCard}>
-        <h2>{copy.account.preferences}</h2>
-        <EasyTSelect
-          label="Language"
-          value={language}
-          onChange={(event) => saveLanguage(event.target.value as "en" | "es")}
-        >
-          <option value="en">English</option>
-          <option value="es">Español</option>
-        </EasyTSelect>
-        <p className={styles.muted}>{copy.account.languageHint}</p>
-      </section>
       <section className={`${styles.profileCard} ${styles.travelProfileCard}`}>
         <p className={styles.eyebrow}>YOUR TRAVEL PROFILE</p>
         <h2>What makes a trip feel good?</h2>
         <p className={styles.muted}>EasyT uses these as a starting point. You can always override them on any trip.</p>
-        <EasyTSelect label="Pace" value={travelProfile.pace} onChange={(event) => setTravelProfile((current) => ({ ...current, pace: event.target.value as TravelProfile["pace"] }))}>
-          <option value="slow">Slow mornings and room to wander</option><option value="balanced">A balanced rhythm</option><option value="full">Full days, plenty to see</option>
-        </EasyTSelect>
-        <EasyTSelect label="What pulls you in" value={travelProfile.priority} onChange={(event) => setTravelProfile((current) => ({ ...current, priority: event.target.value as TravelProfile["priority"] }))}>
-          <option value="food">Local food and neighbourhoods</option><option value="nature">Nature and time outside</option><option value="culture">Culture, history and design</option><option value="mix">A little of everything</option>
-        </EasyTSelect>
-        <EasyTSelect label="Hotel moves" value={travelProfile.hotelMoves} onChange={(event) => setTravelProfile((current) => ({ ...current, hotelMoves: event.target.value as TravelProfile["hotelMoves"] }))}>
-          <option value="few">Keep them to a minimum</option><option value="some">A few is fine</option><option value="open">I’ll move for the right place</option>
-        </EasyTSelect>
-        <EasyTSelect label="Comfort level" value={travelProfile.budget} onChange={(event) => setTravelProfile((current) => ({ ...current, budget: event.target.value as TravelProfile["budget"] }))}>
-          <option value="value">Good value</option><option value="mid">Mid-range</option><option value="high">Best available</option>
-        </EasyTSelect>
+        <div className={styles.profileVisuals}>
+          <section className={styles.preferenceDial}>
+            <div className={styles.preferenceHead}><span>Pace</span><b>{paceOptions.find((option) => option.value === travelProfile.pace)?.label}</b></div>
+            <div className={styles.dialOptions}>{paceOptions.map((option) => { const Icon = option.icon; const active = travelProfile.pace === option.value; return <button type="button" key={option.value} className={active ? styles.dialActive : ""} onClick={() => setTravelProfile((current) => ({ ...current, pace: option.value }))}><Icon /><strong>{option.label}</strong><small>{option.detail}</small></button>; })}</div>
+            <input className={styles.preferenceRange} type="range" min="0" max="2" step="1" value={paceOptions.findIndex((option) => option.value === travelProfile.pace)} onChange={(event) => setTravelProfile((current) => ({ ...current, pace: paceOptions[Number(event.target.value)].value }))} aria-label="Trip pace" />
+          </section>
+          <section className={styles.preferenceChoices}>
+            <div className={styles.preferenceHead}><span>What pulls you in</span><b>Choose the lead</b></div>
+            <div>{priorityOptions.map((option) => { const Icon = option.icon; const active = travelProfile.priority === option.value; return <button type="button" key={option.value} className={active ? styles.choiceActive : ""} onClick={() => setTravelProfile((current) => ({ ...current, priority: option.value }))}><Icon /><span>{option.label}</span></button>; })}</div>
+          </section>
+          <section className={styles.preferenceMoves}>
+            <div className={styles.preferenceHead}><span>Hotel moves</span><b>{moveOptions.find((option) => option.value === travelProfile.hotelMoves)?.label}</b></div>
+            <div>{moveOptions.map((option) => { const Icon = option.icon; const active = travelProfile.hotelMoves === option.value; return <button type="button" key={option.value} className={active ? styles.moveActive : ""} onClick={() => setTravelProfile((current) => ({ ...current, hotelMoves: option.value }))}><Icon /><strong>{option.label}</strong><small>{option.detail}</small></button>; })}</div>
+          </section>
+          <section className={styles.preferenceDial}>
+            <div className={styles.preferenceHead}><span>Comfort level</span><b>{comfortOptions.find((option) => option.value === travelProfile.budget)?.label}</b></div>
+            <div className={styles.dialOptions}>{comfortOptions.map((option) => { const Icon = option.icon; const active = travelProfile.budget === option.value; return <button type="button" key={option.value} className={active ? styles.dialActive : ""} onClick={() => setTravelProfile((current) => ({ ...current, budget: option.value }))}><Icon /><strong>{option.label}</strong></button>; })}</div>
+            <input className={styles.preferenceRange} type="range" min="0" max="2" step="1" value={comfortOptions.findIndex((option) => option.value === travelProfile.budget)} onChange={(event) => setTravelProfile((current) => ({ ...current, budget: comfortOptions[Number(event.target.value)].value }))} aria-label="Comfort level" />
+          </section>
+        </div>
         <EasyTButton type="button" loading={saving} onClick={saveTravelProfile}>Save travel profile</EasyTButton>
       </section>
       {message ? (

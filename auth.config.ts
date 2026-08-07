@@ -34,6 +34,10 @@ function createAuth(databaseUrl: string, secret: string) {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID!,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        // Ask only for the identity data EasyT needs and let travellers choose
+        // between their Google accounts instead of silently reusing one.
+        scope: ["email", "profile"],
+        prompt: "select_account",
       },
     } : {},
     trustedOrigins: [

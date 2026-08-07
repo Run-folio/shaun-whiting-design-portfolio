@@ -84,6 +84,10 @@ export type TripBrief = {
   customActivities?: Record<number, string[]>;
   /** Pins are intentionally lightweight: they are part of the editable map, not a separate places database. */
   mapPins?: PlannerMapPin[];
+  /** Lightweight traveller-entered confirmations, separate from planning suggestions. */
+  bookings?: TripBooking[];
+  /** A compact pre-departure checklist for the mobile trip view. */
+  checklist?: TripChecklistItem[];
 };
 
 export type PlannerPinCategory = "restaurant" | "stay" | "activity" | "transport" | "custom";
@@ -95,6 +99,21 @@ export type PlannerMapPin = {
   dayNumber: number;
   latitude: number;
   longitude: number;
+};
+
+export type TripBooking = {
+  id: string;
+  type: "stay" | "transport" | "reservation" | "other";
+  title: string;
+  date: string | null;
+  confirmation: string | null;
+  url: string | null;
+};
+
+export type TripChecklistItem = {
+  id: string;
+  label: string;
+  complete: boolean;
 };
 
 export type EasyTTrip = {
