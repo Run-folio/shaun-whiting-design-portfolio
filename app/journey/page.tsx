@@ -97,7 +97,9 @@ function isPickCompatibleWithDestination(pick: CustomPick | undefined, destinati
 }
 
 function customPlaceDetails(place: CustomPick | undefined) {
-  if (!place) return [];
+  // A generated "Explore [city]" day has no practical place context yet. Showing
+  // generic advice beneath its image only makes the itinerary feel repetitive.
+  if (!place || new RegExp(`^explore\\s+${place.area.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}$`, "i").test(place.title.trim())) return [];
 
   const type = place.type.toLowerCase();
   const setting = place.area ? `around ${place.area}` : "around this place";
@@ -899,12 +901,12 @@ export default function JourneyPage() {
             </div>
             {images.length ? <>
               <JourneyCarousel images={images} city={selectedDay.city} storyKey={selectedDay.id} />
-              <details className={styles.exploreMore} open>
-                <summary><span>Explore {selected.city}</span><b>More details</b></summary>
+              {details.length ? <details className={styles.exploreMore} open>
+                <summary><span>{isCustomJourney && customPlace ? `Plan around ${customPlace.title}` : `Know ${selected.city}`}</span><b>Quick guide</b></summary>
                 <div className={styles.exploreContent}>
                   {details.map((detail) => <article key={detail.title}><h3>{detail.title}</h3><p>{detail.copy}</p></article>)}
                 </div>
-              </details>
+              </details> : null}
             </> : null}
             {!images.length && details.length ? <div className={styles.detailSections}>
               {details.map((detail) => <details key={detail.title} open={isCustomJourney}><summary>{detail.title}<span>+</span></summary><p>{detail.copy}</p></details>)}

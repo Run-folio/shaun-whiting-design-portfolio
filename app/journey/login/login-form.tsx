@@ -28,6 +28,7 @@ export default function LoginForm({
 }) {
   const [mode, setMode] = useState<"sign-in" | "sign-up">(initialMode ?? "sign-in");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState(initialEmail ?? "");
 
@@ -49,6 +50,16 @@ export default function LoginForm({
       window.location.assign(`/journey/login?next=${encodeURIComponent(callbackURL)}&email=${encodeURIComponent(submittedEmail)}&sent=1`);
     }
     else window.location.assign(callbackURL);
+  };
+
+  const continueWithGoogle = async () => {
+    setGoogleBusy(true);
+    setError("");
+    const result = await authClient.signIn.social({ provider: "google", callbackURL });
+    if (result?.error) {
+      setError(result.error.message || "Google sign-in could not start. Please try again.");
+      setGoogleBusy(false);
+    }
   };
 
   return <section className={styles.authPanel}>
@@ -74,6 +85,6 @@ export default function LoginForm({
       {error && <p className={styles.error}>{error}</p>}
       <EasyTButton type="submit" fullWidth loading={busy} disabled={!configured}>{configured ? mode === "sign-in" ? "Sign in →" : "Create account →" : "Accounts coming online"}</EasyTButton>
     </form>
-    {googleEnabled && <><div className={styles.divider}>or</div><EasyTButton variant="secondary" fullWidth onClick={() => authClient.signIn.social({ provider: "google", callbackURL })}>Continue with Google</EasyTButton></>}
+    {googleEnabled && <><div className={styles.divider}>or</div><EasyTButton type="button" variant="secondary" fullWidth loading={googleBusy} disabled={!configured || busy} onClick={continueWithGoogle}>Continue with Google</EasyTButton></>}
   </section>;
 }

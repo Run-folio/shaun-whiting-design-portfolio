@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Archive, Copy, Edit3, Gift, MoreHorizontal, RotateCcw, Trash2, X } from "lucide-react";
+import { Archive, CalendarCheck2, Copy, Edit3, Gift, MoreHorizontal, RotateCcw, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { EasyTTrip } from "@/lib/easyt/trip";
@@ -139,6 +139,13 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
             </Link>
             <div className={styles.tripFooter}>
               <div className={styles.tripActions}>
+                <Link
+                  className={styles.editTripLink}
+                  href={`/journey/trip?trip=${encodeURIComponent(trip.id)}`}
+                >
+                  <CalendarCheck2 aria-hidden="true" />
+                  {language === "es" ? "Modo viaje" : "Trip mode"}
+                </Link>
                 <Link
                   className={styles.editTripLink}
                   href={`/journey/new?trip=${encodeURIComponent(trip.id)}`}
