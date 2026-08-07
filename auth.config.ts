@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 import { getEasyTAuthSecret } from "@/lib/easyt/auth-environment";
-import { emailButton, sendEasyTEmail } from "@/lib/easyt/email";
+import { passwordResetEmail, sendEasyTEmail, verificationEmail } from "@/lib/easyt/email";
 
 const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
@@ -16,22 +16,12 @@ function createAuth(databaseUrl: string, secret: string) {
       minPasswordLength: 8,
       requireEmailVerification: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM),
       sendResetPassword: async ({ user, url }) => {
-        await sendEasyTEmail({
-          to: user.email,
-          subject: "Reset your EasyT password",
-          text: `Reset your EasyT password: ${url}`,
-          html: `<p>We received a request to reset your EasyT password.</p>${emailButton(url, "Reset password")}<p>If you did not request this, you can ignore this email.</p>`,
-        });
+        await sendEasyTEmail({ to: user.email, ...passwordResetEmail(url) });
       },
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
-        await sendEasyTEmail({
-          to: user.email,
-          subject: "Verify your EasyT account",
-          text: `Verify your EasyT account: ${url}`,
-          html: `<p>Welcome to EasyT. Confirm your email to keep your trips together.</p>${emailButton(url, "Verify email")}`,
-        });
+        await sendEasyTEmail({ to: user.email, ...verificationEmail(url) });
       },
       sendOnSignUp: true,
       // Existing accounts created before email delivery was configured need a
