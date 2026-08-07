@@ -29,7 +29,7 @@ export default async function EasyTAdminFeedbackPage() {
       <p className={styles.intro}>CSAT responses captured from the product.</p>
       <div className={styles.stats}>
         <article><strong>{feedback.length}</strong><span>responses</span></article>
-        <article><strong>{average ? average.toFixed(1) : "—"}</strong><span>average rating</span></article>
+        <article><strong>{average ? average.toFixed(1) : "No rating yet"}</strong><span>average rating</span></article>
         <article><strong>{feedback.filter((item) => item.comment?.trim()).length}</strong><span>with comments</span></article>
       </div>
       <section className={styles.distribution} aria-label="Rating distribution">{distribution.map((item) => <div key={item.rating}><span>{item.rating}</span><div><i style={{ width: feedback.length ? `${(item.count / feedback.length) * 100}%` : "0%" }} /></div><b>{item.count}</b></div>)}</section>

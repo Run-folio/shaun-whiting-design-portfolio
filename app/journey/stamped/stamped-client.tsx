@@ -5,6 +5,8 @@ import { feature } from "topojson-client";
 import { geoNaturalEarth1, geoPath } from "d3-geo";
 import worldTopology from "world-atlas/countries-50m.json";
 import styles from "./stamped.module.css";
+import memoryStyles from "./stamped-memory.module.css";
+import mediaStyles from "./stamped-media.module.css";
 
 type Status = "visited" | "want";
 type Country = { id: string; name: string; continent: string; aliases?: string[] };
@@ -38,6 +40,8 @@ export default function StampedClient({ userKey, authenticated }: Props) {
   const [dbLoaded, setDbLoaded] = useState(false);
   const [savePrompt, setSavePrompt] = useState(false);
   const [language, setLanguage] = useState<"en" | "es">("en");
+  const [memories, setMemories] = useState<Record<string, string>>({});
+  const [photos, setPhotos] = useState<Record<string, string>>({});
   const labels = language === "es"
     ? { eyebrow: "EASYT · SELLOS", title: "Tu mundo, marcado.", intro: "Guarda un registro vivo de los lugares donde has estado y de los que aún te esperan.", visited: "países visitados", guest: "Explorando como invitado · tus cambios se quedan en este dispositivo.", signIn: "Inicia sesión", keep: "Guarda tus sellos", keepText: "Crea una cuenta gratis para guardar este mapa en todos tus dispositivos.", create: "Crear cuenta", dismiss: "Cerrar", mapHint: "Toca un país para actualizar tu sello", visitedLabel: "Visitado", wantLabel: "Quiero ir" }
     : { eyebrow: "EASYT · STAMPED", title: "Your world, marked.", intro: "Keep a living record of where you’ve been, and the places still calling.", visited: "countries visited", guest: "Exploring as a guest · your changes stay on this device.", signIn: "Sign in", keep: "Keep your stamps", keepText: "Create a free account to save this map and use it on every device.", create: "Create account", dismiss: "Dismiss", mapHint: "Tap a country to update its stamp", visitedLabel: "Visited", wantLabel: "Want to visit" };
@@ -62,6 +66,11 @@ export default function StampedClient({ userKey, authenticated }: Props) {
         if (cancelled || !data?.statuses) return;
         const merged = { ...localGuestStatuses, ...data.statuses };
         setStatuses(merged);
+        if (data.memories && typeof data.memories === "object") {
+          const remote = data.memories as Record<string, { note?: string; photoData?: string }>;
+          setMemories(Object.fromEntries(Object.entries(remote).filter(([, memory]) => memory.note).map(([countryId, memory]) => [countryId, String(memory.note)])));
+          setPhotos(Object.fromEntries(Object.entries(remote).filter(([, memory]) => memory.photoData).map(([countryId, memory]) => [countryId, String(memory.photoData)])));
+        }
         const migratedKey = `easyt-stamped-migrated-${userKey ?? "account"}`;
         if (Object.keys(localGuestStatuses).length && !window.localStorage.getItem(migratedKey)) {
           await Promise.all(Object.entries(localGuestStatuses).map(([countryId, status]) =>
@@ -75,6 +84,14 @@ export default function StampedClient({ userKey, authenticated }: Props) {
     return () => { cancelled = true; window.removeEventListener("easyt-language-change", updateLanguage); };
   }, [storageKey, isAuthenticated]);
   useEffect(() => { if (dbLoaded) window.localStorage.setItem(storageKey, JSON.stringify(statuses)); }, [statuses, storageKey, dbLoaded]);
+  useEffect(() => {
+    try { setMemories(JSON.parse(window.localStorage.getItem(`easyt-stamp-memories-${userKey ?? "guest"}`) ?? "{}")); } catch { setMemories({}); }
+  }, [userKey]);
+  useEffect(() => { window.localStorage.setItem(`easyt-stamp-memories-${userKey ?? "guest"}`, JSON.stringify(memories)); }, [memories, userKey]);
+  useEffect(() => {
+    try { setPhotos(JSON.parse(window.localStorage.getItem(`easyt-stamp-photos-${userKey ?? "guest"}`) ?? "{}")); } catch { setPhotos({}); }
+  }, [userKey]);
+  useEffect(() => { window.localStorage.setItem(`easyt-stamp-photos-${userKey ?? "guest"}`, JSON.stringify(photos)); }, [photos, userKey]);
   const topo = useMemo(() => feature(worldTopology as never, worldTopology.objects.countries as never) as unknown as { features: any[] }, []);
   const projection = useMemo(() => geoNaturalEarth1().fitSize([1200, 610], topo as never), [topo]);
   const path = useMemo(() => geoPath(projection), [projection]);
@@ -113,6 +130,10 @@ export default function StampedClient({ userKey, authenticated }: Props) {
       setSavePrompt(true);
     }
   };
+  const syncMemory = (countryId: string, note: string, photoData: string | null) => {
+    if (!isAuthenticated) return;
+    void fetch("/api/easyt/stamped", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ countryId, note, photoData }) }).catch(() => undefined);
+  };
   const visitedCount = Object.values(statuses).filter((value) => value === "visited").length;
   const calloutWidth = selectedCountry ? Math.min(440, Math.max(300, 176 + selectedCountry.name.length * 7.5)) : 300;
   const calloutHeight = selectedCountry && selectedCountry.name.length > 22 ? 136 : 112;
@@ -122,6 +143,8 @@ export default function StampedClient({ userKey, authenticated }: Props) {
     <section className={styles.intro}><div><p className={styles.eyebrow}>{labels.eyebrow}</p><h1>{labels.title}</h1><p>{labels.intro}</p></div><div className={styles.stat}><strong>{visitedCount}</strong><span>{labels.visited}</span></div></section>
     {!isAuthenticated && <p className={styles.guestNote}>{labels.guest} <a href="/journey/login?next=%2Fjourney%2Fstamped">{labels.signIn}</a></p>}
     {!isAuthenticated && savePrompt && <div className={styles.savePrompt} role="status"><div><strong>{labels.keep}</strong><span>{labels.keepText}</span></div><a href="/journey/login?mode=sign-up&next=%2Fjourney%2Fstamped">{labels.create}</a><button type="button" onClick={() => setSavePrompt(false)} aria-label={labels.dismiss}>{labels.dismiss}</button></div>}
+    {selectedCountry && <section className={memoryStyles.memoryCard}><p>MEMORY OF {selectedCountry.name.toUpperCase()}</p><strong>{statuses[selectedCountry.id] === "visited" ? "What stayed with you?" : "Why is this calling you?"}</strong><textarea value={memories[selectedCountry.id] ?? ""} onChange={(event) => setMemories((current) => ({ ...current, [selectedCountry.id]: event.target.value }))} onBlur={(event) => syncMemory(selectedCountry.id, event.target.value, photos[selectedCountry.id] ?? null)} placeholder={statuses[selectedCountry.id] === "visited" ? "A meal, a person, a moment…" : "A reason to go, a place to begin…"} /></section>}
+    {selectedCountry && <section className={mediaStyles.mediaCard}><div><p>PHOTO STAMP</p><strong>Give {selectedCountry.name} a picture.</strong><span>Choose one photo that holds the feeling of this place.</span><label>Choose photo<input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (!file || file.size > 1_500_000) return; const reader = new FileReader(); reader.onload = () => { const photoData = String(reader.result); setPhotos((current) => ({ ...current, [selectedCountry.id]: photoData })); syncMemory(selectedCountry.id, memories[selectedCountry.id] ?? "", photoData); }; reader.readAsDataURL(file); }} /></label></div>{photos[selectedCountry.id] && <figure><img src={photos[selectedCountry.id]} alt={`Memory from ${selectedCountry.name}`} /><button type="button" onClick={() => { setPhotos((current) => { const next = { ...current }; delete next[selectedCountry.id]; return next; }); syncMemory(selectedCountry.id, memories[selectedCountry.id] ?? "", null); }}>Remove</button></figure>}</section>}
     <div className={styles.workspace}>
       <section className={styles.mapPanel} aria-label="World map">
         <div className={styles.mapHeader}><span>{labels.mapHint}</span><div className={styles.legend}><span><i className={styles.dotVisited} />{labels.visitedLabel}</span><span><i className={styles.dotWant} />{labels.wantLabel}</span></div></div>

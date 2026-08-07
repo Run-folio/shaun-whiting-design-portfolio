@@ -32,7 +32,7 @@ export default async function GiftTripPage({ params }: PageProps) {
           <p className={styles.eyebrow}>A trip has been gifted to you</p>
           <h1>{gift.tripTitle}</h1>
           <p className={styles.giftClaimCopy}>
-            {gift.senderName} has shared their plan with you. Claiming it creates your own editable copy — their original stays theirs.
+            {gift.senderName} has shared their plan with you. Claiming it creates your own editable copy. Their original stays theirs.
           </p>
           {gift.note ? <blockquote className={styles.giftNote}>“{gift.note}”</blockquote> : null}
           <p className={styles.giftRecipient}>For {gift.recipientEmail}</p>

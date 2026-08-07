@@ -40,6 +40,7 @@ export default async function EasyTProfilePage() {
           name={session.user.name || ""}
           email={session.user.email}
           initialLanguage={preferences.language}
+          initialTravelProfile={preferences.travelProfile}
         />
       </section>
     </main>

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * EasyT — new trip builder (v2 flow: Where → When → Places → Style → Draft)
+ * EasyT — new trip builder (v2 flow: Where → When → Places → Time → Draft)
  * Self-contained client component. Drop in at app/journey/new/trip-builder.tsx
  * and render <TripBuilder /> from page.tsx.
  *
@@ -20,6 +20,8 @@ import { buildCredibleItinerary, type PlannedDay, type PlannerPlace } from "@/li
 import { journeyMedia, type JourneyImage } from "@/lib/journey";
 import styles from "./trip-builder.module.css";
 import { easytCopy, languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
+import { inspirationByKey } from "@/lib/easyt/inspiration";
+import { defaultTravelProfile, isTravelProfile, type TravelProfile } from "@/lib/easyt/travel-profile";
 
 /* ---------------------------------------------------------------- data */
 
@@ -75,14 +77,14 @@ const STEPS = [
   { label: "Where", note: "Route first" },
   { label: "When", note: "Dates set length" },
   { label: "Places", note: "Spend your days" },
-  { label: "Style", note: "How it should feel" },
+  { label: "Time", note: "Make room for what matters" },
 ];
 
 /** Distinct filler days — never repeat one entry verbatim. */
 const OPEN_DAYS = [
   { title: "Open day", reason: "Nothing scheduled. Whatever you found yesterday gets today.", items: ["Start wherever you left off", "One walkable area, no cross-city legs", "Leave the evening open"] },
   { title: "Neighbourhood day", reason: "One district, on foot, chosen once you're on the ground.", items: ["Pick a district over breakfast", "Walk it properly rather than ticking sights", "Eat where the queue is local"] },
-  { title: "Day trip, if you feel like it", reason: "Held loosely — a short rail hop, or nothing at all.", items: ["Check the weather first", "Keep it under 90 minutes each way", "Be back for an unhurried dinner"] },
+  { title: "Day trip, if you feel like it", reason: "Held loosely: a short rail hop, or nothing at all.", items: ["Check the weather first", "Keep it under 90 minutes each way", "Be back for an unhurried dinner"] },
   { title: "Slow morning", reason: "A deliberate gap so the trip doesn't turn into a schedule.", items: ["No alarm", "One thing only, in the afternoon", "Restock and reset"] },
   { title: "Repeat day", reason: "Go back to the one place that landed best so far.", items: ["Return somewhere you liked", "See it at a different hour", "Nothing new required"] },
 ];
@@ -315,6 +317,8 @@ export default function TripBuilder() {
   const [discovering, setDiscovering] = useState<Record<string, boolean>>({});
 
   const [budget, setBudget] = useState<"value" | "mid" | "high">("value");
+  const [inspirationTitle, setInspirationTitle] = useState<string | null>(null);
+  const [travelProfile, setTravelProfile] = useState<TravelProfile>(defaultTravelProfile);
 
   const pickerRef = useDismiss(Boolean(picker), () => setPicker(null));
 
@@ -337,7 +341,8 @@ export default function TripBuilder() {
       setBudget(saved.brief.budgetBand);
     };
     const hydrate = async () => {
-      const tripIdFromUrl = new URLSearchParams(window.location.search).get("trip");
+      const params = new URLSearchParams(window.location.search);
+      const tripIdFromUrl = params.get("trip");
       if (tripIdFromUrl) {
         try {
           const cloudTrip = await loadTripFromEasyT(tripIdFromUrl);
@@ -351,6 +356,24 @@ export default function TripBuilder() {
         } catch {
           const localTrip = loadActiveTrip();
           if (localTrip?.id === tripIdFromUrl) applySaved(localTrip);
+        }
+      } else {
+        try {
+          const savedProfile = JSON.parse(window.localStorage.getItem("easyt-travel-profile") ?? "null");
+          if (isTravelProfile(savedProfile)) { setBudget(savedProfile.budget); setTravelProfile(savedProfile); }
+        } catch { setBudget(defaultTravelProfile.budget); }
+        const seed = inspirationByKey[params.get("inspire") ?? ""];
+        if (seed) {
+          setOrigin(seed.origin);
+          setOriginCoordinates(seed.originCoordinates);
+          setStops(seed.stops);
+          // A route has its own starting level, but an account preference still
+          // wins when present so the plan reflects the traveller, not the card.
+          try {
+            const savedProfile = JSON.parse(window.localStorage.getItem("easyt-travel-profile") ?? "null");
+            if (isTravelProfile(savedProfile)) { setBudget(savedProfile.budget); setTravelProfile(savedProfile); } else setBudget(seed.budget);
+          } catch { setBudget(seed.budget); }
+          setInspirationTitle(seed.title);
         }
       }
       if (active) setHydrated(true);
@@ -390,6 +413,7 @@ export default function TripBuilder() {
     [stops],
   );
   const originMissing = originTouched && (!origin.trim() || Boolean(originError));
+  const profileFit = `${travelProfile.pace === "slow" ? "slow mornings" : travelProfile.pace === "full" ? "full days" : "a balanced rhythm"}, ${travelProfile.priority === "mix" ? "a little of everything" : travelProfile.priority}, and ${travelProfile.hotelMoves === "few" ? "fewer hotel moves" : "flexible stops"}`;
   const gate = step === 0 ? (!origin.trim() ? ui.addOrigin : !stops.length ? ui.addStop : "") : "";
 
   /** A transparent default: selected activity volume influences the recommended split. */
@@ -643,6 +667,13 @@ export default function TripBuilder() {
         <div className={styles.pane}>
           {step === 0 && (
             <div className={styles.stack}>
+              {inspirationTitle && (
+                <div className={styles.inspirationNotice}>
+                  <span>STARTING POINT</span>
+                  <strong>{inspirationTitle}</strong>
+                  <p>Started for {profileFit}. This is a route to shape, not a package. Change any stop, date or detail.</p>
+                </div>
+              )}
               <div className={`${styles.card} ${originMissing ? styles.cardError : ""}`}>
                 <span className={styles.cardLabel}><Plane /> {copy.startFrom}</span>
                 <input value={origin} placeholder={copy.cityAirport} aria-label={copy.startFrom}
@@ -818,13 +849,6 @@ export default function TripBuilder() {
                   })}
                 </div>
               </section>
-              <RadioGroup label={ui.budget} help={ui.budgetHelp}
-                value={budget} onChange={setBudget}
-                options={[
-                  { value: "value", label: ui.value, note: ui.valueNote },
-                  { value: "mid", label: ui.mid, note: ui.midNote },
-                  { value: "high", label: ui.high, note: ui.highNote },
-                ]} />
             </div>
           )}
         </div>

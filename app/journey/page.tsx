@@ -10,6 +10,7 @@ import { JourneyPlannerMap } from "@/components/journey-planner-map";
 import { JourneyCarousel } from "@/components/journey-carousel";
 import { JourneyRestaurantFinder } from "@/components/journey-restaurant-finder";
 import { JourneyLocalFinder } from "@/components/journey-local-finder";
+import { MobileTripCompanion } from "@/components/mobile-trip-companion";
 import { JourneyWeather } from "@/components/journey-weather";
 import { journeyCalendar, journeyDayMedia, journeyDetails, journeyMedia, march2027Journey, type JourneyCalendarDay, type JourneyLeg, type JourneyRestaurant, type JourneyStop, type RestaurantMeal } from "@/lib/journey";
 import { getCountryIntelligence } from "@/lib/country-intelligence";
@@ -170,7 +171,7 @@ function makeCustomJourney(brief: CustomBrief) {
     const estimate = estimateLeg({ name: from.city, country: from.country, coordinates: from.coordinates ?? undefined }, { id: stop.id, name: stop.city, country: stop.country, coordinates: stop.coordinates ?? undefined });
     return { from: from.id, to: stop.id, mode: estimate.mode === "train" ? "rail" : estimate.mode === "flight" ? "flight" : "road", label: estimate.label, detail: `${estimate.distanceKm ? `${estimate.distanceKm.toLocaleString()} km · ` : ""}${estimate.note}`, duration: formatEstimate(estimate.durationMinutes) };
   });
-  return { title: "Your Journey", dateRange: `${customDate(brief.startDate, 0)} — ${customDate(brief.startDate, Math.max(0, totalDays - 1))}`, stops, legs, calendar };
+  return { title: "Your Journey", dateRange: `${customDate(brief.startDate, 0)} to ${customDate(brief.startDate, Math.max(0, totalDays - 1))}`, stops, legs, calendar };
 }
 
 /**
@@ -274,7 +275,7 @@ function makeEasyTJourney(trip: EasyTTrip) {
   });
   return {
     title: trip.title || "Your Journey",
-    dateRange: `${customDate(trip.startDate, 0)} — ${customDate(trip.endDate, 0)}`,
+    dateRange: `${customDate(trip.startDate, 0)} to ${customDate(trip.endDate, 0)}`,
     stops,
     legs,
     calendar,
@@ -1012,6 +1013,8 @@ export default function JourneyPage() {
         <JourneyLocalFinder kind="restaurant" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} onSavePlace={saveLocalVenue} />
         <JourneyLocalFinder kind="stay" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onSavePlace={saveLocalVenue} />
       </aside> : null}
+
+      {isPlanningPreview && isCustomJourney && selected.coordinates ? <MobileTripCompanion day={selectedDay} city={selected.city} country={selected.country} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} onSavePlace={saveLocalVenue} /> : null}
 
       <div className={styles.bottomControls}>
         {isPlanningPreview && isCustomJourney ? <div className={styles.mapModeControl}>
