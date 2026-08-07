@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@/components/analytics";
+import { EasyTPwaRegister } from "@/components/easyt-pwa-register";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
       <body className="bg-paper font-sans text-ink antialiased dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
         {children}
         <Analytics />
+        <EasyTPwaRegister />
       </body>
     </html>
   );

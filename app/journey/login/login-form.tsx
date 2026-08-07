@@ -42,7 +42,7 @@ export default function LoginForm({
       : await authClient.signIn.email({ email: submittedEmail, password, callbackURL });
     if (result.error) {
       const message = result.error.message || "We couldn't complete that request.";
-      setError(message.toLowerCase().includes("email not verified") ? "Email not verified. We sent a fresh verification link—check your inbox, then try again." : message);
+      setError(message.toLowerCase().includes("email not verified") ? "Email not verified. We sent a fresh verification link. Check your inbox, then try again." : message);
       setBusy(false);
     }
     else if (mode === "sign-up") {

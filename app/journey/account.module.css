@@ -709,6 +709,9 @@
   border-color: #ff3d8b;
   box-shadow: 0 0 0 3px rgba(255, 61, 139, 0.12);
 }
+.travelProfileCard { grid-column: 1 / -1; }
+.travelProfileCard .eyebrow { margin-bottom: 8px; }
+.travelProfileCard > .muted { max-width: 540px; margin-top: -4px; }
 .profileMessage {
   grid-column: 1/-1;
   margin: 0;

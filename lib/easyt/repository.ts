@@ -4,9 +4,10 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import { getEasyTDatabase } from "./database";
 import { EasyTTrip, isEasyTTrip } from "./trip";
+import { defaultTravelProfile, isTravelProfile, type TravelProfile } from "./travel-profile";
 
 type TripDocumentRow = { document: unknown };
-export type EasyTUserPreferences = { language: "en" | "es" };
+export type EasyTUserPreferences = { language: "en" | "es"; travelProfile: TravelProfile };
 
 export type EasyTEmailEvent = {
   id: string;
@@ -109,7 +110,10 @@ export async function getEasyTUserPreferences(
   const rows = (await sql`
     select preferences from easyt_users where id = ${ownerId} limit 1
   `) as Array<{ preferences: Record<string, unknown> }>;
-  return { language: rows[0]?.preferences?.language === "es" ? "es" : "en" };
+  return {
+    language: rows[0]?.preferences?.language === "es" ? "es" : "en",
+    travelProfile: isTravelProfile(rows[0]?.preferences?.travelProfile) ? rows[0].preferences.travelProfile : defaultTravelProfile,
+  };
 }
 
 export async function updateEasyTUserPreferences(
@@ -150,6 +154,23 @@ export async function setCountryStamp(
     on conflict (owner_id, country_id) do update set
       status = excluded.status,
       updated_at = now()
+  `;
+}
+
+export async function getCountryMemories(ownerId: string) {
+  const sql = getEasyTDatabase();
+  return (await sql`
+    select country_id as "countryId", note, photo_data as "photoData"
+    from easyt_country_memories where owner_id = ${ownerId}
+  `) as Array<{ countryId: string; note: string | null; photoData: string | null }>;
+}
+
+export async function setCountryMemory(input: { ownerId: string; countryId: string; note?: string; photoData?: string | null }) {
+  const sql = getEasyTDatabase();
+  await sql`
+    insert into easyt_country_memories (owner_id, country_id, note, photo_data)
+    values (${input.ownerId}, ${input.countryId}, ${input.note?.trim() || null}, ${input.photoData || null})
+    on conflict (owner_id, country_id) do update set note = excluded.note, photo_data = excluded.photo_data, updated_at = now()
   `;
 }
 

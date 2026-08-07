@@ -9,20 +9,24 @@ import {
 } from "@/components/easyt/easyt-controls";
 import styles from "../account.module.css";
 import { easytCopy } from "@/lib/easyt/i18n";
+import { type TravelProfile } from "@/lib/easyt/travel-profile";
 
 export default function ProfileForm({
   name: initialName,
   email,
   initialLanguage,
+  initialTravelProfile,
 }: {
   name: string;
   email: string;
   initialLanguage: "en" | "es";
+  initialTravelProfile: TravelProfile;
 }) {
   const [name, setName] = useState(initialName);
   const [language, setLanguage] = useState(initialLanguage);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [travelProfile, setTravelProfile] = useState<TravelProfile>(initialTravelProfile);
   const copy = easytCopy[language];
 
   useEffect(() => {
@@ -62,6 +66,18 @@ export default function ProfileForm({
     );
   };
 
+  const saveTravelProfile = async () => {
+    setSaving(true);
+    const response = await fetch("/api/easyt/profile", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ language, travelProfile }),
+    });
+    if (response.ok) window.localStorage.setItem("easyt-travel-profile", JSON.stringify(travelProfile));
+    setSaving(false);
+    setMessage(response.ok ? "Travel preferences saved. EasyT will use them as a starting point for new trips." : "Travel preferences could not be saved.");
+  };
+
   return (
     <div className={styles.profileGrid}>
       <form className={styles.profileCard} onSubmit={save}>
@@ -81,6 +97,24 @@ export default function ProfileForm({
           <option value="es">Español</option>
         </EasyTSelect>
         <p className={styles.muted}>{copy.account.languageHint}</p>
+      </section>
+      <section className={`${styles.profileCard} ${styles.travelProfileCard}`}>
+        <p className={styles.eyebrow}>YOUR TRAVEL PROFILE</p>
+        <h2>What makes a trip feel good?</h2>
+        <p className={styles.muted}>EasyT uses these as a starting point. You can always override them on any trip.</p>
+        <EasyTSelect label="Pace" value={travelProfile.pace} onChange={(event) => setTravelProfile((current) => ({ ...current, pace: event.target.value as TravelProfile["pace"] }))}>
+          <option value="slow">Slow mornings and room to wander</option><option value="balanced">A balanced rhythm</option><option value="full">Full days, plenty to see</option>
+        </EasyTSelect>
+        <EasyTSelect label="What pulls you in" value={travelProfile.priority} onChange={(event) => setTravelProfile((current) => ({ ...current, priority: event.target.value as TravelProfile["priority"] }))}>
+          <option value="food">Local food and neighbourhoods</option><option value="nature">Nature and time outside</option><option value="culture">Culture, history and design</option><option value="mix">A little of everything</option>
+        </EasyTSelect>
+        <EasyTSelect label="Hotel moves" value={travelProfile.hotelMoves} onChange={(event) => setTravelProfile((current) => ({ ...current, hotelMoves: event.target.value as TravelProfile["hotelMoves"] }))}>
+          <option value="few">Keep them to a minimum</option><option value="some">A few is fine</option><option value="open">I’ll move for the right place</option>
+        </EasyTSelect>
+        <EasyTSelect label="Comfort level" value={travelProfile.budget} onChange={(event) => setTravelProfile((current) => ({ ...current, budget: event.target.value as TravelProfile["budget"] }))}>
+          <option value="value">Good value</option><option value="mid">Mid-range</option><option value="high">Best available</option>
+        </EasyTSelect>
+        <EasyTButton type="button" loading={saving} onClick={saveTravelProfile}>Save travel profile</EasyTButton>
       </section>
       {message ? (
         <p className={styles.profileMessage} role="status">

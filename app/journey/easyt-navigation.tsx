@@ -12,6 +12,7 @@ import {
   Plus,
   Stamp,
   UserRound,
+  House,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { clearActiveTrip } from "@/lib/easyt/storage";
@@ -20,7 +21,7 @@ import { easytCopy, type EasyTLanguage } from "@/lib/easyt/i18n";
 import styles from "./easyt-navigation.module.css";
 
 type EasyTNavigationProps = {
-  current?: "prototype" | "trips" | "stamped" | "new" | "login" | "profile";
+  current?: "home" | "prototype" | "trips" | "stamped" | "new" | "login" | "profile";
   account?: { name?: string | null; email: string; language?: Language };
 };
 
@@ -44,6 +45,11 @@ export default function EasyTNavigation({
     const saved = window.localStorage.getItem("easyt-language");
     if (saved === "en" || saved === "es") setLanguage(saved);
   }, [account?.language]);
+
+  useEffect(() => {
+    document.body.classList.add("easyt-mobile-shell");
+    return () => document.body.classList.remove("easyt-mobile-shell");
+  }, []);
 
   const changeLanguage = (next: Language) => {
     setLanguage(next);
@@ -75,7 +81,7 @@ export default function EasyTNavigation({
     activeAccount?.name?.trim() || activeAccount?.email || labels.account;
 
   return (
-    <header className={styles.header}>
+    <header className={styles.header} data-easyt-app>
       <button
         type="button"
         className={styles.portfolio}
@@ -92,7 +98,7 @@ export default function EasyTNavigation({
       <Link
         className={styles.brand}
         href="/journey/home"
-        aria-label="EasyT — home"
+        aria-label="EasyT home"
       >
         <span>Easy</span>
         <b>T</b>
@@ -185,6 +191,42 @@ export default function EasyTNavigation({
           </Link>
         ) : null}
       </nav>
+      {current !== "prototype" && current !== "login" ? (
+        <nav className={styles.mobileDock} aria-label="EasyT mobile navigation">
+          <Link
+            className={current === "home" ? styles.dockCurrent : undefined}
+            href="/journey/home"
+          >
+            <House aria-hidden="true" />
+            <span>{labels.home}</span>
+          </Link>
+          <Link
+            className={current === "trips" ? styles.dockCurrent : undefined}
+            href="/journey/dashboard"
+          >
+            <Map aria-hidden="true" />
+            <span>{labels.trips}</span>
+          </Link>
+          <Link className={styles.dockPrimary} href="/journey/new">
+            <Plus aria-hidden="true" />
+            <span>{labels.newTrip}</span>
+          </Link>
+          <Link
+            className={current === "stamped" ? styles.dockCurrent : undefined}
+            href="/journey/stamped"
+          >
+            <Stamp aria-hidden="true" />
+            <span>{labels.stamped}</span>
+          </Link>
+          <Link
+            className={current === "profile" ? styles.dockCurrent : undefined}
+            href={activeAccount ? "/journey/profile" : "/journey/dashboard"}
+          >
+            <UserRound aria-hidden="true" />
+            <span>{labels.account}</span>
+          </Link>
+        </nav>
+      ) : null}
     </header>
   );
 }
