@@ -12,6 +12,7 @@ import { JourneyRestaurantFinder } from "@/components/journey-restaurant-finder"
 import { JourneyLocalFinder } from "@/components/journey-local-finder";
 import { MobileTripCompanion } from "@/components/mobile-trip-companion";
 import { JourneyWeather } from "@/components/journey-weather";
+import EasyTTripCopilot from "@/components/easyt/easyt-trip-copilot";
 import { journeyCalendar, journeyDayMedia, journeyDetails, journeyMedia, march2027Journey, type JourneyCalendarDay, type JourneyLeg, type JourneyRestaurant, type JourneyStop, type RestaurantMeal } from "@/lib/journey";
 import { getCountryIntelligence } from "@/lib/country-intelligence";
 import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
@@ -1045,6 +1046,7 @@ export default function JourneyPage() {
       {isPlanningPreview && isCustomJourney && selected.coordinates ? <MobileTripCompanion day={selectedDay} city={selected.city} country={selected.country} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} onSavePlace={saveLocalVenue} /> : null}
 
       <div className={styles.bottomControls}>
+        {isPlanningPreview && isCustomJourney ? <EasyTTripCopilot surface="map" dayCount={journey.calendar.length} destination={selected.city} /> : null}
         {isPlanningPreview && isCustomJourney ? <div className={styles.mapModeControl}>
           <small>{mapMode === "overview" ? planCopy.tripOverview : planCopy.localDetail}</small>
           <button type="button" onClick={() => setMapMode((mode) => mode === "overview" ? "detail" : "overview")}>

@@ -23,6 +23,7 @@ import mobilePolish from "./trip-builder-mobile.module.css";
 import { easytCopy, languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
 import { inspirationByKey } from "@/lib/easyt/inspiration";
 import { defaultTravelProfile, isTravelProfile, type TravelProfile } from "@/lib/easyt/travel-profile";
+import EasyTTripCopilot from "@/components/easyt/easyt-trip-copilot";
 
 /* ---------------------------------------------------------------- data */
 
@@ -682,6 +683,7 @@ export default function TripBuilder() {
       </nav>
 
       <p className={styles.builderReassurance}>{stepGuidance[step]}</p>
+      <div className={styles.copilotSlot}><EasyTTripCopilot surface="builder" destination={stops[0]?.name} /></div>
 
       <div className={styles.wizardBody}>
         <div className={styles.pane}>
