@@ -8,7 +8,7 @@ import mobileStyles from "./easyt-product-tour-mobile.module.css";
 
 const copy = {
   en: {
-    trigger: "How EasyT works", close: "Close product tour", step: "Step", of: "of", back: "Back", next: "Next", finish: "Start exploring", skip: "Skip tour",
+    trigger: "Guide", close: "Close product tour", step: "Step", of: "of", back: "Back", next: "Next", finish: "Start exploring", skip: "Skip tour",
     steps: [
       { label: "01 · Find a direction", title: "Start with a feeling, not a blank form.", copy: "Browse routes with a point of view, or start from scratch. Every route is a useful first thought, not a fixed package.", image: "/journey/product-shots/map-plan-mobile.jpeg", alt: "EasyT itinerary and map" },
       { label: "02 · Make it yours", title: "Set the pace before EasyT starts suggesting.", copy: "Your travel profile sets the starting rhythm: slow or full days, what draws you in, comfort level and how often you want to move hotels.", image: "/journey/product-shots/profile-mobile.jpeg", alt: "EasyT travel profile" },
@@ -18,7 +18,7 @@ const copy = {
     ],
   },
   es: {
-    trigger: "Cómo funciona EasyT", close: "Cerrar recorrido del producto", step: "Paso", of: "de", back: "Atrás", next: "Siguiente", finish: "Empezar a explorar", skip: "Omitir recorrido",
+    trigger: "Guía", close: "Cerrar recorrido del producto", step: "Paso", of: "de", back: "Atrás", next: "Siguiente", finish: "Empezar a explorar", skip: "Omitir recorrido",
     steps: [
       { label: "01 · Encuentra una dirección", title: "Empieza con una sensación, no con un formulario vacío.", copy: "Explora rutas con un punto de vista o empieza desde cero. Cada ruta es una buena primera idea, no un paquete fijo.", image: "/journey/product-shots/map-plan-mobile.jpeg", alt: "Itinerario y mapa de EasyT" },
       { label: "02 · Hazla tuya", title: "Define el ritmo antes de que EasyT empiece a sugerir.", copy: "Tu perfil de viaje establece el ritmo inicial: días lentos o intensos, lo que te atrae, el nivel de comodidad y la frecuencia con la que quieres cambiar de hotel.", image: "/journey/product-shots/profile-mobile.jpeg", alt: "Perfil de viaje de EasyT" },

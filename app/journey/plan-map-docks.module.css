@@ -1,4 +1,4 @@
 @media (min-width: 681px) {
   .plan :global([class*="finderDock"]) { right:auto; left:clamp(20px,3.5vw,52px); bottom:24px; }
-  .plan :global([class*="pinDock"]) { bottom:302px; }
+  .plan :global([class*="pinDock"]) { bottom:92px; left:50%; transform:translateX(-50%); }
 }

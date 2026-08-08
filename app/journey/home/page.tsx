@@ -12,17 +12,19 @@ export default function EasyTHomePage() {
   return (
     <main className={styles.page}>
       <EasyTNavigation current="home" />
-      <HomeHeroTools />
-
-      <HomeProof />
-
-      <ProductShowcase />
+      <HomeHeroTools showTools={false} />
 
       <section id="start-building" className={styles.builderSection}>
         <HomeTripStarter />
       </section>
 
+      <HomeProof />
+
+      <ProductShowcase />
+
       <InspirationExplorer />
+
+      <HomeHeroTools showHero={false} />
 
     </main>
   );

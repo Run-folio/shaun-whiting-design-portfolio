@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -33,6 +33,7 @@ export default function EasyTNavigation({
   account,
 }: EasyTNavigationProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session } = authClient.useSession();
   const [language, setLanguage] = useState<Language>("en");
 
@@ -83,18 +84,22 @@ export default function EasyTNavigation({
 
   return (
     <header className={styles.header} data-easyt-app>
-      <button
-        type="button"
-        className={styles.portfolio}
-        onClick={() => {
-          if (window.history.length > 1) router.back();
-          else router.push("/journey/dashboard");
-        }}
-        aria-label={labels.back}
-      >
-        <ArrowLeft aria-hidden="true" />
-        <span>{labels.back}</span>
-      </button>
+      {pathname === "/journey/home" ? (
+        <span className={styles.portfolioSpacer} aria-hidden="true" />
+      ) : (
+        <button
+          type="button"
+          className={styles.portfolio}
+          onClick={() => {
+            if (window.history.length > 1) router.back();
+            else router.push("/journey/dashboard");
+          }}
+          aria-label={labels.back}
+        >
+          <ArrowLeft aria-hidden="true" />
+          <span>{labels.back}</span>
+        </button>
+      )}
 
       <Link
         className={styles.brand}
@@ -106,24 +111,6 @@ export default function EasyTNavigation({
       </Link>
 
       <nav className={styles.actions} aria-label="EasyT navigation">
-        <EasyTProductTour triggerLabel={labels.tour} />
-        <EasyTLinkButton
-          className={`${styles.quietLink} ${current === "stamped" ? styles.current : ""}`}
-          href="/journey/stamped"
-          icon={Stamp}
-          size="small"
-          variant="secondary"
-        >
-          <span>{labels.stamped}</span>
-        </EasyTLinkButton>
-        <EasyTLinkButton
-          className={`${styles.quietLink} ${styles.tripsLink} ${current === "trips" ? styles.current : ""}`}
-          href="/journey/dashboard"
-          size="small"
-          variant="secondary"
-        >
-          <span>{labels.trips}</span>
-        </EasyTLinkButton>
         {current !== "new" ? (
           <EasyTLinkButton
             className={styles.primaryLink}
@@ -135,6 +122,15 @@ export default function EasyTNavigation({
             <span>{labels.newTrip}</span>
           </EasyTLinkButton>
         ) : null}
+        <EasyTLinkButton
+          className={`${styles.quietLink} ${styles.tripsLink} ${current === "trips" ? styles.current : ""}`}
+          href="/journey/dashboard"
+          size="small"
+          variant="secondary"
+        >
+          <span>{labels.trips}</span>
+        </EasyTLinkButton>
+        <EasyTProductTour triggerLabel={labels.tour} />
         {activeAccount ? (
           <details className={styles.accountMenu}>
             <summary
@@ -154,6 +150,13 @@ export default function EasyTNavigation({
               <Link href="/journey/profile">
                 <UserRound aria-hidden="true" />
                 <span>{labels.profile}</span>
+              </Link>
+              <Link
+                className={current === "stamped" ? styles.submenuCurrent : undefined}
+                href="/journey/stamped"
+              >
+                <Stamp aria-hidden="true" />
+                <span>{labels.stamped}</span>
               </Link>
               <Link
                 className={current === "prototype" ? styles.submenuCurrent : undefined}

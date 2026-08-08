@@ -12,7 +12,7 @@ import styles from "../account.module.css";
 import { isEasyTAuthConfigured } from "@/lib/easyt/auth-environment";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "My trips · EasyT" };
+export const metadata = { title: "Trips · EasyT" };
 
 export default async function EasyTDashboardPage() {
   if (!isEasyTAuthConfigured()) {
@@ -40,7 +40,7 @@ export default async function EasyTDashboardPage() {
         <div className={styles.dashTop}>
           <div>
             <p className={styles.eyebrow}>Your travel workspace</p>
-            <h1>My trips.</h1>
+            <h1>Trips.</h1>
             <p className={styles.userLine}>
               Plan, revisit and travel with every journey from one place.
             </p>
