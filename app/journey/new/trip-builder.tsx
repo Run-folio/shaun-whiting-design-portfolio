@@ -215,7 +215,7 @@ function useDismiss(open: boolean, close: () => void) {
 
 /* --------------------------------------------------------- sub-components */
 
-function Calendar({ value, onPick, language = "en" }: { value: string; onPick: (v: string) => void; language?: EasyTLanguage }) {
+export function Calendar({ value, onPick, language = "en" }: { value: string; onPick: (v: string) => void; language?: EasyTLanguage }) {
   const [view, setView] = useState(value || iso(new Date()));
   const v = new Date(`${view}T00:00:00`);
   const offset = new Date(v.getFullYear(), v.getMonth(), 1).getDay();
