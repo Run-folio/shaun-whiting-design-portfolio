@@ -365,8 +365,20 @@ export default function TripBuilder() {
           const savedProfile = JSON.parse(window.localStorage.getItem("easyt-travel-profile") ?? "null");
           if (isTravelProfile(savedProfile)) { setBudget(savedProfile.budget); setTravelProfile(savedProfile); }
         } catch { setBudget(defaultTravelProfile.budget); }
-        const seed = inspirationByKey[params.get("inspire") ?? ""];
-        if (seed) {
+        let homeDraft: { origin?: string; originCoordinates?: [number, number]; destination?: Stop; startDate?: string; endDate?: string } | null = null;
+        if (params.get("homeDraft") === "1") {
+          try { homeDraft = JSON.parse(window.localStorage.getItem("easyt-home-trip-draft") ?? "null"); } catch { homeDraft = null; }
+        }
+        if (homeDraft?.origin && homeDraft.originCoordinates && homeDraft.destination?.coordinates && homeDraft.destination.country && homeDraft.startDate && homeDraft.endDate) {
+          setOrigin(homeDraft.origin);
+          setOriginCoordinates(homeDraft.originCoordinates);
+          setStops([homeDraft.destination]);
+          setStartDate(homeDraft.startDate);
+          setEndDate(homeDraft.endDate);
+          window.localStorage.removeItem("easyt-home-trip-draft");
+        } else {
+          const seed = inspirationByKey[params.get("inspire") ?? ""];
+          if (seed) {
           setOrigin(seed.origin);
           setOriginCoordinates(seed.originCoordinates);
           setStops(seed.stops);
@@ -375,8 +387,9 @@ export default function TripBuilder() {
           try {
             const savedProfile = JSON.parse(window.localStorage.getItem("easyt-travel-profile") ?? "null");
             if (isTravelProfile(savedProfile)) { setBudget(savedProfile.budget); setTravelProfile(savedProfile); } else setBudget(seed.budget);
-          } catch { setBudget(seed.budget); }
-          setInspirationTitle(seed.title);
+            } catch { setBudget(seed.budget); }
+            setInspirationTitle(seed.title);
+          }
         }
       }
       if (active) setHydrated(true);
@@ -417,6 +430,9 @@ export default function TripBuilder() {
   );
   const originMissing = originTouched && (!origin.trim() || Boolean(originError));
   const profileFit = `${travelProfile.pace === "slow" ? "slow mornings" : travelProfile.pace === "full" ? "full days" : "a balanced rhythm"}, ${travelProfile.priority === "mix" ? "a little of everything" : travelProfile.priority}, and ${travelProfile.hotelMoves === "few" ? "fewer hotel moves" : "flexible stops"}`;
+  const stepGuidance = language === "es"
+    ? ["Empieza con una salida y un destino. Podrás cambiar, añadir o quitar lugares después.", "Las fechas marcan el ritmo inicial. Nada se reserva al crear el plan.", "Elige solo los lugares que realmente te importan. EasyT deja espacio para el resto.", "Ajusta los días hasta que el ritmo te parezca correcto. Después podrás editar cualquier detalle."]
+    : ["Start with a departure and destination. You can change, add or remove places later.", "Dates set the first rhythm. Nothing is booked when you create a plan.", "Choose only the places that matter most. EasyT leaves room for the rest.", "Adjust the days until the pace feels right. You will still be able to edit every detail."];
   const gate = step === 0 ? (!origin.trim() ? ui.addOrigin : !stops.length ? ui.addStop : "") : "";
 
   /** A transparent default: selected activity volume influences the recommended split. */
@@ -664,6 +680,8 @@ export default function TripBuilder() {
           );
         })}
       </nav>
+
+      <p className={styles.builderReassurance}>{stepGuidance[step]}</p>
 
       <div className={styles.wizardBody}>
         <div className={styles.pane}>

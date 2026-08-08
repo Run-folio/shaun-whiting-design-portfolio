@@ -42,8 +42,12 @@ export default function LoginForm({
       ? await authClient.signUp.email({ name, email, password, callbackURL })
       : await authClient.signIn.email({ email: submittedEmail, password, callbackURL });
     if (result.error) {
-      const message = result.error.message || "We couldn't complete that request.";
-      setError(message.toLowerCase().includes("email not verified") ? "Email not verified. We sent a fresh verification link. Check your inbox, then try again." : message);
+      const message = result.error.message || "";
+      setError(message.toLowerCase().includes("email not verified")
+        ? "Email not verified. We sent a fresh verification link. Check your inbox, including spam, then sign in again."
+        : mode === "sign-up"
+          ? "We could not create your account just now. Check the details and try again."
+          : "We could not sign you in. Check your email and password, then try again.");
       setBusy(false);
     }
     else if (mode === "sign-up") {
@@ -78,7 +82,7 @@ export default function LoginForm({
       ]}
     />
     <form className={styles.form} onSubmit={submit}>
-      {mode === "sign-up" && <EasyTField label="Your name" name="name" autoComplete="name" required placeholder="Shaun" />}
+      {mode === "sign-up" && <EasyTField label="Your name" name="name" autoComplete="name" required placeholder="Your name" />}
       <EasyTField label="Email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} />
       <EasyTField label="Password" name="password" type="password" minLength={8} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} required placeholder="At least 8 characters" />
       {mode === "sign-in" && <a className={styles.forgotLink} href="/journey/forgot-password">Forgot password?</a>}

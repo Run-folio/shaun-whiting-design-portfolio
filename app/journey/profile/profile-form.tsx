@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { BedDouble, Coffee, Footprints, Gem, Landmark, Luggage, Sparkles, Sun, Trees, Wallet, Zap } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -50,6 +51,22 @@ export default function ProfileForm({
   const [saving, setSaving] = useState(false);
   const [travelProfile, setTravelProfile] = useState<TravelProfile>(initialTravelProfile);
   const copy = easytCopy[language];
+  const profileGuide = language === "es"
+    ? { eyebrow: "Punto de partida", title: "Configúralo una vez. Ajusta cada viaje cuando quieras.", detail: "Estas preferencias solo dan a EasyT una dirección inicial. No reservan nada ni limitan las decisiones de tu viaje.", action: "Crear un viaje" }
+    : { eyebrow: "Starting point", title: "Set this once. Change every trip whenever you want.", detail: "These preferences only give EasyT an initial direction. They do not book anything or limit your decisions on a trip.", action: "Create a trip" };
+  const messages = language === "es"
+    ? {
+        profileSaved: "Tu perfil se ha actualizado.",
+        profileError: "No pudimos guardar tu perfil ahora. Revisa tu conexión e inténtalo de nuevo.",
+        preferencesSaved: "Preferencias guardadas. EasyT las usará como punto de partida para nuevos viajes.",
+        preferencesError: "No pudimos guardar tus preferencias. Inténtalo de nuevo; tu viaje actual no cambiará.",
+      }
+    : {
+        profileSaved: "Your profile has been updated.",
+        profileError: "We could not save your profile just now. Check your connection and try again.",
+        preferencesSaved: "Travel preferences saved. EasyT will use them as a starting point for new trips.",
+        preferencesError: "We could not save your travel preferences. Try again; your current trip will not change.",
+      };
 
   useEffect(() => {
     window.localStorage.setItem("easyt-language", initialLanguage);
@@ -66,9 +83,7 @@ export default function ProfileForm({
     const result = await authClient.updateUser({ name });
     setSaving(false);
     setMessage(
-      result.error
-        ? result.error.message || "Profile could not be updated."
-        : "Profile updated.",
+      result.error ? messages.profileError : messages.profileSaved,
     );
   };
 
@@ -81,7 +96,7 @@ export default function ProfileForm({
     });
     if (response.ok) window.localStorage.setItem("easyt-travel-profile", JSON.stringify(travelProfile));
     setSaving(false);
-    setMessage(response.ok ? "Travel preferences saved. EasyT will use them as a starting point for new trips." : "Travel preferences could not be saved.");
+    setMessage(response.ok ? messages.preferencesSaved : messages.preferencesError);
   };
 
   return (
@@ -93,6 +108,7 @@ export default function ProfileForm({
         <EasyTButton type="submit" loading={saving}>{copy.account.saveProfile}</EasyTButton>
       </form>
       <section className={`${styles.profileCard} ${styles.travelProfileCard}`}>
+        <div className={styles.profileGuide}><div><p className={styles.eyebrow}>{profileGuide.eyebrow}</p><strong>{profileGuide.title}</strong><span>{profileGuide.detail}</span></div><Link href="/journey/new">{profileGuide.action}</Link></div>
         <p className={styles.eyebrow}>YOUR TRAVEL PROFILE</p>
         <h2>What makes a trip feel good?</h2>
         <p className={styles.muted}>EasyT uses these as a starting point. You can always override them on any trip.</p>

@@ -10,6 +10,7 @@ import { EasyTFeedback } from "@/components/easyt/easyt-feedback";
 import { loadActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
 import { easytCopy, languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
 import styles from "../account.module.css";
+import FirstTripGuide from "./first-trip-guide";
 
 export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
   const router = useRouter();
@@ -105,6 +106,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
 
   return (
     <>
+      <FirstTripGuide trips={trips} />
       <EasyTSegmentedControl
         ariaLabel={language === "es" ? "Estado del viaje" : "Trip status"}
         className={styles.tripViews}
@@ -212,6 +214,7 @@ export default function DashboardClient({ trips }: { trips: EasyTTrip[] }) {
                 ? copy.archivedHint
                 : copy.activeHint}
             </p>
+            {view === "active" ? <Link className={styles.primaryLink} href="/journey/home#start-building">{language === "es" ? "Crea tu primer viaje" : "Start your first trip"}</Link> : null}
           </div>
         )}
       </div>
