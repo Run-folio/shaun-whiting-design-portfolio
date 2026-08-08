@@ -35,6 +35,7 @@
 .stepTabDone { color: #000; }
 .stepTabOn { background: var(--tint); color: var(--signal); }
 .stepTabOn small { color: var(--signal); }
+.builderReassurance{margin:0;padding:12px 40px;border-bottom:1px solid var(--line);color:var(--muted);background:#fcfbfc;font-size:12px;line-height:1.45}
 
 /* ------------------------------------------------------------- layout */
 .wizardBody { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, .85fr); }
@@ -333,6 +334,7 @@
   .dateRow, .groupGrid { grid-template-columns: 1fr !important; }
   .allocationHead { display: grid; gap: 10px; }
   .steps { grid-template-columns: repeat(2, 1fr); }
+  .builderReassurance{padding:12px 24px}
 }
 @media (max-width: 620px){.placeCard{grid-template-columns:82px 24px minmax(0,1fr);align-items:start}.placeThumb,.placeThumbFallback{width:82px;min-height:82px}.placeThumb img{min-height:82px}.placeCost{grid-column:3;margin:0}.dayImage{height:220px}.allocationRow{grid-template-columns:1fr 44px;gap:8px}.allocationRow input{grid-column:1 / -1;grid-row:2}.allocationRow > b{grid-column:2;grid-row:1}}
 @media (max-width: 420px){.wizardFoot{align-items:stretch;padding:14px 20px}.footRight{width:100%;min-width:0;justify-content:space-between;gap:10px}.saveState{min-width:0;font-size:10px}.gate{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.primary{flex:0 0 auto;justify-content:center;padding-inline:16px;font-size:14px}}

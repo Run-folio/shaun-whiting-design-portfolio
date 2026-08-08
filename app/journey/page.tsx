@@ -15,6 +15,7 @@ import { JourneyWeather } from "@/components/journey-weather";
 import { journeyCalendar, journeyDayMedia, journeyDetails, journeyMedia, march2027Journey, type JourneyCalendarDay, type JourneyLeg, type JourneyRestaurant, type JourneyStop, type RestaurantMeal } from "@/lib/journey";
 import { getCountryIntelligence } from "@/lib/country-intelligence";
 import { loadActiveTrip, loadTripFromEasyT, saveActiveTrip, saveTripToEasyT } from "@/lib/easyt/storage";
+import { languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
 import { authClient } from "@/lib/auth-client";
 import type { EasyTTrip, PlannerMapPin, PlannerPinCategory } from "@/lib/easyt/trip";
 import { estimateLeg } from "@/lib/easyt/planner";
@@ -22,6 +23,7 @@ import { applyRecommendation, recommendationImpact, reviewTrip, undoRecommendati
 import styles from "./journey.module.css";
 import mobileNav from "./plan-mobile-nav.module.css";
 import mobileLayout from "./plan-mobile-layout.module.css";
+import mapDocks from "./plan-map-docks.module.css";
 
 const destinationIcons: Record<string, LucideIcon> = {
   plane: Plane,
@@ -292,6 +294,7 @@ export default function JourneyPage() {
   const { data: session } = authClient.useSession();
   const isPlanningPreview = pathname === "/journey/plan";
   const [selectedDayId, setSelectedDayId] = useState("day-03");
+  const [language, setLanguage] = useState<EasyTLanguage>("en");
   const [selectedId, setSelectedId] = useState("tokyo");
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState<{ restaurant: JourneyRestaurant; meal?: RestaurantMeal }>();
@@ -321,6 +324,7 @@ export default function JourneyPage() {
   const [plannerWarning, setPlannerWarning] = useState("");
   const [lastPlannerTrip, setLastPlannerTrip] = useState<EasyTTrip | null>(null);
   const [undoMessage, setUndoMessage] = useState("");
+  const [mapCoachVisible, setMapCoachVisible] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
   const hasMounted = useRef(false);
   const journey = useMemo(() => {
@@ -332,6 +336,15 @@ export default function JourneyPage() {
     return customBrief ? { ...base, stops: base.stops.map((stop) => ({ ...stop, coordinates: resolvedCoordinates[stop.id] ?? stop.coordinates, description: placeMedia[stop.id]?.description ?? stop.description })) } : base;
   }, [customBrief, customTrip, resolvedCoordinates, placeMedia]);
   const isCustomJourney = Boolean(customBrief);
+  const planCopy = language === "es"
+    ? { backToItinerary: "Volver al itinerario", myTrips: "Mis viajes", export: "Exportar", exportPdf: "Exportar PDF", preparing: "Preparando…", menu: "Menú del viaje", review: "REVISIÓN DEL PLAN", signal: "señal de planificación", noWarnings: "Sin avisos inmediatos", checks: "Comprobaciones definidas", affects: "Afecta", overallPlan: "todo el plan", confidence: "de confianza", apply: "Aplicar", undo: "Deshacer", coverage: "La ruta tiene cobertura para todos los días y no hay señales de trayectos largos por carretera. Aun así, comprueba horarios y cierres antes de reservar.", travelConnection: "Conexión de viaje", localTransfer: "Traslado local", editingHint: "Arrastra días en la cronología o actividades abajo. Las sugerencias se mantienen hasta que las elimines.", scheduleHealth: "RITMO DEL DÍA", needsCheck: "Necesita una revisión", comfortable: "Ritmo cómodo", dayClear: "No hay trayectos largos ni demasiadas actividades para este día.", moveDay: "MOVER ESTE DÍA", earlier: "Antes", later: "Después", editActivity: "Editar tu actividad personalizada", yours: "TUYA", addActivity: "Añadir una actividad personalizada", add: "Añadir", notes: "NOTAS PARA MÍ", dayOnly: "Solo para este día", editNote: "Editar nota", save: "Guardar", cancel: "Cancelar", addNote: "Añade una nota para ti", addNoteButton: "Añadir nota", mapPins: "PINES EN EL MAPA", addToDay: "Añadir a este día", chooseLocation: "1. Elige una ubicación", chooseAnother: "Elegir otra ubicación", clickMap: "Haz clic en el mapa…", locationSelected: "Ubicación seleccionada", detailedMap: "abre el mapa detallado", chooseCategory: "2. Elige una categoría y ponle nombre", namePlace: "Nombra este lugar", savePin: "Guardar pin", pinHelp: "Primero haz clic en el punto exacto. Después elegirás su categoría y nombre.", selectedPin: "PIN SELECCIONADO", renamePin: "Cambiar nombre del pin", saveName: "Guardar nombre", removeSelectedPin: "Eliminar pin seleccionado", pinsAria: "Pines del mapa", findPlaces: "Buscar lugares para este día", onTheGo: "SOBRE LA MARCHA", findNearby: "Encuentra lugares cerca", tripOverview: "VISTA DEL VIAJE", localDetail: "DETALLE LOCAL", zoomInto: "Acercar a", viewOverview: "Ver vista del viaje", pause: "Pausar recorrido", play: "Reproducir recorrido", meal: "Comida", savedRestaurant: "restaurante guardado", next: "Siguiente" }
+    : { backToItinerary: "Back to itinerary", myTrips: "My trips", export: "Export", exportPdf: "Export PDF", preparing: "Preparing…", menu: "Trip menu", review: "PLAN REVIEW", signal: "planning signal", noWarnings: "No immediate warnings", checks: "Deterministic checks", affects: "Affects", overallPlan: "the overall plan", confidence: "confidence", apply: "Apply", undo: "Undo", coverage: "The route currently has coverage for every day and no long road transfer signal. Live schedules and closures still need checking before booking.", travelConnection: "Travel connection", localTransfer: "Local transfer", editingHint: "Drag days in the timeline, or activities below. Suggestions stay intact unless you remove them.", scheduleHealth: "SCHEDULE HEALTH", needsCheck: "Needs a quick check", comfortable: "Comfortable pace", dayClear: "No long transfer or crowded activity signal for this day.", moveDay: "MOVE THIS DAY", earlier: "Earlier", later: "Later", editActivity: "Edit your custom activity", yours: "YOURS", addActivity: "Add a custom activity", add: "Add", notes: "NOTES TO SELF", dayOnly: "For this day only", editNote: "Edit note", save: "Save", cancel: "Cancel", addNote: "Add a note to yourself", addNoteButton: "Add note", mapPins: "MAP PINS", addToDay: "Add to this day", chooseLocation: "1. Choose a location", chooseAnother: "Choose another location", clickMap: "Click the map…", locationSelected: "Location selected", detailedMap: "opens the detailed map", chooseCategory: "2. Choose a category and name it", namePlace: "Name this place", savePin: "Save pin", pinHelp: "Click the exact spot first. You’ll choose its category and name next.", selectedPin: "SELECTED PIN", renamePin: "Rename selected pin", saveName: "Save name", removeSelectedPin: "Remove selected pin", pinsAria: "Map pins", findPlaces: "Find places for this day", onTheGo: "ON THE GO", findNearby: "Find nearby places", tripOverview: "TRIP OVERVIEW", localDetail: "LOCAL DETAIL", zoomInto: "Zoom into", viewOverview: "View trip overview", pause: "Pause journey sequence", play: "Play journey sequence", meal: "Meal", savedRestaurant: "saved restaurant", next: "Next" };
+  const pinCategoryLabel = (category: PlannerPinCategory) => language === "es"
+    ? ({ restaurant: "Restaurante", stay: "Alojamiento", activity: "Actividad", transport: "Transporte", custom: "Personalizado" }[category])
+    : category;
+  const mapCoach = language === "es"
+    ? { eyebrow: "Empieza aquí", title: "Primero, mira el día.", detail: "Cambia de día en la cronología y usa “Encuentra lugares cerca” cuando necesites algo. Los pines y notas se abren solo cuando quieras personalizar.", dismiss: "Entendido" }
+    : { eyebrow: "Start here", title: "First, look at the day.", detail: "Move between days in the timeline and use Find nearby when you need something. Pins and notes open only when you want to personalise the plan.", dismiss: "Got it" };
   const editTripHref = customTrip
     ? `/journey/new?trip=${encodeURIComponent(customTrip.id)}&view=itinerary`
     : "/journey/new";
@@ -344,6 +357,15 @@ export default function JourneyPage() {
   const selectedPlanItem = customTrip?.planItems.find((item) => item.dayNumber === selectedDayIndex + 1);
   const selectedActivities = selectedPlanItem?.notes ?? selectedDay.items;
   const selectedDayNotes = customTrip?.brief.dayNotes?.[selectedDayIndex + 1] ?? [];
+  useEffect(() => {
+    setLanguage(languageFromStorage());
+    const updateLanguage = (event: Event) => setLanguage((event as CustomEvent<EasyTLanguage>).detail);
+    window.addEventListener("easyt-language-change", updateLanguage);
+    return () => window.removeEventListener("easyt-language-change", updateLanguage);
+  }, []);
+  useEffect(() => {
+    if (isPlanningPreview && window.localStorage.getItem("easyt-map-coach-dismissed") !== "1") setMapCoachVisible(true);
+  }, [isPlanningPreview]);
   useEffect(() => { setSelectedPlannerPin(null); }, [selectedDayId]);
   const selectedScheduleSignals = useMemo(() => {
     const signals: string[] = [];
@@ -759,7 +781,7 @@ export default function JourneyPage() {
   }
 
   return (
-    <main className={`${styles.journey} ${mobileLayout.plan}`}>
+    <main className={`${styles.journey} ${mobileLayout.plan} ${mapDocks.plan}`}>
       {isPlanningPreview && isCustomJourney ? (
         <>
           <div className={`${styles.mapOverviewLayer} ${mapMode === "overview" ? styles.mapLayerActive : styles.mapLayerHidden}`}>
@@ -832,22 +854,23 @@ export default function JourneyPage() {
           <div className={styles.grain} />
         </>
       )}
+      {isPlanningPreview && isCustomJourney && mapCoachVisible ? <aside className={styles.mapCoach} role="status"><small>{mapCoach.eyebrow}</small><strong>{mapCoach.title}</strong><p>{mapCoach.detail}</p><button type="button" onClick={() => { window.localStorage.setItem("easyt-map-coach-dismissed", "1"); setMapCoachVisible(false); }}>{mapCoach.dismiss}</button></aside> : null}
 
       <header className={styles.topbar}>
         <div className={styles.headerRow}>
-          {isPlanningPreview ? <Link href={editTripHref} className={styles.back}>← Back to itinerary</Link> : <Link href="/" className={styles.back}>← Shaun Whiting</Link>}
+          {isPlanningPreview ? <Link href={editTripHref} className={styles.back}>← {planCopy.backToItinerary}</Link> : <Link href="/" className={styles.back}>← Shaun Whiting</Link>}
           <div className={styles.titleLockup}><span>{journey.title}</span><small>{journey.dateRange}</small></div>
           <details className={mobileNav.menu}>
-            <summary aria-label="Trip menu"><Menu aria-hidden="true" /></summary>
+            <summary aria-label={planCopy.menu}><Menu aria-hidden="true" /></summary>
             <div>
-              {isPlanningPreview ? <Link href={editTripHref}>Back to itinerary</Link> : null}
-              <Link href="/journey/dashboard">My trips</Link>
-              {isPlanningPreview && customTrip && session?.user ? <button type="button" onClick={() => void exportPlan()} disabled={exportState === "saving"}>{exportState === "saving" ? "Preparing PDF…" : "Export PDF"}</button> : null}
+              {isPlanningPreview ? <Link href={editTripHref}>{planCopy.backToItinerary}</Link> : null}
+              <Link href="/journey/dashboard">{planCopy.myTrips}</Link>
+              {isPlanningPreview && customTrip && session?.user ? <button type="button" onClick={() => void exportPlan()} disabled={exportState === "saving"}>{exportState === "saving" ? planCopy.preparing : planCopy.exportPdf}</button> : null}
             </div>
           </details>
           <nav className={`${styles.headerActions} ${mobileNav.actions}`} aria-label="EasyT account navigation">
-            <Link href="/journey/dashboard" className={styles.myTripsLink}>My trips</Link>
-            {isPlanningPreview && customTrip && session?.user ? <button type="button" className={styles.exportPlanLink} onClick={() => void exportPlan()} disabled={exportState === "saving"}>{exportState === "saving" ? "Preparing PDF…" : "Export"}</button> : null}
+            <Link href="/journey/dashboard" className={styles.myTripsLink}>{planCopy.myTrips}</Link>
+            {isPlanningPreview && customTrip && session?.user ? <button type="button" className={styles.exportPlanLink} onClick={() => void exportPlan()} disabled={exportState === "saving"}>{exportState === "saving" ? planCopy.preparing : planCopy.export}</button> : null}
           </nav>
         </div>
         <nav className={styles.timeline} aria-label="Trip itinerary">
@@ -927,22 +950,22 @@ export default function JourneyPage() {
           <p className={styles.itineraryEyebrow}>{selectedDay.date} <span /> {selectedDay.label}</p>
           <h2>{selectedDay.title}</h2>
           <p className={styles.itineraryLocation}>{selectedDay.city}</p>
-          {isPlanningPreview && customTrip ? <section className={styles.reviewPanel} aria-label="Plan review">
-            <div className={styles.reviewHeader}><div><small>PLAN REVIEW</small><strong>{reviewRecommendations.length ? `${reviewRecommendations.length} planning signal${reviewRecommendations.length === 1 ? "" : "s"}` : "No immediate warnings"}</strong></div><span>Deterministic checks</span></div>
-            {reviewRecommendations.length ? <div className={styles.reviewList}>{reviewRecommendations.map((item) => <article key={item.id} className={`${styles.reviewItem} ${styles[`review${item.severity[0].toUpperCase()}${item.severity.slice(1)}`]} ${item.status !== "open" ? styles.reviewResolved : ""}`}><div><b>{item.status === "open" ? item.severity : item.status}</b><strong>{item.message}</strong></div><p>{item.evidence}</p><small>Affects {item.affectedDays.length ? item.affectedDays.map((day) => `day ${day}`).join(", ") : "the overall plan"} · {item.confidence} confidence</small><p className={styles.reviewImpact}>{recommendationImpact(item)}</p><div className={styles.reviewActions}>{item.status === "open" ? <button type="button" onClick={() => changeRecommendation(item.id, "apply")}>Apply</button> : <button type="button" onClick={() => changeRecommendation(item.id, "undo")}>Undo</button>}</div></article>)}</div> : <p className={styles.reviewEmpty}>The route currently has coverage for every day and no long road transfer signal. Live schedules and closures still need checking before booking.</p>}
+          {isPlanningPreview && customTrip ? <section className={styles.reviewPanel} aria-label={planCopy.review}>
+            <div className={styles.reviewHeader}><div><small>{planCopy.review}</small><strong>{reviewRecommendations.length ? `${reviewRecommendations.length} ${planCopy.signal}${reviewRecommendations.length === 1 ? "" : language === "es" ? "es" : "s"}` : planCopy.noWarnings}</strong></div><span>{planCopy.checks}</span></div>
+            {reviewRecommendations.length ? <div className={styles.reviewList}>{reviewRecommendations.map((item) => <article key={item.id} className={`${styles.reviewItem} ${styles[`review${item.severity[0].toUpperCase()}${item.severity.slice(1)}`]} ${item.status !== "open" ? styles.reviewResolved : ""}`}><div><b>{item.status === "open" ? item.severity : item.status}</b><strong>{item.message}</strong></div><p>{item.evidence}</p><small>{planCopy.affects} {item.affectedDays.length ? item.affectedDays.map((day) => `${language === "es" ? "día" : "day"} ${day}`).join(", ") : planCopy.overallPlan} · {item.confidence} {planCopy.confidence}</small><p className={styles.reviewImpact}>{recommendationImpact(item)}</p><div className={styles.reviewActions}>{item.status === "open" ? <button type="button" onClick={() => changeRecommendation(item.id, "apply")}>{planCopy.apply}</button> : <button type="button" onClick={() => changeRecommendation(item.id, "undo")}>{planCopy.undo}</button>}</div></article>)}</div> : <p className={styles.reviewEmpty}>{planCopy.coverage}</p>}
           </section> : null}
-          {selectedDay.travel ? <div className={styles.dayTravel}><Plane /><div><small>{selectedDay.travel.mode === "flight" ? "Travel connection" : "Local transfer"}</small><strong>{selectedDay.travel.from ? `${selectedDay.travel.from} → ${selectedDay.city}` : selectedDay.travel.detail}</strong><span>{selectedDay.travel.duration} · {selectedDay.travel.detail}</span></div></div> : null}
+          {selectedDay.travel ? <div className={styles.dayTravel}><Plane /><div><small>{selectedDay.travel.mode === "flight" ? planCopy.travelConnection : planCopy.localTransfer}</small><strong>{selectedDay.travel.from ? `${selectedDay.travel.from} → ${selectedDay.city}` : selectedDay.travel.detail}</strong><span>{selectedDay.travel.duration} · {selectedDay.travel.detail}</span></div></div> : null}
           {isPlanningPreview && customTrip && selectedPlanItem ? <>
-            <p className={styles.editingHint}><GripVertical /> Drag days in the timeline, or activities below. Suggestions stay intact unless you remove them.</p>
+            <p className={styles.editingHint}><GripVertical /> {planCopy.editingHint}</p>
             {plannerWarning ? <p className={styles.plannerWarning}>{plannerWarning}</p> : null}
-            <section className={styles.scheduleHealth} aria-label="Schedule health">
-              <div><span>SCHEDULE HEALTH</span><strong>{selectedScheduleSignals.length ? "Needs a quick check" : "Comfortable pace"}</strong></div>
-              <p>{selectedScheduleSignals.length ? selectedScheduleSignals.join(" ") : "No long transfer or crowded activity signal for this day."}</p>
+            <section className={styles.scheduleHealth} aria-label={planCopy.scheduleHealth}>
+              <div><span>{planCopy.scheduleHealth}</span><strong>{selectedScheduleSignals.length ? planCopy.needsCheck : planCopy.comfortable}</strong></div>
+              <p>{selectedScheduleSignals.length ? selectedScheduleSignals.join(" ") : planCopy.dayClear}</p>
             </section>
-            <div className={styles.mobileDayMove} aria-label="Move this day">
-              <span>MOVE THIS DAY</span>
-              <button type="button" disabled={selectedDayIndex === 0} onClick={() => moveDay(selectedDay.id, journey.calendar[selectedDayIndex - 1].id)}><ArrowUp /> Earlier</button>
-              <button type="button" disabled={selectedDayIndex >= journey.calendar.length - 1} onClick={() => moveDay(selectedDay.id, journey.calendar[selectedDayIndex + 1].id)}><ArrowDown /> Later</button>
+            <div className={styles.mobileDayMove} aria-label={planCopy.moveDay}>
+              <span>{planCopy.moveDay}</span>
+              <button type="button" disabled={selectedDayIndex === 0} onClick={() => moveDay(selectedDay.id, journey.calendar[selectedDayIndex - 1].id)}><ArrowUp /> {planCopy.earlier}</button>
+              <button type="button" disabled={selectedDayIndex >= journey.calendar.length - 1} onClick={() => moveDay(selectedDay.id, journey.calendar[selectedDayIndex + 1].id)}><ArrowDown /> {planCopy.later}</button>
             </div>
             <ol className={styles.editableActivities}>
               {selectedActivities.map((item, index) => {
@@ -952,20 +975,20 @@ export default function JourneyPage() {
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={(event) => { event.preventDefault(); if (draggedActivity) moveActivity(draggedActivity, { dayNumber: selectedPlanItem.dayNumber, index }); setDraggedActivity(null); }}
                 onDragEnd={() => setDraggedActivity(null)}>
-                <b>{String(index + 1).padStart(2, "0")}</b><GripVertical className={styles.activityGrip} />{isCustom ? <input className={styles.customActivityInput} value={item} onChange={(event) => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, customActivities: { ...(trip.brief.customActivities ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.customActivities?.[selectedPlanItem.dayNumber] ?? []).map((activity) => activity === item ? event.target.value : activity) } }, planItems: trip.planItems.map((plan) => plan.dayNumber === selectedPlanItem.dayNumber ? { ...plan, notes: plan.notes.map((activity, activityIndex) => activityIndex === index ? event.target.value : activity) } : plan) }))} aria-label="Edit your custom activity" /> : <span>{item}</span>}{isCustom ? <small className={styles.yourActivity}>YOURS</small> : null}
+                <b>{String(index + 1).padStart(2, "0")}</b><GripVertical className={styles.activityGrip} />{isCustom ? <input className={styles.customActivityInput} value={item} onChange={(event) => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, customActivities: { ...(trip.brief.customActivities ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.customActivities?.[selectedPlanItem.dayNumber] ?? []).map((activity) => activity === item ? event.target.value : activity) } }, planItems: trip.planItems.map((plan) => plan.dayNumber === selectedPlanItem.dayNumber ? { ...plan, notes: plan.notes.map((activity, activityIndex) => activityIndex === index ? event.target.value : activity) } : plan) }))} aria-label={planCopy.editActivity} /> : <span>{item}</span>}{isCustom ? <small className={styles.yourActivity}>{planCopy.yours}</small> : null}
                 <span className={styles.mobileActivityMove}><button type="button" disabled={index === 0} onClick={() => moveActivity({ dayNumber: selectedPlanItem.dayNumber, index }, { dayNumber: selectedPlanItem.dayNumber, index: index - 1 })} aria-label={`Move ${item} earlier`}><ArrowUp /></button><button type="button" disabled={index === selectedActivities.length - 1} onClick={() => moveActivity({ dayNumber: selectedPlanItem.dayNumber, index }, { dayNumber: selectedPlanItem.dayNumber, index: index + 2 })} aria-label={`Move ${item} later`}><ArrowDown /></button></span>
                 <button type="button" className={styles.removeActivity} onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, customActivities: { ...(trip.brief.customActivities ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.customActivities?.[selectedPlanItem.dayNumber] ?? []).filter((activity) => activity !== item) } }, planItems: trip.planItems.map((plan) => plan.dayNumber === selectedPlanItem.dayNumber ? { ...plan, notes: plan.notes.filter((_, activityIndex) => activityIndex !== index) } : plan) }))} aria-label={`Remove ${item}`}><Trash2 /></button>
               </li>;
               })}
             </ol>
             <form className={styles.addActivity} onSubmit={(event) => { event.preventDefault(); addActivity(); }}>
-              <input value={activityDraft} onChange={(event) => setActivityDraft(event.target.value)} placeholder="Add a custom activity" aria-label="Add a custom activity" />
-              <button type="submit" disabled={!activityDraft.trim()}><Plus /> Add</button>
+              <input value={activityDraft} onChange={(event) => setActivityDraft(event.target.value)} placeholder={planCopy.addActivity} aria-label={planCopy.addActivity} />
+              <button type="submit" disabled={!activityDraft.trim()}><Plus /> {planCopy.add}</button>
             </form>
-            <section className={styles.notesToSelf} aria-label="Notes to self">
-              <div><StickyNote /><span><small>NOTES TO SELF</small><strong>For this day only</strong></span></div>
-              {selectedDayNotes.map((note, index) => editingNote?.dayNumber === selectedPlanItem.dayNumber && editingNote.index === index ? <form key={`${note}-${index}`} className={styles.editingNoteForm} onSubmit={(event) => { event.preventDefault(); saveNoteEdit(); }}><input value={editingNoteDraft} onChange={(event) => setEditingNoteDraft(event.target.value)} aria-label="Edit note" autoFocus /><button type="submit" disabled={!editingNoteDraft.trim()}>Save</button><button type="button" onClick={() => setEditingNote(null)}>Cancel</button></form> : <p key={`${note}-${index}`}><button type="button" className={styles.editNoteButton} onClick={() => beginNoteEdit(selectedPlanItem.dayNumber, index, note)}>{note}</button><button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, dayNotes: { ...(trip.brief.dayNotes ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.dayNotes?.[selectedPlanItem.dayNumber] ?? []).filter((_, noteIndex) => noteIndex !== index) } } }), "Note removed")} aria-label={`Remove note ${note}`}><Trash2 /></button></p>)}
-              <form onSubmit={(event) => { event.preventDefault(); addDayNote(); }}><input value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Add a note to yourself" /><button type="submit" disabled={!noteDraft.trim()}>Add note</button></form>
+            <section className={styles.notesToSelf} aria-label={planCopy.notes}>
+              <div><StickyNote /><span><small>{planCopy.notes}</small><strong>{planCopy.dayOnly}</strong></span></div>
+              {selectedDayNotes.map((note, index) => editingNote?.dayNumber === selectedPlanItem.dayNumber && editingNote.index === index ? <form key={`${note}-${index}`} className={styles.editingNoteForm} onSubmit={(event) => { event.preventDefault(); saveNoteEdit(); }}><input value={editingNoteDraft} onChange={(event) => setEditingNoteDraft(event.target.value)} aria-label={planCopy.editNote} autoFocus /><button type="submit" disabled={!editingNoteDraft.trim()}>{planCopy.save}</button><button type="button" onClick={() => setEditingNote(null)}>{planCopy.cancel}</button></form> : <p key={`${note}-${index}`}><button type="button" className={styles.editNoteButton} onClick={() => beginNoteEdit(selectedPlanItem.dayNumber, index, note)}>{note}</button><button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, dayNotes: { ...(trip.brief.dayNotes ?? {}), [selectedPlanItem.dayNumber]: (trip.brief.dayNotes?.[selectedPlanItem.dayNumber] ?? []).filter((_, noteIndex) => noteIndex !== index) } } }), "Note removed")} aria-label={`${language === "es" ? "Eliminar nota" : "Remove note"} ${note}`}><Trash2 /></button></p>)}
+              <form onSubmit={(event) => { event.preventDefault(); addDayNote(); }}><input value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder={planCopy.addNote} /><button type="submit" disabled={!noteDraft.trim()}>{planCopy.addNoteButton}</button></form>
             </section>
           </> : <ol>
             {selectedDay.items.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, "0")}</b><span>{item}</span></li>)}
@@ -974,7 +997,7 @@ export default function JourneyPage() {
               <a href={selectedRestaurant.restaurant.mapsUrl} target="_blank" rel="noreferrer">
                 <span className={styles.savedRestaurantIcon}><Utensils /></span>
                 <span className={styles.savedRestaurantCopy}>
-                  <small>{selectedRestaurant.meal ?? "Meal"} · saved restaurant</small>
+                  <small>{selectedRestaurant.meal ?? planCopy.meal} · {planCopy.savedRestaurant}</small>
                   <strong>{selectedRestaurant.restaurant.name}</strong>
                   <em>{selectedRestaurant.restaurant.area}</em>
                 </span>
@@ -987,34 +1010,34 @@ export default function JourneyPage() {
             setIsPlaying(false);
             setSelectedDayId(nextDay.id);
             setSelectedId(nextDay.stopId);
-          }}><small>Next</small><span>{journey.calendar[selectedDayIndex + 1].date}</span><strong>{journey.calendar[selectedDayIndex + 1].city} →</strong></button> : null}
+          }}><small>{planCopy.next}</small><span>{journey.calendar[selectedDayIndex + 1].date}</span><strong>{journey.calendar[selectedDayIndex + 1].city} →</strong></button> : null}
           {!isCustomJourney ? <JourneyRestaurantFinder stopId={selected.id} city={selected.city} dayId={selectedDay.id} onSelectRestaurant={handleRestaurantSelect} /> : null}
         </motion.div>
       </aside>
 
-      {isPlanningPreview && customTrip && selectedPlanItem ? <aside className={styles.pinDock} aria-label="Map pins">
+      {isPlanningPreview && customTrip && selectedPlanItem ? <aside className={styles.pinDock} aria-label={planCopy.pinsAria}>
         <details>
-          <summary><MapPin /><span><small>MAP PINS</small><strong>Add to this day</strong></span><b>{(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).length}</b></summary>
+          <summary><MapPin /><span><small>{planCopy.mapPins}</small><strong>{planCopy.addToDay}</strong></span><b>{(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).length}</b></summary>
           <div className={styles.pinComposer}>
             <div className={styles.pinPlacement}>
               <button type="button" aria-pressed={pinPlacementMode} onClick={() => { setMapMode("detail"); setSelectedPlannerPin(null); setPinDraft(""); setPinCoordinates(null); setPinPlacementMode(true); }}>
-                {pinPlacementMode ? "Click the map…" : pinCoordinates ? "Choose another location" : "1. Choose a location"}
+                {pinPlacementMode ? planCopy.clickMap : pinCoordinates ? planCopy.chooseAnother : planCopy.chooseLocation}
               </button>
-              {pinCoordinates ? <span>Location selected</span> : <small>opens the detailed map</small>}
+              {pinCoordinates ? <span>{planCopy.locationSelected}</span> : <small>{planCopy.detailedMap}</small>}
             </div>
             {pinCoordinates ? <>
-              <small className={styles.pinHint}>2. Choose a category and name it</small>
-              <div className={styles.pinCategories}>{(["restaurant", "stay", "activity", "transport", "custom"] as PlannerPinCategory[]).map((category) => <button key={category} type="button" aria-pressed={pinCategory === category} onClick={() => setPinCategory(category)}>{category}</button>)}</div>
-              <form onSubmit={(event) => { event.preventDefault(); addPin(); }}><input autoFocus value={pinDraft} onChange={(event) => setPinDraft(event.target.value)} placeholder="Name this place" /><button type="submit" disabled={!pinDraft.trim()}>Save pin</button></form>
-            </> : <small className={styles.pinHint}>Click the exact spot first. You’ll choose its category and name next.</small>}
-            {(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).map((pin) => <p key={pin.id}><i className={`${styles.pinDot} ${styles[`pin${pin.category[0].toUpperCase()}${pin.category.slice(1)}`]}`} />{pin.title}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== pin.id) } }))} aria-label={`Remove ${pin.title}`}><Trash2 /></button></p>)}
-            {selectedPlannerPin ? <div className={styles.selectedPinDetail}><small>SELECTED PIN</small><form onSubmit={(event) => { event.preventDefault(); savePinEdit(); }}><input value={pinEditDraft} onChange={(event) => setPinEditDraft(event.target.value)} aria-label="Rename selected pin" /><button type="submit" disabled={!pinEditDraft.trim()}>Save name</button></form><span>{selectedPlannerPin.category} · Day {selectedPlannerPin.dayNumber}</span><button type="button" onClick={() => { updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== selectedPlannerPin.id) } }), "Map pin removed"); setSelectedPlannerPin(null); }}>Remove selected pin</button></div> : null}
+              <small className={styles.pinHint}>{planCopy.chooseCategory}</small>
+              <div className={styles.pinCategories}>{(["restaurant", "stay", "activity", "transport", "custom"] as PlannerPinCategory[]).map((category) => <button key={category} type="button" aria-pressed={pinCategory === category} onClick={() => setPinCategory(category)}>{pinCategoryLabel(category)}</button>)}</div>
+              <form onSubmit={(event) => { event.preventDefault(); addPin(); }}><input autoFocus value={pinDraft} onChange={(event) => setPinDraft(event.target.value)} placeholder={planCopy.namePlace} /><button type="submit" disabled={!pinDraft.trim()}>{planCopy.savePin}</button></form>
+            </> : <small className={styles.pinHint}>{planCopy.pinHelp}</small>}
+            {(customTrip.brief.mapPins ?? []).filter((pin) => pin.dayNumber === selectedPlanItem.dayNumber).map((pin) => <p key={pin.id}><i className={`${styles.pinDot} ${styles[`pin${pin.category[0].toUpperCase()}${pin.category.slice(1)}`]}`} />{pin.title}<button type="button" onClick={() => updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== pin.id) } }))} aria-label={`${language === "es" ? "Eliminar" : "Remove"} ${pin.title}`}><Trash2 /></button></p>)}
+            {selectedPlannerPin ? <div className={styles.selectedPinDetail}><small>{planCopy.selectedPin}</small><form onSubmit={(event) => { event.preventDefault(); savePinEdit(); }}><input value={pinEditDraft} onChange={(event) => setPinEditDraft(event.target.value)} aria-label={planCopy.renamePin} /><button type="submit" disabled={!pinEditDraft.trim()}>{planCopy.saveName}</button></form><span>{pinCategoryLabel(selectedPlannerPin.category)} · {language === "es" ? "Día" : "Day"} {selectedPlannerPin.dayNumber}</span><button type="button" onClick={() => { updatePlannerTrip((trip) => ({ ...trip, brief: { ...trip.brief, mapPins: (trip.brief.mapPins ?? []).filter((item) => item.id !== selectedPlannerPin.id) } }), "Map pin removed"); setSelectedPlannerPin(null); }}>{planCopy.removeSelectedPin}</button></div> : null}
           </div>
         </details>
       </aside> : null}
 
-      {isPlanningPreview && isCustomJourney && selected.coordinates ? <aside className={styles.finderDock} aria-label="Find places for this day">
-        <header><small>ON THE GO</small><strong>Find nearby places</strong></header>
+      {isPlanningPreview && isCustomJourney && selected.coordinates ? <aside className={styles.finderDock} aria-label={planCopy.findPlaces}>
+        <header><small>{planCopy.onTheGo}</small><strong>{planCopy.findNearby}</strong></header>
         <JourneyLocalFinder kind="restaurant" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onRestaurantSelect={handleRestaurantSelect} onSavePlace={saveLocalVenue} />
         <JourneyLocalFinder kind="stay" city={selected.city} country={selected.country} dayId={selectedDay.id} coordinates={selected.coordinates} onSavePlace={saveLocalVenue} />
       </aside> : null}
@@ -1023,20 +1046,20 @@ export default function JourneyPage() {
 
       <div className={styles.bottomControls}>
         {isPlanningPreview && isCustomJourney ? <div className={styles.mapModeControl}>
-          <small>{mapMode === "overview" ? "TRIP OVERVIEW" : "LOCAL DETAIL"}</small>
+          <small>{mapMode === "overview" ? planCopy.tripOverview : planCopy.localDetail}</small>
           <button type="button" onClick={() => setMapMode((mode) => mode === "overview" ? "detail" : "overview")}>
-            {mapMode === "overview" ? `Zoom into ${selected.city}` : "View trip overview"}
+            {mapMode === "overview" ? `${planCopy.zoomInto} ${selected.city}` : planCopy.viewOverview}
           </button>
         </div> : null}
-        <button className={`${styles.playButton} ${isPlaying ? styles.playing : ""}`} onClick={() => setIsPlaying((playing) => !playing)} aria-label={isPlaying ? "Pause journey sequence" : "Play journey sequence"}>
+        <button className={`${styles.playButton} ${isPlaying ? styles.playing : ""}`} onClick={() => setIsPlaying((playing) => !playing)} aria-label={isPlaying ? planCopy.pause : planCopy.play}>
           <span>{isPlaying ? "Ⅱ" : "▶"}</span>
-          <strong>{isPlaying ? "Pause journey" : "Play journey"}</strong>
+          <strong>{isPlaying ? planCopy.pause : planCopy.play}</strong>
           <small>{selectedDayIndex + 1} / {journey.calendar.length}</small>
         </button>
       </div>
-      {isPlanningPreview && lastPlannerTrip ? <div className={styles.undoToast} role="status"><span>{undoMessage}</span><button type="button" onClick={undoPlannerEdit}>Undo</button></div> : null}
-      {exportState === "error" ? <p className={styles.savePlanError}>{exportError || "The PDF could not be prepared."}</p> : null}
-      {cloudSaveState === "error" ? <p className={styles.savePlanError}>Couldn’t save this trip just now. Your plan is still safe on this device.</p> : null}
+      {isPlanningPreview && lastPlannerTrip ? <div className={styles.undoToast} role="status"><span>{undoMessage}</span><button type="button" onClick={undoPlannerEdit}>{planCopy.undo}</button></div> : null}
+      {exportState === "error" ? <p className={styles.savePlanError}>{exportError || (language === "es" ? "No se pudo preparar el PDF." : "The PDF could not be prepared.")}</p> : null}
+      {cloudSaveState === "error" ? <p className={styles.savePlanError}>{language === "es" ? "No se pudo guardar este viaje ahora. Tu plan sigue seguro en este dispositivo." : "Couldn’t save this trip just now. Your plan is still safe on this device."}</p> : null}
 
     </main>
   );

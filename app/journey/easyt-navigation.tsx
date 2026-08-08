@@ -17,6 +17,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { clearActiveTrip } from "@/lib/easyt/storage";
 import { EasyTLinkButton } from "@/components/easyt/easyt-controls";
+import EasyTProductTour from "@/components/easyt/easyt-product-tour";
 import { easytCopy, type EasyTLanguage } from "@/lib/easyt/i18n";
 import styles from "./easyt-navigation.module.css";
 
@@ -105,6 +106,7 @@ export default function EasyTNavigation({
       </Link>
 
       <nav className={styles.actions} aria-label="EasyT navigation">
+        <EasyTProductTour triggerLabel={labels.tour} />
         <EasyTLinkButton
           className={`${styles.quietLink} ${current === "stamped" ? styles.current : ""}`}
           href="/journey/stamped"
