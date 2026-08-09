@@ -35,17 +35,12 @@
 .stepTabDone { color: #000; }
 .stepTabOn { background: var(--tint); color: var(--signal); }
 .stepTabOn small { color: var(--signal); }
-.builderReassurance{margin:0;padding:12px 40px;border-bottom:1px solid var(--line);color:var(--muted);background:#fcfbfc;font-size:12px;line-height:1.45}
-.copilotSlot{padding:12px 40px 0;background:#fcfbfc}
+.builderReassurance{display:flex;align-items:baseline;gap:10px;margin:0;padding:16px 40px 12px;border-bottom:1px solid var(--line);color:var(--muted);background:transparent;font-size:13px;line-height:1.4;letter-spacing:-.005em}.builderReassurance strong{color:var(--ink);font-size:15px;font-weight:650;letter-spacing:-.02em;white-space:nowrap}.builderReassurance span{font-weight:450}
 
 /* ------------------------------------------------------------- layout */
 .wizardBody { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, .85fr); }
 .pane { min-height: 520px; padding: 38px 40px; }
 .stack { display: grid; gap: 12px; position: relative; }
-.inspirationNotice { display: grid; gap: 5px; padding: 16px 18px; border: 1px solid #e4d7df; border-radius: 16px; background: #fff8fb; }
-.inspirationNotice span { color: var(--signal); font: 700 10px var(--font-geist-mono, monospace); letter-spacing: .1em; }
-.inspirationNotice strong { color: var(--ink); font-size: 16px; letter-spacing: -.02em; }
-.inspirationNotice p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
 
 /* -------------------------------------------------------------- cards */
 .card {
@@ -86,26 +81,6 @@
 }
 .suggestions button:hover { border-color: var(--ink); color: var(--ink); }
 .suggestions svg { width: 12px; height: 12px; }
-
-.stopList { display: grid; gap: 6px; margin-top: 2px; }
-.stopRow {
-  display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 8px 10px 8px 14px;
-  border: 1px solid var(--line); border-radius: 12px; background: #fff; cursor: grab;
-  transition: border-color .16s, opacity .16s;
-}
-.stopRowDragging { border-color: var(--signal); opacity: .45; }
-.stopRow > b { color: var(--signal); font: 800 11px var(--font-geist-mono, monospace); }
-.grip { width: 15px; height: 15px; color: #a8a4ae; }
-.stopRow > div { display: grid; gap: 2px; min-width: 0; }
-.stopRow strong { font-size: 14px; font-weight: 570; }
-.stopRow small { color: var(--muted); font: 600 10px var(--font-geist-mono, monospace); }
-.removeStop {
-  display: grid; place-items: center; width: 32px; height: 32px; margin-left: auto;
-  border: 0; border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer;
-  transition: color .16s, background .16s;
-}
-.removeStop:hover { background: #fff1f7; color: var(--signal); }
-.removeStop svg { width: 15px; height: 15px; }
 
 /* ------------------------------------------------------ dates + calendar */
 .dateRow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -229,6 +204,17 @@
 .railNode strong { font-size: 15px; font-weight: 580; letter-spacing: -.02em; }
 .railNameMuted { color: #5c5866; font-weight: 500 !important; }
 .railNode small { color: var(--muted); font: 600 11px var(--font-geist-mono, monospace); }
+.railNodeEditable { position: relative; cursor: grab; padding-right: 34px; }
+.railNodeEditable:active { cursor: grabbing; }
+.railNodeDragging { opacity: .45; }
+.railNodeHead { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.railGrip { width: 14px; height: 14px; flex: 0 0 auto; color: #aaa6b0; }
+.railNodeActions { position: absolute; top: 0; right: 0; display: flex; }
+.railNodeActions button { display: inline-grid; place-items: center; min-width: 25px; height: 24px; padding: 0 6px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: #fff; font: 700 12px/1 var(--font-geist-mono, monospace); cursor: pointer; }
+.railNodeActions button:hover:not(:disabled) { border-color: var(--signal); color: var(--signal); }
+.railNodeActions button:disabled { opacity: .3; cursor: not-allowed; }
+.railNodeActions button:last-child { color: var(--muted); }
+.railNodeActions button:last-child svg { width: 13px; height: 13px; }
 .railMarker { display: grid; justify-items: center; height: 100%; }
 .railDot, .railDotOrigin { width: 11px; height: 11px; margin-top: 4px; border-radius: 50%; }
 .railDot { background: var(--signal); border: 2px solid var(--signal); }
@@ -335,7 +321,7 @@
   .dateRow, .groupGrid { grid-template-columns: 1fr !important; }
   .allocationHead { display: grid; gap: 10px; }
   .steps { grid-template-columns: repeat(2, 1fr); }
-  .builderReassurance{padding:12px 24px}.copilotSlot{padding:12px 24px 0}
+  .builderReassurance{align-items:flex-start;flex-direction:column;gap:2px;padding:14px 24px 11px;font-size:12px}.builderReassurance strong{font-size:14px}
 }
 @media (max-width: 620px){.placeCard{grid-template-columns:82px 24px minmax(0,1fr);align-items:start}.placeThumb,.placeThumbFallback{width:82px;min-height:82px}.placeThumb img{min-height:82px}.placeCost{grid-column:3;margin:0}.dayImage{height:220px}.allocationRow{grid-template-columns:1fr 44px;gap:8px}.allocationRow input{grid-column:1 / -1;grid-row:2}.allocationRow > b{grid-column:2;grid-row:1}}
 @media (max-width: 420px){.wizardFoot{align-items:stretch;padding:14px 20px}.footRight{width:100%;min-width:0;justify-content:space-between;gap:10px}.saveState{min-width:0;font-size:10px}.gate{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.primary{flex:0 0 auto;justify-content:center;padding-inline:16px;font-size:14px}}
