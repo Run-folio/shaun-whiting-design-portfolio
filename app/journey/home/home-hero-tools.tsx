@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Compass, Plus, Sparkles, Stamp, Utensils } from "lucide-react";
 import { useEffect, useState } from "react";
 import { languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
+import { trackEvent } from "@/lib/analytics";
 import HomeRestaurantFinder from "./restaurant-finder";
 import styles from "./home.module.css";
 import polish from "./home-polish.module.css";
@@ -22,14 +23,14 @@ export default function HomeHeroTools({ showHero = true, showTools = true }: { s
     {showHero ? <section className={styles.hero}>
       <div className={styles.heroCopy}>
         <p className={styles.eyebrow}>{text.eyebrow}</p><h1>{text.title}</h1><p className={styles.lede}>{text.lede}</p>
-        <div className={styles.heroActions}><a className={styles.primary} href="#start-building"><Plus aria-hidden="true" /> {text.scratch}</a><a className={styles.secondaryPill} href="#routes"><Sparkles aria-hidden="true" /> {text.routes}</a></div>
+        <div className={styles.heroActions}><a className={styles.primary} href="#start-building" onClick={() => trackEvent("easyt_trip_started", { source: "homepage_hero" })}><Plus aria-hidden="true" /> {text.scratch}</a><a className={styles.secondaryPill} href="#routes" onClick={() => trackEvent("easyt_featured_route_opened", { source: "homepage_hero" })}><Sparkles aria-hidden="true" /> {text.routes}</a></div>
         <div className={styles.heroProof}><span><Sparkles aria-hidden="true" /> {text.personal}</span><span><Compass aria-hidden="true" /> {text.useful}</span></div>
       </div>
-      <Link href="/journey/routes/japan-slow" className={`${styles.heroCard} ${polish.heroCard}`} aria-label={text.exploreJapan}><div className={styles.heroImage} style={{ backgroundImage: "url(/journey/tokyo.jpg)" }} /><div className={styles.heroCardOverlay}><div className={styles.heroRouteMeta}><span>{text.routeMeta} · {text.routeStops}</span></div><small>{text.exploreJapan} <ArrowRight aria-hidden="true" /></small></div></Link>
+      <Link href="/journey/routes/japan-slow" className={`${styles.heroCard} ${polish.heroCard}`} aria-label={text.exploreJapan} onClick={() => trackEvent("easyt_featured_route_opened", { source: "homepage_hero_card", route: "japan-slow" })}><div className={styles.heroImage} style={{ backgroundImage: "url(/journey/tokyo.jpg)" }} /><div className={styles.heroCardOverlay}><div className={styles.heroRouteMeta}><span>{text.routeMeta} · {text.routeStops}</span></div><small>{text.exploreJapan} <ArrowRight aria-hidden="true" /></small></div></Link>
     </section> : null}
     {showTools ? <section className={styles.tools}>
       <article className={`${styles.toolCard} ${styles.restaurantCard} ${polish.toolCard}`}><div className={styles.toolIcon}><Utensils aria-hidden="true" /></div><p className={styles.eyebrow}>{text.out}</p><h2>{text.nearby}</h2><p>{text.nearbyText}</p><HomeRestaurantFinder /></article>
-      <article className={`${styles.toolCard} ${styles.stampCard} ${stampCard.stampCard} ${polish.toolCard}`}><div className={`${styles.stampMap} ${stampCard.mapLayer}`}><span className={styles.mapDot} /><span className={styles.mapDot} /><span className={styles.mapDot} /><span className={styles.mapLine} /></div><div className={styles.toolIcon}><Stamp aria-hidden="true" /></div><p className={styles.eyebrow}>{text.story}</p><h2>{text.stamps}</h2><p>{text.stampsText}</p><Link className={styles.secondary} href="/journey/stamped">{text.openMap} <ArrowRight aria-hidden="true" /></Link></article>
+      <article className={`${styles.toolCard} ${styles.stampCard} ${stampCard.stampCard} ${polish.toolCard}`}><div className={`${styles.stampMap} ${stampCard.mapLayer}`}><span className={styles.mapDot} /><span className={styles.mapDot} /><span className={styles.mapDot} /><span className={styles.mapLine} /></div><div className={styles.toolIcon}><Stamp aria-hidden="true" /></div><p className={styles.eyebrow}>{text.story}</p><h2>{text.stamps}</h2><p>{text.stampsText}</p><Link className={styles.secondary} href="/journey/stamped" onClick={() => trackEvent("easyt_stamps_opened", { source: "homepage" })}>{text.openMap} <ArrowRight aria-hidden="true" /></Link></article>
     </section> : null}
   </>;
 }

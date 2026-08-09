@@ -87,7 +87,7 @@ export default function LoginForm({
       <EasyTField label="Password" name="password" type="password" minLength={8} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} required placeholder="At least 8 characters" />
       {mode === "sign-in" && <a className={styles.forgotLink} href="/journey/forgot-password">Forgot password?</a>}
       {error && <p className={styles.error}>{error}</p>}
-      <EasyTButton type="submit" fullWidth loading={busy} disabled={!configured}>{configured ? mode === "sign-in" ? "Sign in →" : "Create account →" : "Accounts coming online"}</EasyTButton>
+      <EasyTButton className={styles.authSubmit} type="submit" fullWidth loading={busy} disabled={!configured}>{configured ? mode === "sign-in" ? "Sign in →" : "Create account →" : "Accounts coming online"}</EasyTButton>
     </form>
     {googleEnabled && <><div className={styles.divider}>or</div><EasyTButton type="button" variant="secondary" fullWidth loading={googleBusy} disabled={!configured || busy} onClick={continueWithGoogle}>Continue with Google</EasyTButton></>}
   </section>;

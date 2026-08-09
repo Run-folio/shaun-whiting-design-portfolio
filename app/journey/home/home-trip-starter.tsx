@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays, ChevronDown, MapPin, Plane } from "lucide-rea
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
+import { trackEvent } from "@/lib/analytics";
 import { Calendar } from "../new/trip-builder";
 import builderStyles from "../new/trip-builder.module.css";
 import styles from "./home.module.css";
@@ -52,6 +53,7 @@ export default function HomeTripStarter() {
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    trackEvent("easyt_trip_started", { source: "homepage_builder", has_origin: Boolean(origin.trim()), has_destination: Boolean(destination.trim()) });
     setError("");
     if (endDate <= startDate) { setError(text.dateError); return; }
     if (origin.trim().toLowerCase() === destination.trim().toLowerCase()) { setError(text.samePlace); return; }

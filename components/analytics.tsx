@@ -5,10 +5,9 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
 import { pageView, trackEvent } from "@/lib/analytics";
 
-// GA measurement IDs are public client-side identifiers. Keeping this fallback here
-// ensures tracking remains enabled even when a deployment environment variable is
-// not configured yet.
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-EQ4870QKE5";
+// Keep analytics opt-in per deployment. This prevents local/staging traffic from
+// polluting production reporting and makes the launch configuration explicit.
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const SCROLL_DEPTHS = [50, 75, 90] as const;

@@ -7,7 +7,15 @@ export type AnalyticsEventName =
   | "journey_prototype_clicked"
   | "scroll_depth_reached"
   | "copy_email_clicked"
-  | "book_call_clicked";
+  | "book_call_clicked"
+  | "easyt_trip_started"
+  | "easyt_featured_route_opened"
+  | "easyt_finder_started"
+  | "easyt_stamps_opened"
+  | "easyt_trip_saved"
+  | "easyt_trip_exported"
+  | "easyt_share_created"
+  | "easyt_error_shown";
 
 export type AnalyticsEventProperties = Record<string, string | number | boolean | null | undefined>;
 
