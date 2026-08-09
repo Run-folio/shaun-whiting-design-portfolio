@@ -24,6 +24,7 @@ import styles from "./easyt-navigation.module.css";
 type EasyTNavigationProps = {
   current?: "home" | "prototype" | "trips" | "stamped" | "new" | "login" | "profile";
   account?: { name?: string | null; email: string; language?: Language };
+  showBack?: boolean;
 };
 
 type Language = EasyTLanguage;
@@ -31,6 +32,7 @@ type Language = EasyTLanguage;
 export default function EasyTNavigation({
   current,
   account,
+  showBack = true,
 }: EasyTNavigationProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -84,7 +86,7 @@ export default function EasyTNavigation({
 
   return (
     <header className={styles.header} data-easyt-app>
-      {pathname === "/journey/home" ? (
+      {!showBack || pathname === "/journey/home" ? (
         <span className={styles.portfolioSpacer} aria-hidden="true" />
       ) : (
         <button

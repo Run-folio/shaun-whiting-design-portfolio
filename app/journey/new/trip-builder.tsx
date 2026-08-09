@@ -23,7 +23,6 @@ import mobilePolish from "./trip-builder-mobile.module.css";
 import { easytCopy, languageFromStorage, type EasyTLanguage } from "@/lib/easyt/i18n";
 import { inspirationByKey } from "@/lib/easyt/inspiration";
 import { defaultTravelProfile, isTravelProfile, type TravelProfile } from "@/lib/easyt/travel-profile";
-import EasyTTripCopilot from "@/components/easyt/easyt-trip-copilot";
 
 /* ---------------------------------------------------------------- data */
 
@@ -319,7 +318,6 @@ export default function TripBuilder() {
   const [discovering, setDiscovering] = useState<Record<string, boolean>>({});
 
   const [budget, setBudget] = useState<"value" | "mid" | "high">("value");
-  const [inspirationTitle, setInspirationTitle] = useState<string | null>(null);
   const [travelProfile, setTravelProfile] = useState<TravelProfile>(defaultTravelProfile);
 
   const pickerRef = useDismiss(Boolean(picker), () => setPicker(null));
@@ -389,7 +387,6 @@ export default function TripBuilder() {
             const savedProfile = JSON.parse(window.localStorage.getItem("easyt-travel-profile") ?? "null");
             if (isTravelProfile(savedProfile)) { setBudget(savedProfile.budget); setTravelProfile(savedProfile); } else setBudget(seed.budget);
             } catch { setBudget(seed.budget); }
-            setInspirationTitle(seed.title);
           }
         }
       }
@@ -430,10 +427,19 @@ export default function TripBuilder() {
     [stops],
   );
   const originMissing = originTouched && (!origin.trim() || Boolean(originError));
-  const profileFit = `${travelProfile.pace === "slow" ? "slow mornings" : travelProfile.pace === "full" ? "full days" : "a balanced rhythm"}, ${travelProfile.priority === "mix" ? "a little of everything" : travelProfile.priority}, and ${travelProfile.hotelMoves === "few" ? "fewer hotel moves" : "flexible stops"}`;
   const stepGuidance = language === "es"
-    ? ["Empieza con una salida y un destino. Podrás cambiar, añadir o quitar lugares después.", "Las fechas marcan el ritmo inicial. Nada se reserva al crear el plan.", "Elige solo los lugares que realmente te importan. EasyT deja espacio para el resto.", "Ajusta los días hasta que el ritmo te parezca correcto. Después podrás editar cualquier detalle."]
-    : ["Start with a departure and destination. You can change, add or remove places later.", "Dates set the first rhythm. Nothing is booked when you create a plan.", "Choose only the places that matter most. EasyT leaves room for the rest.", "Adjust the days until the pace feels right. You will still be able to edit every detail."];
+    ? [
+      ["Empieza con lo esencial.", "Añade una salida y un destino. Podrás cambiar, añadir o quitar lugares después."],
+      ["Marca el ritmo.", "Nada se reserva al crear el plan."],
+      ["Elige lo que importa.", "EasyT deja espacio para el resto."],
+      ["Haz que los días encajen.", "Podrás editar cada detalle más adelante."],
+    ]
+    : [
+      ["Start with the essentials.", "Add a departure and destination. You can change, add or remove places later."],
+      ["Set the rhythm.", "Nothing is booked when you create a plan."],
+      ["Choose what matters.", "EasyT leaves room for the rest."],
+      ["Make the days fit.", "You can edit every detail later."],
+    ];
   const gate = step === 0 ? (!origin.trim() ? ui.addOrigin : !stops.length ? ui.addStop : "") : "";
 
   /** A transparent default: selected activity volume influences the recommended split. */
@@ -494,6 +500,16 @@ export default function TripBuilder() {
     } catch {
       setStopError(ui.unavailable);
     }
+  };
+
+  const moveStop = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0 || from >= stops.length || to >= stops.length) return;
+    setStops((current) => {
+      const next = [...current];
+      const [moving] = next.splice(from, 1);
+      next.splice(to, 0, moving);
+      return next;
+    });
   };
 
   const validateOrigin = async () => {
@@ -682,20 +698,14 @@ export default function TripBuilder() {
         })}
       </nav>
 
-      <p className={styles.builderReassurance}>{stepGuidance[step]}</p>
-      <div className={styles.copilotSlot}><EasyTTripCopilot surface="builder" destination={stops[0]?.name} /></div>
-
+      <p className={styles.builderReassurance}>
+        <strong>{stepGuidance[step][0]}</strong>
+        <span>{stepGuidance[step][1]}</span>
+      </p>
       <div className={styles.wizardBody}>
         <div className={styles.pane}>
           {step === 0 && (
             <div className={styles.stack}>
-              {inspirationTitle && (
-                <div className={styles.inspirationNotice}>
-                  <span>STARTING POINT</span>
-                  <strong>{inspirationTitle}</strong>
-                  <p>Started for {profileFit}. This is a route to shape, not a package. Change any stop, date or detail.</p>
-                </div>
-              )}
               <div className={`${styles.card} ${originMissing ? styles.cardError : ""}`}>
                 <span className={styles.cardLabel}><Plane /> {copy.startFrom}</span>
                 <input value={origin} placeholder={copy.cityAirport} aria-label={copy.startFrom}
@@ -723,39 +733,6 @@ export default function TripBuilder() {
                 )}
               </div>
 
-              <div className={styles.stopList}>
-                {stops.map((stop, i) => (
-                  <div key={stop.id} draggable
-                    className={`${styles.stopRow} ${dragId === stop.id ? styles.stopRowDragging : ""}`}
-                    onDragStart={(e) => { setDragId(stop.id); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", stop.id); }}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      const from = stops.findIndex((x) => x.id === (dragId ?? e.dataTransfer.getData("text/plain")));
-                      if (from < 0 || from === i) return setDragId(null);
-                      const next = [...stops];
-                      const [moving] = next.splice(from, 1);
-                      next.splice(i, 0, moving);
-                      setStops(next); setDragId(null);
-                    }}
-                    onDragEnd={() => setDragId(null)}>
-                    <b>{pad(i + 1)}</b>
-                    <GripVertical className={styles.grip} aria-hidden />
-                    <div>
-                      <strong>{stop.name}</strong>
-                      <small>{(picks[stop.id] ?? []).length} {ui.placesSelected}</small>
-                    </div>
-                    <button
-                      type="button"
-                      className={styles.removeStop}
-                      onClick={() => setStops(stops.filter((x) => x.id !== stop.id))}
-                      aria-label={`Remove ${stop.name}`}
-                    >
-                      <X />
-                    </button>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
@@ -879,21 +856,36 @@ export default function TripBuilder() {
           <div className={styles.railBlock}>
             <small className={styles.railLabel}>{ui.route}</small>
             <div className={styles.railRoute}>
-              {[{ name: origin.trim() || (language === "es" ? "Añade tu origen" : "Add your origin"), note: ui.departure, origin: true },
-                ...stops.map((stop) => ({
-                  name: stop.name,
-                  note: `${(picks[stop.id] ?? []).length} ${ui.selected} · ${allocation[stop.id] ?? 1} ${(allocation[stop.id] ?? 1) === 1 ? ui.day : ui.days}`,
-                  origin: false,
-                }))].map((node, i, list) => (
+              {[{ name: origin.trim() || (language === "es" ? "Añade tu origen" : "Add your origin"), note: ui.departure, origin: true }].map((node, i) => (
                 <div key={`${node.name}-${i}`} className={styles.railNode}>
                   <span className={styles.railMarker}>
                     <span className={node.origin ? styles.railDotOrigin : styles.railDot} />
-                    {i < list.length - 1 && <span className={styles.railLine} />}
+                    {stops.length > 0 && <span className={styles.railLine} />}
                   </span>
                   <span>
                     <strong className={node.origin ? styles.railNameMuted : ""}>{node.name}</strong>
                     <small>{node.note}</small>
                   </span>
+                </div>
+              ))}
+              {stops.map((stop, i) => (
+                <div key={stop.id} draggable
+                  className={`${styles.railNode} ${styles.railNodeEditable} ${dragId === stop.id ? styles.railNodeDragging : ""}`}
+                  onDragStart={(event) => { setDragId(stop.id); event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", stop.id); }}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => { event.preventDefault(); const from = stops.findIndex((item) => item.id === (dragId ?? event.dataTransfer.getData("text/plain"))); moveStop(from, i); setDragId(null); }}
+                  onDragEnd={() => setDragId(null)}>
+                  <span className={styles.railMarker}>
+                    <span className={styles.railDot} />
+                    {i < stops.length - 1 && <span className={styles.railLine} />}
+                  </span>
+                    <span>
+                      <span className={styles.railNodeHead}><GripVertical className={styles.railGrip} aria-hidden /><strong>{stop.name}</strong></span>
+                      <small>{(picks[stop.id] ?? []).length} {ui.selected} · {allocation[stop.id] ?? 1} {(allocation[stop.id] ?? 1) === 1 ? ui.day : ui.days}</small>
+                      <span className={styles.railNodeActions}>
+                        <button type="button" onClick={() => setStops(stops.filter((item) => item.id !== stop.id))} aria-label={`${language === "es" ? "Quitar" : "Remove"} ${stop.name}`}><X /></button>
+                      </span>
+                    </span>
                 </div>
               ))}
               {!stops.length && <p className={styles.railEmpty}>{ui.routeEmpty}</p>}
