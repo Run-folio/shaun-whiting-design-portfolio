@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { caseStudies } from "@/lib/case-studies";
 
 const siteUrl = "https://shaunwhiting.com";
+const easyTRouteSlugs = ["japan-slow", "portugal-coast", "andean-highlands", "taiwan-rail"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -31,6 +32,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+    {
+      url: `${siteUrl}/journey/home`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    ...easyTRouteSlugs.map((slug) => ({
+      url: `${siteUrl}/journey/routes/${slug}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
     ...caseStudies.map((study) => ({
       url: `${siteUrl}/case-study/${study.slug}`,
       lastModified: now,

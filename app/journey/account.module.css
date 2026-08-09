@@ -54,7 +54,8 @@
 }
 .authGrid {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: minmax(0, 560px);
+  justify-content: center;
   background: #fff;
   border: 1px solid rgba(23, 21, 47, 0.15);
   border-radius: 28px;
@@ -107,7 +108,7 @@
   align-items: center;
 }
 .authPanel {
-  padding: clamp(36px, 5vw, 72px);
+  padding: clamp(32px, 5vw, 64px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -224,6 +225,20 @@
     Menlo,
     monospace;
   letter-spacing: 0.04em;
+}
+.authSubmit {
+  transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+.authSubmit:hover:not(:disabled) {
+  background: #ff3d8b;
+  border-color: #ff3d8b;
+  color: #17152f;
+  box-shadow: 0 8px 18px rgba(255, 61, 139, 0.22);
+  transform: translateY(-1px);
+}
+.authSubmit:focus-visible {
+  outline: 3px solid rgba(255, 61, 139, 0.45);
+  outline-offset: 3px;
 }
 .button:disabled {
   opacity: 0.5;
