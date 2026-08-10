@@ -64,6 +64,34 @@ export function reviewTrip(trip: EasyTTrip): TripRecommendation[] {
     }, results.length));
   }
 
+  const unknownLeg = trip.legs.find((leg) => leg.mode === "unknown");
+  if (unknownLeg) {
+    const destination = trip.stops.find((stop) => stop.id === unknownLeg.toStopId)?.name ?? "the next stop";
+    results.push(recommendation(trip, {
+      rule: "connection-confidence",
+      severity: "info",
+      message: `The connection into ${destination} still needs a travel mode before EasyT can judge the day realistically.`,
+      evidence: "No rail, road, ferry or flight mode has been confirmed for this leg.",
+      affectedDays: trip.planItems.filter((item) => item.stopId === unknownLeg.toStopId).map((item) => item.dayNumber),
+      confidence: "high",
+      proposedChange: { action: "resolve-leg", legId: unknownLeg.id },
+    }, results.length));
+  }
+
+  const transportDays = new Set(trip.planItems.filter((item) => item.type === "transport" || item.type === "arrival").map((item) => item.dayNumber));
+  const consecutiveTransfers = [...transportDays].some((day) => transportDays.has(day + 1));
+  if (consecutiveTransfers) {
+    results.push(recommendation(trip, {
+      rule: "recovery-time",
+      severity: trip.brief.pace === "slow" ? "warning" : "info",
+      message: "Two travel-heavy days sit back to back, leaving little room to arrive, recover and explore.",
+      evidence: "EasyT found consecutive arrival or transport days in the current plan.",
+      affectedDays: [...transportDays].sort((a, b) => a - b),
+      confidence: "medium",
+      proposedChange: { action: "suggest-extra-night", stopIds: trip.stops.filter((stop) => stop.nights === 1).map((stop) => stop.id) },
+    }, results.length));
+  }
+
   const plannedDays = trip.planItems.length;
   const totalDays = Math.max(1, Math.round((+new Date(`${trip.endDate}T00:00:00`) - +new Date(`${trip.startDate}T00:00:00`)) / 86400000) + 1);
   if (plannedDays < totalDays) {
@@ -75,6 +103,19 @@ export function reviewTrip(trip: EasyTTrip): TripRecommendation[] {
       affectedDays: [],
       confidence: "high",
       proposedChange: { action: "add-open-days", count: totalDays - plannedDays },
+    }, results.length));
+  }
+
+  const openDays = trip.planItems.filter((item) => item.type === "open").length;
+  if (trip.brief.pace === "slow" && totalDays >= 5 && openDays === 0) {
+    results.push(recommendation(trip, {
+      rule: "flex-space",
+      severity: "info",
+      message: "This slow-paced trip has no deliberately open day or half-day to absorb weather, delays or a place worth lingering in.",
+      evidence: `${totalDays} scheduled days and no open planning day currently recorded.`,
+      affectedDays: [],
+      confidence: "medium",
+      proposedChange: { action: "add-open-days", count: 1 },
     }, results.length));
   }
 

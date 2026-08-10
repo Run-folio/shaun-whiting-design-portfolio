@@ -45,15 +45,22 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  font-size: 24px;
-  font-weight: 750;
-  letter-spacing: -0.045em;
+  gap: 13px;
+  line-height: 1;
 }
-.brand b {
-  margin-left: 3px;
-  padding: 1px 7px;
-  background: #ff3d8b;
-  color: #fff;
+.brandMark {
+  display: block;
+  width: 48px;
+  height: auto;
+  flex: 0 0 auto;
+}
+.brandName {
+  color: #201c4d;
+  font-family: var(--font-geist-sans, Geist, Inter, Arial, sans-serif);
+  font-size: 21px;
+  font-weight: 400;
+  letter-spacing: .16em;
+  line-height: 1;
 }
 .actions {
   justify-self: end;
@@ -264,6 +271,9 @@
   }
 }
 @media (max-width: 520px) {
+  .actions {
+    display: none;
+  }
   .quietLink {
     display: none;
   }
@@ -278,8 +288,12 @@
     width: 36px;
     padding: 0;
   }
-  .brand {
-    font-size: 21px;
+  .brandMark {
+    width: 42px;
+  }
+  .brandName {
+    font-size: 18px;
+    letter-spacing: .13em;
   }
   .accountPopover {
     position: fixed;
