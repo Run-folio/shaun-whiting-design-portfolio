@@ -12,9 +12,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#17152f",
     icons: [
       {
-        src: "/easyt-icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: "/brand/morrow-route-mark-512.png",
+        sizes: "512x512",
+        type: "image/png",
         purpose: "maskable",
       },
     ],

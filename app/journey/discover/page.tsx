@@ -1,4 +1,5 @@
 import EasyTNavigation from "../easyt-navigation";
+import { applyEasyTRouteControls, listEasyTRouteControls } from "@/lib/easyt/admin-content";
 import { routeFamilies } from "@/lib/easyt/route-catalog";
 import DiscoveryBrowser from "./discovery-browser";
 import styles from "./discover.module.css";
@@ -8,7 +9,10 @@ export const metadata = {
   description: "Browse thoughtful, editable routes by region, feeling and trip length.",
 };
 
-export default function DiscoveryPage() {
+export const dynamic = "force-dynamic";
+
+export default async function DiscoveryPage() {
+  const controls = await listEasyTRouteControls().catch(() => []);
   return (
     <main className={styles.page}>
       <EasyTNavigation current="home" />
@@ -17,7 +21,7 @@ export default function DiscoveryPage() {
         <h1>Discover</h1>
         <p>Start with a shape that already makes sense, then make every day your own.</p>
       </section>
-      <DiscoveryBrowser routes={routeFamilies} />
+      <DiscoveryBrowser routes={applyEasyTRouteControls(routeFamilies, controls)} />
     </main>
   );
 }

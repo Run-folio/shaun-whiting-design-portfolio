@@ -115,7 +115,7 @@ function FieldShell({ children, error, hint, id, label }: FieldShellProps) {
       <span className={styles.fieldLabel}>{label}</span>
       {children}
       {error ? (
-        <p className={styles.fieldError} id={descriptionId}>{error}</p>
+        <p className={styles.fieldError} id={descriptionId} role="alert">{error}</p>
       ) : hint ? (
         <p className={styles.fieldHint} id={descriptionId}>{hint}</p>
       ) : null}
@@ -196,15 +196,14 @@ export function EasyTSegmentedControl<T extends string>({
   value: T;
 }) {
   return (
-    <div className={`${styles.segments} ${className}`} role="tablist" aria-label={ariaLabel}>
+    <div className={`${styles.segments} ${className}`} role="group" aria-label={ariaLabel}>
       {options.map((option) => {
         const active = option.value === value;
         return (
           <button
             key={option.value}
             type="button"
-            role="tab"
-            aria-selected={active}
+            aria-pressed={active}
             className={`${styles.segment} ${active ? styles.segmentActive : ""}`}
             onClick={() => onChange(option.value)}
           >

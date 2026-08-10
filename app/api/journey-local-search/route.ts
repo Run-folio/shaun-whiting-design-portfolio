@@ -16,6 +16,7 @@ type LocalPlace = {
   coordinates: [number, number];
   mapsUrl: string;
   bookingUrl: string | undefined;
+  distanceKm: number;
 };
 
 type PhotonPlace = {
@@ -39,6 +40,13 @@ function addressFor(tags: Record<string, string>, fallback: string) {
   const street = [tags["addr:housenumber"], tags["addr:street"]].filter(Boolean).join(" ");
   const locality = tags["addr:city"] || tags["addr:district"] || tags["addr:suburb"];
   return [street, locality, tags["addr:postcode"], fallback].filter(Boolean).join(", ");
+}
+
+function distanceKm(latitude: number, longitude: number, targetLatitude: number, targetLongitude: number) {
+  const radians = (value: number) => value * Math.PI / 180;
+  const a = Math.sin(radians(targetLatitude - latitude) / 2) ** 2
+    + Math.cos(radians(latitude)) * Math.cos(radians(targetLatitude)) * Math.sin(radians(targetLongitude - longitude) / 2) ** 2;
+  return Math.round(6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 10) / 10;
 }
 
 async function photonFallback(kind: "restaurant" | "stay", city: string, country: string, latitude: number, longitude: number) {
@@ -68,6 +76,7 @@ async function photonFallback(kind: "restaurant" | "stay", city: string, country
           ? `https://www.amap.com/search?query=${encodeURIComponent(searchQuery)}`
           : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`,
         bookingUrl: kind === "stay" ? `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(searchQuery)}` : undefined,
+        distanceKm: distanceKm(latitude, longitude, lat!, lon!),
       } satisfies LocalPlace;
     })
     .filter((place): place is LocalPlace => place !== null);
@@ -125,6 +134,7 @@ export async function GET(request: NextRequest) {
             ? `https://www.amap.com/search?query=${encodeURIComponent(searchQuery)}`
             : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`,
           bookingUrl: kind === "stay" ? `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(searchQuery)}` : undefined,
+          distanceKm: distanceKm(latitude, longitude, lat!, lon!),
         } satisfies LocalPlace;
       })
       .filter((place): place is LocalPlace => place !== null)

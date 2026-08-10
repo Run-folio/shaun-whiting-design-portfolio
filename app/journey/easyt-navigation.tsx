@@ -10,6 +10,7 @@ import {
   LogOut,
   Map,
   Plus,
+  ShieldCheck,
   Stamp,
   UserRound,
   House,
@@ -22,7 +23,7 @@ import { easytCopy, type EasyTLanguage } from "@/lib/easyt/i18n";
 import styles from "./easyt-navigation.module.css";
 
 type EasyTNavigationProps = {
-  current?: "home" | "prototype" | "trips" | "stamped" | "new" | "login" | "profile";
+  current?: "home" | "prototype" | "trips" | "stamped" | "new" | "login" | "profile" | "privacy" | "admin";
   account?: { name?: string | null; email: string; language?: Language };
   showBack?: boolean;
 };
@@ -38,6 +39,12 @@ export default function EasyTNavigation({
   const pathname = usePathname();
   const { data: session } = authClient.useSession();
   const [language, setLanguage] = useState<Language>("en");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const activeAccount =
+    account ||
+    (session?.user
+      ? { name: session.user.name, email: session.user.email }
+      : undefined);
 
   useEffect(() => {
     if (account?.language) {
@@ -54,6 +61,23 @@ export default function EasyTNavigation({
     document.body.classList.add("easyt-mobile-shell");
     return () => document.body.classList.remove("easyt-mobile-shell");
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!activeAccount?.email) {
+      setIsAdmin(false);
+      return;
+    }
+    void fetch("/api/easyt/admin/access")
+      .then((response) => response.ok ? response.json() : { isAdmin: false })
+      .then((data: { isAdmin?: boolean }) => {
+        if (!cancelled) setIsAdmin(Boolean(data.isAdmin));
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => { cancelled = true; };
+  }, [activeAccount?.email]);
 
   const changeLanguage = (next: Language) => {
     setLanguage(next);
@@ -76,16 +100,12 @@ export default function EasyTNavigation({
   };
 
   const labels = easytCopy[language].nav;
-  const activeAccount =
-    account ||
-    (session?.user
-      ? { name: session.user.name, email: session.user.email }
-      : undefined);
   const accountLabel =
     activeAccount?.name?.trim() || activeAccount?.email || labels.account;
 
   return (
-    <header className={styles.header} data-easyt-app>
+    <>
+      <header className={styles.header} data-easyt-app>
       {!showBack || pathname === "/journey/home" ? (
         <span className={styles.portfolioSpacer} aria-hidden="true" />
       ) : (
@@ -106,10 +126,14 @@ export default function EasyTNavigation({
       <Link
         className={styles.brand}
         href="/journey/home"
-        aria-label="EasyT home"
+        aria-label="Morrow home"
       >
-        <span>Easy</span>
-        <b>T</b>
+        <img
+          className={styles.brandMark}
+          src="/brand/morrow-route-wordmark.svg"
+          alt=""
+        />
+        <span className={styles.brandName}>MORROW</span>
       </Link>
 
       <nav className={styles.actions} aria-label="EasyT navigation">
@@ -167,6 +191,20 @@ export default function EasyTNavigation({
                 <Map aria-hidden="true" />
                 <span>{labels.prototype}</span>
               </Link>
+              <Link
+                className={current === "privacy" ? styles.submenuCurrent : undefined}
+                href="/journey/privacy"
+              >
+                <ShieldCheck aria-hidden="true" />
+                <span>{labels.privacy}</span>
+              </Link>
+              {isAdmin && <Link
+                className={current === "admin" ? styles.submenuCurrent : undefined}
+                href="/journey/admin"
+              >
+                <ShieldCheck aria-hidden="true" />
+                <span>Admin</span>
+              </Link>}
               <label className={styles.languageControl}>
                 <Languages aria-hidden="true" />
                 <span>{labels.language}</span>
@@ -198,7 +236,8 @@ export default function EasyTNavigation({
           </Link>
         ) : null}
       </nav>
-      {current !== "prototype" && current !== "login" ? (
+      </header>
+      {current !== "prototype" ? (
         <nav className={styles.mobileDock} aria-label="EasyT mobile navigation">
           <Link
             className={current === "home" ? styles.dockCurrent : undefined}
@@ -234,6 +273,6 @@ export default function EasyTNavigation({
           </Link>
         </nav>
       ) : null}
-    </header>
+    </>
   );
 }

@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { pageView, trackEvent } from "@/lib/analytics";
 
 // Keep analytics opt-in per deployment. This prevents local/staging traffic from
@@ -11,9 +11,24 @@ const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const SCROLL_DEPTHS = [50, 75, 90] as const;
+const ANALYTICS_CONSENT_KEY = "easyt-analytics-consent";
+
+function readAnalyticsConsent() {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(ANALYTICS_CONSENT_KEY) === "granted";
+}
 
 export function Analytics() {
-  if (!IS_PRODUCTION) {
+  const [hasConsent, setHasConsent] = useState(false);
+
+  useEffect(() => {
+    const updateConsent = () => setHasConsent(readAnalyticsConsent());
+    updateConsent();
+    window.addEventListener("easyt-analytics-consent-change", updateConsent);
+    return () => window.removeEventListener("easyt-analytics-consent-change", updateConsent);
+  }, []);
+
+  if (!IS_PRODUCTION || !hasConsent) {
     return null;
   }
 

@@ -194,8 +194,15 @@ export type EasyTFeedbackRow = {
   rating: number;
   comment: string | null;
   surface: string;
+  status: EasyTFeedbackStatus;
+  internalNote: string | null;
+  triagedBy: string | null;
+  triagedAt: string | null;
   createdAt: string;
 };
+
+export const easyTFeedbackStatuses = ["new", "reviewed", "planned", "resolved"] as const;
+export type EasyTFeedbackStatus = (typeof easyTFeedbackStatuses)[number];
 
 export async function listEasyTFeedback(): Promise<EasyTFeedbackRow[]> {
   const sql = getEasyTDatabase();
@@ -206,12 +213,35 @@ export async function listEasyTFeedback(): Promise<EasyTFeedbackRow[]> {
       feedback.rating,
       feedback.comment,
       feedback.surface,
+      feedback.status,
+      feedback.internal_note as "internalNote",
+      feedback.triaged_by as "triagedBy",
+      feedback.triaged_at as "triagedAt",
       feedback.created_at as "createdAt"
     from easyt_feedback feedback
     left join easyt_users users on users.id = feedback.owner_id
     order by feedback.created_at desc
     limit 500
   `) as EasyTFeedbackRow[];
+}
+
+export async function updateEasyTFeedbackTriage(input: {
+  feedbackId: string;
+  status: EasyTFeedbackStatus;
+  internalNote: string;
+  triagedBy: string;
+}) {
+  const sql = getEasyTDatabase();
+  const rows = (await sql`
+    update easyt_feedback
+    set status = ${input.status},
+      internal_note = ${input.internalNote.trim() || null},
+      triaged_by = ${input.triagedBy},
+      triaged_at = now()
+    where id = ${input.feedbackId}::uuid
+    returning id
+  `) as Array<{ id: string }>;
+  return Boolean(rows[0]);
 }
 
 export async function listTripsForOwner(ownerId: string): Promise<EasyTTrip[]> {

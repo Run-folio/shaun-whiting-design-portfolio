@@ -5,6 +5,7 @@ import { isEasyTAuthConfigured } from "@/lib/easyt/auth-environment";
 import { isEasyTAdmin } from "@/lib/easyt/owner";
 import { listEasyTFeedback } from "@/lib/easyt/repository";
 import EasyTNavigation from "../../easyt-navigation";
+import FeedbackTriageList from "./feedback-triage-list";
 import styles from "./feedback.module.css";
 
 export const dynamic = "force-dynamic";
@@ -33,9 +34,7 @@ export default async function EasyTAdminFeedbackPage() {
         <article><strong>{feedback.filter((item) => item.comment?.trim()).length}</strong><span>with comments</span></article>
       </div>
       <section className={styles.distribution} aria-label="Rating distribution">{distribution.map((item) => <div key={item.rating}><span>{item.rating}</span><div><i style={{ width: feedback.length ? `${(item.count / feedback.length) * 100}%` : "0%" }} /></div><b>{item.count}</b></div>)}</section>
-      <section className={styles.list} aria-label="Feedback responses">
-        {!feedback.length ? <p className={styles.empty}>No feedback has been submitted yet.</p> : feedback.map((item) => <article key={item.id}><header><strong>{"★".repeat(item.rating)}<span>{"★".repeat(5 - item.rating)}</span></strong><time dateTime={item.createdAt}>{new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(item.createdAt))}</time></header><p>{item.comment?.trim() || "No written comment."}</p><small>{item.ownerEmail || "Unknown account"} · {item.surface}</small></article>)}
-      </section>
+      <FeedbackTriageList feedback={feedback} />
     </section>
   </main>;
 }
