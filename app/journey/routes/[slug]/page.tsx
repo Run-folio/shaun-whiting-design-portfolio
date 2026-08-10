@@ -3,6 +3,7 @@ import { ArrowRight, CalendarDays, MapPin, Route, Sparkles } from "lucide-react"
 import { notFound } from "next/navigation";
 import EasyTNavigation from "../../easyt-navigation";
 import { inspirationByKey } from "@/lib/easyt/inspiration";
+import { routeFamilyByKey } from "@/lib/easyt/route-catalog";
 import styles from "./route-overview.module.css";
 
 const routeStories: Record<string, { eyebrow: string; title: string; summary: string; image: string; duration: string; rhythm: string; bestFor: string; promise: string; notes: string[] }> = {
@@ -12,16 +13,43 @@ const routeStories: Record<string, { eyebrow: string; title: string; summary: st
   "taiwan-rail": { eyebrow: "Asia · rail and night markets", title: "Taiwan by train", summary: "A fast, delicious route south through Taipei, Taichung and Tainan, held together by easy rail legs and nights that stay open for eating.", image: "/journey/taiwan-rail-route.jpg", duration: "8 days", rhythm: "3 bases · rail-first", bestFor: "Night markets, tea hills and low-friction movement", promise: "The rail route keeps transfers simple, so you can arrive, drop your bag and spend your energy on the places that make Taiwan memorable.", notes: ["Taipei starts with neighbourhood energy and room to eat your way around it.", "Taichung breaks the journey with slower streets and green space.", "Tainan is the warm, food-led finish with time to follow your appetite."] },
 };
 
+const fallbackImages: Record<string, string> = {
+  asia: "/journey/taiwan-rail-route.jpg",
+  europe: "/journey/portugal-atlantic-route.jpg",
+  "south-america": "/journey/peru-sacred-valley-route.jpg",
+  "central-america": "/journey/portugal-atlantic-route.jpg",
+  "north-america": "/journey/portugal-atlantic-route.jpg",
+  africa: "/journey/portugal-atlantic-route.jpg",
+};
+
+function storyForRoute(slug: string) {
+  const existing = routeStories[slug];
+  if (existing) return existing;
+  const route = routeFamilyByKey[slug];
+  if (!route) return null;
+  return {
+    eyebrow: `${route.region.replace("-", " ")} · ${route.interests.slice(0, 2).join(" and ")}`,
+    title: route.title,
+    summary: route.bestFor,
+    image: fallbackImages[route.region] ?? "/journey/portugal-atlantic-route.jpg",
+    duration: `${route.suggestedDays.ideal} days`,
+    rhythm: `${route.bases.length} bases · editable pacing`,
+    bestFor: route.bestFor,
+    promise: `A considered first route through ${route.bases.join(", ")}, with practical connections and room to change the shape once you know what matters to you.`,
+    notes: route.stops.map((stop) => stop.reason),
+  };
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const story = routeStories[slug];
+  const story = storyForRoute(slug);
   return { title: story ? `${story.title} · EasyT` : "Route · EasyT" };
 }
 
 export default async function RouteOverviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const seed = inspirationByKey[slug];
-  const story = routeStories[slug];
+  const story = storyForRoute(slug);
   if (!seed || !story) notFound();
 
   return <main className={styles.page}>

@@ -3,8 +3,8 @@ import { recommendRouteFamilies, routeFamilies, type RouteInterest, type RouteRe
 
 export const dynamic = "force-dynamic";
 
-const regions = new Set<RouteRegion>(["asia", "europe", "south-america", "central-america", "africa"]);
-const interests = new Set<RouteInterest>(["food", "culture", "nature", "rail", "coast", "hiking", "wildlife"]);
+const regions = new Set<RouteRegion>(["asia", "europe", "south-america", "central-america", "north-america", "africa"]);
+const interests = new Set<RouteInterest>(["food", "culture", "nature", "rail", "coast", "hiking", "wildlife", "heritage"]);
 
 export function GET(request: Request) {
   const url = new URL(request.url);
