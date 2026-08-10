@@ -199,4 +199,23 @@ export const inspirationSeeds: InspirationSeed[] = [
   },
 ];
 
-export const inspirationByKey = Object.fromEntries(inspirationSeeds.map((seed) => [seed.key, seed]));
+const catalogSeeds: InspirationSeed[] = routeFamilies
+  .filter((route) => !inspirationSeeds.some((seed) => seed.key === route.key))
+  .map((route) => ({
+    key: route.key,
+    title: route.title,
+    origin: route.stops[0]?.name ?? route.bases[0] ?? "",
+    originCoordinates: route.stops[0]?.coordinates ?? [0, 0],
+    stops: route.stops.map((stop, index) => ({
+      id: `catalog-${route.key}-${index}`,
+      name: stop.name,
+      country: stop.country,
+      coordinates: stop.coordinates,
+    })),
+    budget: "mid",
+  }));
+
+export const inspirationByKey = Object.fromEntries(
+  [...inspirationSeeds, ...catalogSeeds].map((seed) => [seed.key, seed]),
+);
+import { routeFamilies } from "./route-catalog";
