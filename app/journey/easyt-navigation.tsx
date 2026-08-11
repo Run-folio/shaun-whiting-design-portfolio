@@ -126,17 +126,17 @@ export default function EasyTNavigation({
       <Link
         className={styles.brand}
         href="/journey/home"
-        aria-label="Morrow home"
+        aria-label="Morrovia home"
       >
         <img
           className={styles.brandMark}
           src="/brand/morrow-route-wordmark.svg"
           alt=""
         />
-        <span className={styles.brandName}>MORROW</span>
+        <span className={styles.brandName}>MORROVIA</span>
       </Link>
 
-      <nav className={styles.actions} aria-label="EasyT navigation">
+      <nav className={styles.actions} aria-label="Morrovia navigation">
         {current !== "new" ? (
           <EasyTLinkButton
             className={styles.primaryLink}
@@ -155,6 +155,15 @@ export default function EasyTNavigation({
           variant="secondary"
         >
           <span>{labels.trips}</span>
+        </EasyTLinkButton>
+        <EasyTLinkButton
+          className={`${styles.quietLink} ${current === "stamped" ? styles.current : ""}`}
+          href="/journey/stamped"
+          size="small"
+          variant="secondary"
+        >
+          <Stamp aria-hidden="true" />
+          <span>{labels.stamped}</span>
         </EasyTLinkButton>
         <EasyTProductTour triggerLabel={labels.tour} />
         {activeAccount ? (

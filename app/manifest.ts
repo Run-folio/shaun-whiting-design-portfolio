@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "EasyT: travel planning that fits you",
-    short_name: "EasyT",
+    name: "Morrovia: travel planning that fits you",
+    short_name: "Morrovia",
     description: "Build, adapt, and keep your trips close at hand.",
     start_url: "/journey/home",
     scope: "/journey/",
