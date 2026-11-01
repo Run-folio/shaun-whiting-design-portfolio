@@ -1,0 +1,52 @@
+/* Selected visual-first case-study layout, shared across the portfolio. */
+.case-detail { --case-gutter: clamp(24px, 6vw, 96px); }
+.case-detail :is(section,header)[id] { scroll-margin-top: 112px; }
+.case-detail-container { width: min(1400px, calc(100% - 2 * var(--case-gutter))); margin-inline: auto; }
+.case-detail-opening { padding-top: 124px; padding-bottom: 24px; }
+.case-detail-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 480; margin-bottom: 24px; color: #525252; }
+.case-detail-back:hover { color: #ff3d8b; }
+.case-detail-eyebrow { font-size: 12px; line-height: 18px; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 10px; }
+.case-detail-opening h1 { font-size: clamp(52px, 5.1vw, 80px); font-weight: 310; line-height: 1.02; letter-spacing: -.055em; }
+.case-detail-product { padding-bottom: 32px; }
+.case-detail figure { border-radius: 24px; overflow: hidden; }
+.case-detail-product figure { background: #fff; }
+.case-detail-product figure > button > img { display: block; width: 100%; height: auto; border-radius: 24px; }
+.case-detail-scope { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; padding-block: 0 24px; }
+.case-detail-summary { margin-top: 0; font-size: 24px; line-height: 1.35; font-weight: 330; letter-spacing: -.025em; max-width: 740px; }
+.case-detail-scope dl { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px; align-content: start; }
+.case-detail #decisions > div > div { grid-template-columns: minmax(0,1fr); gap: 28px; }
+.case-detail #decisions > div > div > div { order: 0; justify-self: stretch; max-width: none; }
+.case-detail #decisions .max-w-xl { max-width: 760px; }
+.case-detail #decisions h2, .case-detail #decisions h2 + div { max-width: 760px; }
+.case-detail #impact h2 { max-width: 440px; }
+.case-detail :is(a,button):focus-visible { outline: 2px solid #ff3d8b; outline-offset: 4px; }
+@media (max-width: 767px) {
+  .case-detail-opening { padding-top: 116px; padding-bottom: 24px; }
+  .case-detail-back { margin-bottom: 20px; }
+  .case-detail-scope { grid-template-columns: minmax(0,1fr); gap: 28px; padding-top: 0; }
+  .case-detail-scope dl { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 24px; }
+  .case-detail-scope dl > div:first-child { grid-column: 1 / -1; }
+  .case-detail-product { padding-bottom: 24px; }
+  .case-detail-summary { font-size: 21px; }
+  .case-detail #impact > div > div > div { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .case-detail #impact > div > div > div > p:last-child { text-align: left; }
+}
+
+/* Lead with each case's sourced primary outcome. */
+.case-detail-outcomes { padding: 28px var(--case-gutter); }
+.case-detail-outcomes-grid { max-width: 1400px; margin-inline: auto; display: grid; grid-template-columns: 1.5fr repeat(3,minmax(0,1fr)); gap: 32px; align-items: center; }
+.case-detail-primary-value { font-size: 64px; font-weight: 340; line-height: 1; letter-spacing: -.04em; }
+.case-detail-primary-label { margin-top: 10px; font-size: 17px; font-weight: 480; line-height: 1.3; }
+.case-detail-outcome-scope { margin-top: 6px; font-size: 13px; font-weight: 330; line-height: 1.4; color: #ffffffb8; }
+.case-detail-supporting-outcome > p:first-child { font-size: 36px; font-weight: 340; line-height: 1; letter-spacing: -.03em; }
+.case-detail-supporting-outcome > p:last-child { max-width: 200px; margin-top: 10px; font-size: 13px; font-weight: 330; line-height: 1.4; color: #ffffffd6; }
+@media (max-width: 767px) {
+  .case-detail-outcomes-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px 18px; align-items: start; }
+  .case-detail-primary-outcome { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0,1fr); gap: 20px; align-items: center; padding-bottom: 24px; border-bottom: 1px solid #ffffff38; }
+  .case-detail-primary-value { font-size: 56px; }
+  .case-detail-primary-label { margin-top: 0; font-size: 16px; }
+  .case-detail-supporting-outcome > p:first-child { font-size: 30px; }
+  .case-detail-supporting-outcome > p:last-child { font-size: 12px; overflow-wrap: anywhere; }
+}
+
+.case-detail figure[data-portrait] { max-width: 420px; margin-inline: auto; }

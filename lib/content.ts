@@ -28,6 +28,21 @@ export const projects = [
     href: "/case-study/rio",
   },
   {
+    title: "Morrovia",
+    industry: "Travel / AI-assisted planning",
+    role: "Product design and AI-assisted building",
+    outcome: "A travel-planning beta focused on editable routes, realistic connections and reliable saved trips.",
+    summary:
+      "Complex trips, made simple: turning a travel idea into an editable journey, with realistic transport and a plan to return to.",
+    outcomes: [
+      { value: "Beta", label: "Product in active validation" },
+      { value: "AI-assisted", label: "Design and build workflow" },
+      { value: "Editable", label: "Traveller stays in control" },
+    ],
+    image: "/morrovia/transport-desktop.webp",
+    href: "/case-study/morrovia",
+  },
+  {
     title: "Amazon Returns Kiosk",
     industry: "Logistics / Retail",
     role: "Founding / Sr Staff Product Designer, end-to-end UX",
@@ -57,21 +72,7 @@ export const projects = [
     image: "/Carrier.png",
     href: "/case-study/returns-platform",
   },
-  {
-    title: "Farfetch Mobile + Store of the Future",
-    industry: "Luxury Ecommerce / AI Retail",
-    role: "Native app UX, interaction design, design systems",
-    outcome: "20M+ app downloads, 4.8 App Store rating, +127% mobile revenue growth.",
-    summary:
-      "Created luxury shopping experiences across iOS, Android and a future retail concept exhibited at the London Design Museum.",
-    outcomes: [
-      { value: "20M+", label: "App downloads" },
-      { value: "4.8", label: "App Store rating" },
-      { value: "+127%", label: "Mobile revenue growth" },
-    ],
-    image: "/farfetch-mobile.png",
-    href: "/case-study/farfetch",
-  },
+
 ];
 
 export const principles = [

@@ -6,6 +6,9 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { caseStudies } from "@/lib/case-studies";
+import { caseStudyOrder } from "@/lib/case-study-presentation";
+
+const navigationCaseStudies = [...caseStudies].sort((a,b) => caseStudyOrder.indexOf(a.slug) - caseStudyOrder.indexOf(b.slug));
 
 const primaryLinks = [
   { label: "Home", href: "/" },
@@ -13,12 +16,6 @@ const primaryLinks = [
   { label: "Beyond Design", href: "/more-about-me" },
   { label: "Contact", href: "/#contact" },
 ];
-
-const journeyPrototype = {
-  label: "EasyT",
-  detail: "Travel companion prototype",
-  href: "/journey",
-};
 
 export function SiteNavigation() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -32,13 +29,6 @@ export function SiteNavigation() {
       case_study_slug: slug,
       case_study_title: title,
       cta_label: ctaLabel,
-    });
-  }
-
-  function handleJourneyPrototypeClick(location: string) {
-    trackEvent("journey_prototype_clicked", {
-      cta_label: journeyPrototype.label,
-      location,
     });
   }
 
@@ -84,7 +74,7 @@ export function SiteNavigation() {
             </Link>
             <div className="invisible absolute left-1/2 top-full w-[340px] -translate-x-1/2 pt-5 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
               <div className="rounded-2xl border border-black/10 bg-white p-3 shadow-[0_18px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#151514]">
-                {caseStudies.map((study) => {
+                {navigationCaseStudies.map((study) => {
                   const primaryIndustry = study.slug === "rio" ? "AI Workflows | Energy" : study.industry.split("/")[0]?.trim() ?? study.industry;
 
                   return (
@@ -101,16 +91,7 @@ export function SiteNavigation() {
                     </Link>
                   );
                 })}
-                <Link
-                  href={journeyPrototype.href}
-                  onClick={() => handleJourneyPrototypeClick("Work dropdown")}
-                  className="block rounded-xl px-4 py-3 transition duration-200 hover:bg-mist hover:text-signal dark:hover:bg-white/10"
-                >
-                  <span className="block text-sm font-[540] tracking-[-0.01em]">{journeyPrototype.label}</span>
-                  <span className="mt-1 block font-mono text-[0.64rem] uppercase tracking-[0.14em] text-black/46 dark:text-white/46">
-                    {journeyPrototype.detail}
-                  </span>
-                </Link>
+
               </div>
             </div>
           </div>
@@ -176,7 +157,7 @@ export function SiteNavigation() {
               Work
             </MobileLink>
             <div className="grid gap-1 border-l border-black/10 pl-4 dark:border-white/10">
-              {caseStudies.map((study) => (
+              {navigationCaseStudies.map((study) => (
                 <MobileLink
                   key={study.slug}
                   href={`/case-study/${study.slug}`}
@@ -189,16 +170,7 @@ export function SiteNavigation() {
                   {study.shortTitle ?? study.title}
                 </MobileLink>
               ))}
-              <MobileLink
-                href={journeyPrototype.href}
-                onClick={() => {
-                  handleJourneyPrototypeClick("Mobile work menu");
-                  closeMenu();
-                }}
-                small
-              >
-                {journeyPrototype.label} <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-black/46 dark:text-white/46">· {journeyPrototype.detail}</span>
-              </MobileLink>
+
             </div>
             {primaryLinks.slice(2).map((item) => (
               <MobileLink key={item.href} href={item.href} onClick={closeMenu}>

@@ -1,3 +1,5 @@
+import { morroviaCaseStudy } from "./morrovia-case-study";
+
 export type CaseStudyCallout = {
   /** Horizontal position as a percentage of the image width (0–100). */
   x: number;
@@ -223,6 +225,7 @@ export const caseStudies: CaseStudy[] = [
       ],
     },
   },
+  morroviaCaseStudy,
   {
     slug: "returns-kiosk",
     shortTitle: "Amazon Returns Kiosk",

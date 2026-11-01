@@ -46,7 +46,7 @@ export function Navigation() {
 
 export function Hero() {
   return (
-    <section className="relative isolate overflow-hidden bg-paper text-ink dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
+    <section id="about" aria-label="About Shaun" className="relative isolate scroll-mt-28 overflow-hidden bg-paper text-ink dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
       <MountainScene />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[30svh] bg-[linear-gradient(to_top,#ffffff_0%,rgba(255,255,255,0.92)_38%,rgba(255,255,255,0.4)_62%,rgba(255,255,255,0)_100%)] dark:bg-[linear-gradient(to_top,#0d0d0c_0%,rgba(13,13,12,0.92)_38%,rgba(13,13,12,0.4)_62%,rgba(13,13,12,0)_100%)]" />
       <div className="relative z-10 px-6 pt-[92px] sm:px-8 lg:pl-36 lg:pr-20 xl:pr-24">
@@ -55,17 +55,21 @@ export function Hero() {
             <p className="mb-6 font-mono text-[0.76rem] uppercase tracking-[0.28em] text-ink dark:text-white sm:mb-8 sm:text-[0.84rem] lg:mb-14 lg:text-[clamp(0.8rem,0.92vw,1.15rem)] lg:tracking-[0.36em]">
               Staff Product Designer
             </p>
-            <h1 className="max-w-[60rem] text-[clamp(3.95rem,18vw,6.6rem)] font-[310] leading-[0.92] tracking-[-0.055em] text-ink dark:text-[#f4f3ef] lg:text-[clamp(5.2rem,10.8vw,12rem)]">
-              <span className="block">Complexity</span>
-              <span className="block">
-                solved<span className="text-signal">.</span>
-              </span>
+            <h1 className="max-w-[60rem] text-[clamp(3rem,12vw,5rem)] font-[310] leading-[1.02] tracking-[-0.055em] text-ink dark:text-[#f4f3ef] lg:text-[clamp(3.5rem,5.4vw,6rem)]">
+              Helping teams make complex products feel simple<span className="text-signal">.</span>
             </h1>
           </div>
           <div className="relative z-20 max-w-[34rem] self-center">
-            <p className="text-[clamp(1.45rem,7vw,2rem)] font-[330] leading-[1.22] tracking-[-0.025em] text-ink dark:text-white lg:text-[clamp(2rem,2.32vw,2.95rem)] lg:leading-[1.24]">
-              Helping teams make complex products feel simple.
+            <p className="text-[clamp(1.25rem,4vw,1.5rem)] font-[330] leading-[1.4] tracking-[-0.025em] text-ink dark:text-white lg:text-[clamp(1.35rem,1.65vw,1.75rem)] lg:leading-[1.4]">
+              I’m a Staff Product Designer with 16 years’ experience across AI, SaaS and enterprise products, from early concepts to platforms used by over 67 million people. I turn complex systems and workflows into intuitive experiences.
             </p>
+            <div className="mt-6 flex flex-wrap gap-2.5" aria-label="Specialisms">
+              {capabilityTags.map((tag) => (
+                <span key={tag} className="rounded-full bg-mist px-3.5 py-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink dark:bg-white/[0.08] dark:text-white">
+                  {tag}
+                </span>
+              ))}
+            </div>
             <div className="mt-8 flex flex-wrap gap-3 sm:mt-10 lg:mt-12">
               <Magnetic strength={0.28}>
                 <TrackedAnchor
@@ -162,46 +166,10 @@ export function SectionHeader({
   );
 }
 
-export function AboutPreview() {
-  return (
-    <section id="about" className="container-pad scroll-mt-28 py-16 sm:py-20 lg:py-24">
-      <Reveal className="grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,1fr)] lg:gap-20">
-        <div>
-          <p className="mb-5 font-mono text-xs uppercase tracking-[0.16em] text-signal">About</p>
-          <h2 className="max-w-3xl text-balance text-5xl font-[340] leading-[1.02] tracking-[-0.035em] text-ink dark:text-white sm:text-6xl lg:text-[5.25rem]">
-            Turning complexity into clarity<span className="text-signal">.</span>
-          </h2>
-        </div>
-        <div className="max-w-3xl space-y-8 pt-1 text-xl font-[330] leading-[1.38] tracking-[-0.015em] text-ink dark:text-white sm:text-2xl lg:text-[1.68rem]">
-          <p>
-            I&apos;m a Staff Product Designer with 16 years&apos; experience designing AI, SaaS and enterprise products, from zero-to-one concepts to platforms used by more than 67 million people. I specialise in untangling complex systems, workflows and operational software so teams can build products that feel simple, capable and intuitive.
-          </p>
-        </div>
-      </Reveal>
-      <Reveal delay={0.08} className="mt-10 flex flex-wrap gap-2.5 sm:mt-12">
-        {capabilityTags.map((tag) => (
-          <span key={tag} className="rounded-full bg-mist px-3.5 py-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink dark:bg-white/[0.08] dark:text-white">
-            {tag}
-          </span>
-        ))}
-      </Reveal>
-    </section>
-  );
-}
-
 export function FeaturedWork() {
   return (
-    <section id="work" className="scroll-mt-28 border-y border-black/10 bg-paper py-16 text-ink dark:border-white/10 dark:bg-[#0d0d0c] dark:text-[#f4f3ef] sm:py-24">
+    <section id="work" aria-label="Selected work" className="scroll-mt-28 border-y border-black/10 bg-paper py-16 text-ink dark:border-white/10 dark:bg-[#0d0d0c] dark:text-[#f4f3ef] sm:py-24">
       <div className="container-pad">
-        <Reveal className="mb-16 max-w-5xl">
-          <p className="mb-7 font-mono text-xs uppercase tracking-[0.16em] text-signal">Selected work</p>
-          <h2 className="max-w-5xl text-balance text-5xl font-[340] leading-[1.02] tracking-[-0.035em] sm:text-6xl lg:text-[5.25rem]">
-            Complex problems, measurable outcomes<span className="text-signal">.</span>
-          </h2>
-          <p className="mt-8 max-w-4xl text-xl font-[330] leading-[1.4] tracking-[-0.01em] text-black/72 dark:text-white/72 sm:text-2xl">
-            A closer look at the systems, product decisions and measurable outcomes behind the work.
-          </p>
-        </Reveal>
         <div className="grid gap-12 lg:grid-cols-[220px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
             <div className="sticky top-28 space-y-5 pt-2">

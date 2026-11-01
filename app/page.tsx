@@ -1,25 +1,12 @@
-import {
-  AboutPreview,
-  Contact,
-  FeaturedWork,
-  Footer,
-  Hero,
-  Navigation,
-  RunningAdventure,
-} from "@/components/ui";
+import { Footer } from "@/components/ui";
+import { AlternativeNavigation } from "@/components/alternative-navigation";
+import { AlternativeHome, AlternativeContact } from "@/components/home-alternative";
+import "./home-alt/home-alt.css";
 
 export default function Home() {
-  return (
-    <>
-      <Navigation />
-      <main id="main">
-        <Hero />
-        <AboutPreview />
-        <FeaturedWork />
-        <RunningAdventure />
-        <Contact />
-      </main>
-      <Footer />
-    </>
-  );
+  return <div className="alternative-page">
+    <AlternativeNavigation />
+    <main id="main" className="home-alternative"><AlternativeHome /><AlternativeContact /></main>
+    <Footer />
+  </div>;
 }
