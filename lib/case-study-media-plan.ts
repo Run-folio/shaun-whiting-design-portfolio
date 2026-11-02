@@ -23,9 +23,7 @@ export function caseStudyMediaPlan(study: CaseStudy, hero: CaseStudyMedia) {
       if (process) process.media = process.media?.map(item => ({ ...item, caption: item.src.includes("store4_en3nyf") ? "Store dispatch states: open totes, ready to dispatch and dispatched." : item.src.includes("portal5") ? "Merchant configuration: rule priorities, tags and status." : "Carrier selection rules and the default carrier." }));
       break;
     case "morrovia":
-      decisions[0].media = [{ src: "/morrovia/itinerary-workspace.png", alt: "Sample Cusco itinerary populated with activities and day parts", caption: "Existing product-tour capture of a populated Cusco itinerary. This is demonstration data, not a customer trip or evidence of newly released mobile work.", wide: true }];
       decisions[1].media = study.overviewMedia?.map(item => ({ ...item, wide: true }));
-      if (process) process.media = undefined; // The desktop map already shows the populated activity plan.
       break;
     case "returns-kiosk":
       decisions[0].comparison = undefined;

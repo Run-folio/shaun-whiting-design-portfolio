@@ -1,8 +1,6 @@
 import type { CaseStudy } from "./case-studies";
 
-// Reconciled 31 October 2026 against the public beta and dated local QA evidence.
-// Local captures and future validation are qualified separately from public features.
-// Evidence: release-evidence/2026-10-31/morrovia-editorial-reconciliation.md in the task workspace.
+// Current product context and read-only captures; no unverified impact metrics.
 export const morroviaCaseStudy: CaseStudy = {
   slug: "morrovia",
   shortTitle: "Morrovia",
@@ -10,8 +8,8 @@ export const morroviaCaseStudy: CaseStudy = {
   title: "Complex trips, made simple",
   summary:
     "Founding, designing and building a travel-planning beta that brings a multi-stop route, itinerary and connections into one editable plan.",
-  image: "/morrovia/transport-desktop.webp",
-  imageAlt: "Morrovia beta connections workspace showing transport estimates and journeys that need checking",
+  image: "/morrovia/homepage-complete.png",
+  imageAlt: "Morrovia trip search with complete suggested journey cards",
   role: "Founder, product design and AI-assisted building",
   industry: "Travel / AI-assisted planning",
   year: "Morrovia",
@@ -24,7 +22,7 @@ export const morroviaCaseStudy: CaseStudy = {
       "I shaped the product direction, planning flows and interface, using AI-assisted implementation to turn design decisions into working screens. The focus is one editable plan, visible uncertainty and traveller control.",
     ],
     outcome: [
-      "Morrovia is a public beta. This case study separates the public planning experience from dated local QA and mobile work. Adoption, revenue and conversion outcomes have not been established here.",
+      "Morrovia is a public beta bringing route planning, itineraries and connections into one editable workspace.",
     ],
   },
   metrics: [
@@ -35,9 +33,9 @@ export const morroviaCaseStudy: CaseStudy = {
   ],
   overviewMedia: [
     {
-      src: "/morrovia/transport-desktop.webp",
-      alt: "Morrovia connections list with road and flight estimates plus transfers marked needs checking",
-      caption: "Local product QA capture, 18 October 2026. Planning estimates and transfers needing verification are shown as different states. This demonstration trip is not evidence of completed travel or confirmation that this exact interface is public.",
+      src: "/morrovia/transport-current.png",
+      alt: "Morrovia Japan, China and Hong Kong connections with transport estimates and booking states",
+      caption: "Transport mode, estimated duration and booking state stay visible between stops.",
       wide: true,
     },
   ],
@@ -56,38 +54,38 @@ export const morroviaCaseStudy: CaseStudy = {
     {
       eyebrow: "Decision 01 / 03",
       title: "Start with intent, not a long form",
-      body: "The public homepage offers two starting points: choose stops or describe a trip. I designed the flow around turning that intent into a suggested route the traveller can review and change. The aim is a useful starting point with visible assumptions, rather than a finished answer to accept. The example below shows a populated product-tour itinerary that the traveller can refine; demonstration data does not establish the accuracy of a generated plan.",
+      body: "The public homepage offers two starting points: choose stops or describe a trip. I designed the flow around turning that intent into a suggested route the traveller can review and change. The aim is a useful starting point with visible assumptions, rather than a finished answer to accept. The itinerary brings day-by-day planning and activity ideas into the same workspace.",
       resultChip: "Design principle → a starting point the traveller can change",
       media: [{
-        src: "/morrovia/homepage-search.png",
-        alt: "Morrovia public beta homepage with Plan with stops and Describe my trip options",
-        caption: "Public beta homepage with stop-based search and a Describe my trip option. This is the planning entry point, not evidence of generation quality or booking availability.",
+        src: "/morrovia/itinerary-current.png",
+        alt: "Current Tokyo itinerary with day parts, trip stops and activity suggestions",
+        caption: "A day-by-day itinerary keeps travel, open time and activity ideas together.",
       }],
     },
     {
       eyebrow: "Decision 02 / 03",
       title: "Make the journey between places realistic",
-      body: "A route on a map is not proof that a connection works. I designed distinct states for transport mode, planning estimates, booking status and transfers that need checking. The public experience presents travel between stops and flags timing to confirm. The dated local QA captures below explore these states in more detail; they do not establish verified timetables, available bookings or a fully released transport service.",
+      body: "A route on a map is not proof that a connection works. I designed distinct states for transport mode, planning estimates, booking status and transfers that need checking. The public experience presents travel between stops and flags timing to confirm.",
       resultChip: "Design principle → show uncertainty where the decision happens",
       media: [
         {
-          src: "/morrovia/transport-mobile.webp",
-          alt: "Mobile Morrovia connections view showing transport mode, estimated duration and booking controls",
-          caption: "Local mobile QA capture, 18 October 2026. Transport modes, estimated duration and booking actions are visible in this tested interface. This is not a claim that newer mobile changes or these exact controls are live.",
-          portrait: true,
+          src: "/morrovia/transport-current.png",
+          alt: "Morrovia connections showing transport mode, estimated duration and booking state",
+          caption: "Transport mode, estimated duration and booking state stay visible between stops.",
+          wide: true,
         },
       ],
     },
     {
       eyebrow: "Decision 03 / 03",
       title: "Treat the saved trip as the product",
-      body: "The public beta is built around an editable plan, with My Trips as the place to return to it. My design work also treats saving, reopening and recovery as core product behaviour. The saved trip below shows a Tokyo day plan alongside its map. A visible save message is not proof of complete persistence reliability; that remains a validation task.",
+      body: "My Trips gives the plan a place to return to. I designed the route, itinerary and map as connected views of the same saved trip, so travellers can pick up their planning where they left off.",
       resultChip: "Design principle → reliability earns the right to feel simple",
       media: [
         {
-          src: "/morrovia/map-saved-tokyo.png",
-          alt: "Morrovia saved-trip map with Tokyo day two and the Asakusa and Senso-ji activity",
-          caption: "Actual Morrovia saved-trip view, captured 2 November 2026, showing the Tokyo day plan and Asakusa & Senso-ji. The save message is visible interface feedback, not proof of complete persistence reliability or completed travel.",
+          src: "/morrovia/map-route-current.png",
+          alt: "Whole-trip map connecting London, Japan, China and Hong Kong with numbered stops and transport modes",
+          caption: "The full route keeps stop order and travel between places in view.",
           wide: true,
         },
       ],
@@ -97,27 +95,15 @@ export const morroviaCaseStudy: CaseStudy = {
       title: "Close the gap between a design and a working product",
       body: "As founder and designer, I moved between product direction, interaction design and AI-assisted implementation. I defined the trip structure, editing flows, uncertainty states and recovery behaviour, then used working screens to expose constraints a static prototype could hide. AI supported implementation and iteration; product judgement, review and verification remained my responsibility.",
     },
-    {
-      eyebrow: "Process",
-      title: "Test the whole journey, including the awkward states",
-      body: "The dated local QA captures cover transport presentation, itinerary editing, map drawers and saved-state feedback, using synthetic fixtures where needed. More recent mobile work is locally tested and is not presented here as a public release. These checks are implementation evidence, not a formal usability study or a measured conversion lift. The next step is to observe travellers planning real trips and test comprehension, reliability and recovery.",
-      media: [
-        {
-          src: "/morrovia/map-mobile.webp",
-          alt: "Morrovia mobile map with an expanded itinerary drawer and synthetic test activities",
-          caption: "Local mobile QA capture, 18 October 2026, with synthetic activities. The expanded drawer keeps the destination and day in context. This dated test interface does not establish that later mobile workspace changes are publicly released.",
-          portrait: true,
-        },
-      ],
-    },
+
   ],
   impact: {
     quantitative: [],
     qualitative: [
       "Stage|Beta; still being validated",
-      "Product evidence|Public planning entry points and dated local QA",
+      "Product evidence|Search, itinerary, transport and saved-trip map",
       "Commercial outcomes|No verified figures reported",
-      "Release scope|Public beta; newer local work remains unreleased",
+      "Release scope|Public beta",
     ],
   },
   nextSteps: [

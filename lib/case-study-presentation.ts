@@ -5,7 +5,7 @@ export const caseStudyOrder = ["rio", "returns-platform", "morrovia", "returns-k
 // Presentation choices use existing case evidence; underlying case data stays intact.
 export function caseStudyPresentation(study: CaseStudy) {
   const hero = study.slug === "rio" ? study.heroTestMedia!.desktop
-    : study.slug === "morrovia" ? { src: "/morrovia/homepage-search.png", alt: "Morrovia homepage with multi-stop trip search", caption: "Actual Morrovia beta homepage with multi-stop search and the option to describe a trip." }
+    : study.slug === "morrovia" ? { src: "/morrovia/homepage-complete.png", alt: "Morrovia trip search with complete suggested journey cards", caption: "Choose stops or describe a trip, with suggested journeys to explore." }
     : study.slug === "farfetch" ? study.postDecisionsShowcase!.media
     : study.overviewMedia![0];
   const intro = study.slug === "rio"

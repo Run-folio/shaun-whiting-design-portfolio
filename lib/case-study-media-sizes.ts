@@ -1,5 +1,9 @@
 // Existing product assets: measured intrinsic dimensions, no cropped/stretched UI.
 export const caseStudyMediaSizes: Record<string, {width:number; height:number}> = {
+  "/morrovia/homepage-complete.png": { width: 1800, height: 930 },
+  "/morrovia/itinerary-current.png": { width: 1800, height: 1070 },
+  "/morrovia/transport-current.png": { width: 1800, height: 959 },
+  "/morrovia/map-route-current.png": { width: 2000, height: 1005 },
   "/morrovia/map-saved-tokyo.png": { width: 1600, height: 804 },
   "/morrovia/itinerary-workspace.png": { width: 1600, height: 1000 },
   "/rio/rio-field-ticket.png": {
