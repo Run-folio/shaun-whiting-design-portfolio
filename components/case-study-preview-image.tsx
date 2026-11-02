@@ -7,7 +7,7 @@ import { caseStudyMediaSizes } from "@/lib/case-study-media-sizes";
 import type { CaseStudyMedia } from "@/lib/case-studies";
 
 // Isolated preview adapter: retain the existing gallery while containing focus.
-export function CaseStudyPreviewImage({ item, gallery, hero = false }: { item: CaseStudyMedia; gallery: CaseStudyMedia[]; hero?: boolean }) {
+export function CaseStudyPreviewImage({ item, gallery, hero = false, textOnly }: { item: CaseStudyMedia; gallery: CaseStudyMedia[]; hero?: boolean; textOnly?: string }) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scope = useRef<HTMLDivElement>(null);
   const open = selectedIndex !== null;
@@ -31,8 +31,8 @@ export function CaseStudyPreviewImage({ item, gallery, hero = false }: { item: C
     return () => { document.removeEventListener("keydown", trap, true); document.removeEventListener("focusin", contain); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, [open]);
   return <>
-    <button type="button" onClick={() => setSelectedIndex(itemIndex)} className="group block w-full cursor-zoom-in text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-inset" aria-label={`Open ${item.alt ?? item.caption}`}>
-      <Image src={item.src} alt={item.alt ?? item.caption} width={caseStudyMediaSizes[item.src]?.width ?? 1800} height={caseStudyMediaSizes[item.src]?.height ?? 1100} priority={hero} sizes={hero ? "(min-width: 1600px) 1400px, (min-width: 1024px) 88vw, 94vw" : "100vw"} className="h-auto w-full transition duration-300 group-hover:scale-[1.01]" />
+    <button type="button" onClick={() => setSelectedIndex(itemIndex)} className={`group cursor-zoom-in text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-inset ${textOnly ? "underline underline-offset-4" : "block w-full"}`} aria-label={textOnly ?? `Open ${item.alt ?? item.caption}`}>
+      {textOnly ?? <Image src={item.src} alt={item.alt ?? item.caption} width={caseStudyMediaSizes[item.src]?.width ?? 1800} height={caseStudyMediaSizes[item.src]?.height ?? 1100} priority={hero} sizes={hero ? "(min-width: 1600px) 1400px, (min-width: 1024px) 88vw, 94vw" : "100vw"} className="h-auto w-full transition duration-300 group-hover:scale-[1.01]" />}
     </button>
     {selectedIndex !== null ? <div ref={scope}><ImageLightbox images={images} selectedIndex={selectedIndex} onClose={() => setSelectedIndex(null)} onSelect={setSelectedIndex} /></div> : null}
   </>;

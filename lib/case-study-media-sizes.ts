@@ -1,5 +1,6 @@
 // Existing product assets: measured intrinsic dimensions, no cropped/stretched UI.
 export const caseStudyMediaSizes: Record<string, {width:number; height:number}> = {
+  "/morrovia/map-saved-tokyo.png": { width: 1600, height: 804 },
   "/morrovia/itinerary-workspace.png": { width: 1600, height: 1000 },
   "/rio/rio-field-ticket.png": {
     "width": 1962,

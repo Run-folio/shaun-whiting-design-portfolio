@@ -81,13 +81,13 @@ export const morroviaCaseStudy: CaseStudy = {
     {
       eyebrow: "Decision 03 / 03",
       title: "Treat the saved trip as the product",
-      body: "The public beta is built around an editable plan, with My Trips as the place to return to it. My design work also treats saving, reopening and recovery as core product behaviour. The local QA capture below explores that workflow with synthetic activities. A visible save message is not proof of complete persistence reliability; that remains a validation task.",
+      body: "The public beta is built around an editable plan, with My Trips as the place to return to it. My design work also treats saving, reopening and recovery as core product behaviour. The saved trip below shows a Tokyo day plan alongside its map. A visible save message is not proof of complete persistence reliability; that remains a validation task.",
       resultChip: "Design principle → reliability earns the right to feel simple",
       media: [
         {
-          src: "/morrovia/map-desktop.webp",
-          alt: "Morrovia desktop map beside a day-by-day itinerary and saved-to-account feedback",
-          caption: "Local desktop QA capture, 18 October 2026, with synthetic itinerary activities. The map and daily plan share a workspace; the save message is a visible test state, not proof of complete persistence reliability or a newly shipped workspace.",
+          src: "/morrovia/map-saved-tokyo.png",
+          alt: "Morrovia saved-trip map with Tokyo day two and the Asakusa and Senso-ji activity",
+          caption: "Actual Morrovia saved-trip view, captured 2 November 2026, showing the Tokyo day plan and Asakusa & Senso-ji. The save message is visible interface feedback, not proof of complete persistence reliability or completed travel.",
           wide: true,
         },
       ],

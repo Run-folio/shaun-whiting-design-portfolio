@@ -12,13 +12,15 @@ export function caseStudyMediaPlan(study: CaseStudy, hero: CaseStudyMedia) {
   switch (study.slug) {
     case "rio":
       walkthrough = study.overviewMedia?.[0]; // The motion prototype adds a distinct explanation.
-      decisions[0].media = [{ src: "/rio/rio-field-ticket.png", alt: "Redacted field-ticket example with labour and equipment line items", caption: "A redacted field-ticket example: the labour and equipment lines that need to become structured data.", wide: true }];
-      if (process) process.media = process.media?.slice(0, 1); // One clear approval-flow diagram.
+      decisions[0].media = undefined; // Keep the extraction explanation and result without the field-ticket image.
       break;
     case "returns-platform":
-      decisions[0].media = undefined; // The admin list does not explain merchant-branded initiation.
-      decisions[2].media = [{ ...study.postDecisionsShowcase!.media, wide: true }];
-      if (process) process.media = process.media?.filter(item => item.src.includes("store4_en3nyf")).map(item => ({ ...item, caption: "Store dispatch states: open totes, ready to dispatch and dispatched." }));
+      decisions[0].media = decisions[0].media?.map(item => ({ ...item, alt: "Merchant returns queue with statuses and exceptions", caption: "The merchant returns queue showing return status and exceptions." }));
+      decisions[2].media = [
+        { ...study.postDecisionsShowcase!.media, wide: true },
+        ...decisions[2].media!.map(item => ({ ...item, alt: "Configured carrier methods for return routing", caption: "Carrier methods configured for return routing." })),
+      ];
+      if (process) process.media = process.media?.map(item => ({ ...item, caption: item.src.includes("store4_en3nyf") ? "Store dispatch states: open totes, ready to dispatch and dispatched." : item.src.includes("portal5") ? "Merchant configuration: rule priorities, tags and status." : "Carrier selection rules and the default carrier." }));
       break;
     case "morrovia":
       decisions[0].media = [{ src: "/morrovia/itinerary-workspace.png", alt: "Sample Cusco itinerary populated with activities and day parts", caption: "Existing product-tour capture of a populated Cusco itinerary. This is demonstration data, not a customer trip or evidence of newly released mobile work.", wide: true }];
@@ -26,17 +28,27 @@ export function caseStudyMediaPlan(study: CaseStudy, hero: CaseStudyMedia) {
       if (process) process.media = undefined; // The desktop map already shows the populated activity plan.
       break;
     case "returns-kiosk":
-      decisions[0].media = undefined;
       decisions[0].comparison = undefined;
-      decisions[2].comparison = undefined; // Source pair is physical kiosk photos, not an interface before/after.
-      if (process) process.media = process.media?.filter(item => !item.src.includes("amazoncase4_w6zzqt"));
+      decisions[0].media = decisions[0].media?.map(item => ({ ...item, caption: "The scan prompt, parcel constraints and scan-success confirmation." }));
+      if (decisions[2].comparison) decisions[2].comparison = {
+        ...decisions[2].comparison,
+        before: { ...decisions[2].comparison.before, alt: "Amazon return kiosks installed in a grocery store", caption: "Physical kiosk installation in a grocery store." },
+        after: { ...decisions[2].comparison.after, alt: "Amazon return kiosk beside a parcel hatch in a retail store", caption: "Physical kiosk and parcel hatch in a retail store." },
+        beforeLabel: "Grocery store",
+        afterLabel: "Retail store",
+        label: "Slide to explore two physical kiosk installations and their retail context.",
+      };
       break;
     case "farfetch": {
       const retail = sections.find(section => section.eyebrow === "Retail innovation");
       const designs = sections.find(section => section.eyebrow === "Key designs");
       const native = sections.find(section => section.eyebrow === "Design");
       const mirror = native?.media?.[0];
-      if (native) native.media = undefined;
+      if (native) native.media = [
+        { ...study.overviewMedia![0], alt: "Farfetch iOS discovery, product and shopping-bag screens", caption: "The iOS shopping journey, from discovery to the shopping bag." },
+        { ...study.overviewMedia![1], alt: "Farfetch Android discovery and product-detail screens", caption: "Android discovery, navigation and product-detail screens." },
+        { ...study.challengeMedia![0], alt: "Farfetch Android basket, delivery, payment and confirmation screens", caption: "The Android checkout journey, from basket to order confirmation." },
+      ];
       if (retail) retail.media = [{ ...study.challengeMedia![1], alt: "Farfetch Store of the Future mirror installed in a retail setting", caption: "The physical fitting-room mirror installation for Store of the Future.", wide: true }];
       if (designs && mirror) designs.media = [{ ...mirror, alt: "Farfetch interactive mirror clothing-selection interface", caption: "The mirror interface showing clothing selection and related items.", wide: true }];
       break;

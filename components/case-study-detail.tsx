@@ -267,7 +267,7 @@ function DecisionSection({
     resultChip?: string;
     bullets?: string[];
     media?: CaseStudyMedia[];
-    comparison?: { before: CaseStudyMedia; after: CaseStudyMedia; label?: string };
+    comparison?: { before: CaseStudyMedia; after: CaseStudyMedia; label?: string; beforeLabel?: string; afterLabel?: string };
   };
   index: number;
   gallery: CaseStudyMedia[];
@@ -297,7 +297,7 @@ function DecisionSection({
   );
   const visual = section.comparison || media?.length ? (
     <div className="space-y-6">
-      {section.comparison ? <BeforeAfterSlider before={section.comparison.before} after={section.comparison.after} label={section.comparison.label} /> : null}
+      {section.comparison ? <BeforeAfterSlider before={section.comparison.before} after={section.comparison.after} label={section.comparison.label} beforeLabel={section.comparison.beforeLabel} afterLabel={section.comparison.afterLabel} gallery={gallery} /> : null}
       {media?.length ? <MediaGrid items={media} gallery={gallery} /> : null}
     </div>
   ) : null;

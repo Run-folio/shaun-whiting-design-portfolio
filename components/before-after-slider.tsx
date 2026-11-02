@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useId, useState } from "react";
 import type { CaseStudyMedia } from "@/lib/case-studies";
+import { CaseStudyPreviewImage } from "./case-study-preview-image";
 
 /**
  * Draggable / keyboard-operable before-after comparison. A native range
@@ -14,10 +15,16 @@ export function BeforeAfterSlider({
   before,
   after,
   label,
+  beforeLabel = "Before",
+  afterLabel = "After",
+  gallery,
 }: {
   before: CaseStudyMedia;
   after: CaseStudyMedia;
   label?: string;
+  beforeLabel?: string;
+  afterLabel?: string;
+  gallery?: CaseStudyMedia[];
 }) {
   const [value, setValue] = useState(50);
   const id = useId();
@@ -32,10 +39,10 @@ export function BeforeAfterSlider({
         </div>
 
         <span className="pointer-events-none absolute left-4 top-4 z-10 rounded-full bg-black/55 px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-white backdrop-blur-sm">
-          Before
+          {beforeLabel}
         </span>
         <span className="pointer-events-none absolute right-4 top-4 z-10 rounded-full bg-black/55 px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-white backdrop-blur-sm">
-          After
+          {afterLabel}
         </span>
 
         <input
@@ -62,6 +69,7 @@ export function BeforeAfterSlider({
       </div>
       <figcaption className="border-t border-black/10 px-5 py-4 text-sm font-[330] leading-[1.45] text-black/62 dark:border-white/10 dark:text-white/62">
         {label ?? `${before.caption} → ${after.caption}`}
+        {gallery ? <div className="mt-3"><CaseStudyPreviewImage item={before} gallery={gallery} textOnly="Enlarge installation photos" /></div> : null}
       </figcaption>
     </figure>
   );

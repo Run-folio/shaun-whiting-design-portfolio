@@ -69,7 +69,7 @@ export type CaseStudy = {
     bullets?: string[];
     resultChip?: string;
     media?: CaseStudyMedia[];
-    comparison?: { before: CaseStudyMedia; after: CaseStudyMedia; label?: string };
+    comparison?: { before: CaseStudyMedia; after: CaseStudyMedia; label?: string; beforeLabel?: string; afterLabel?: string };
   }>;
   impact: {
     quantitative: string[];
