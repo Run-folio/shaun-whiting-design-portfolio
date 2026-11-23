@@ -1,5 +1,6 @@
 "use client";
 
+import "./portfolio-navigation.css";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Menu, X } from "lucide-react";
@@ -65,7 +66,7 @@ export function AlternativeNavigation() {
           
           <div className="group relative">
             <Link
-              href="#work"
+              href="/#work"
               className="alt-nav-work alt-nav-pill inline-flex items-center gap-1 rounded-full px-2 py-2 transition duration-200 hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:focus-visible:ring-offset-[#0d0d0c]"
             >
               Work <ChevronDown viewBox="6 9 12 6" size={16} strokeWidth={1.8} aria-hidden="true" />
@@ -146,7 +147,7 @@ export function AlternativeNavigation() {
         <div className="border-t border-hairline bg-white px-6 py-5 shadow-[0_18px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#0d0d0c] lg:hidden">
           <div className="grid gap-2">
             
-            <MobileLink href="#work" onClick={closeMenu}>
+            <MobileLink href="/#work" onClick={closeMenu}>
               Work
             </MobileLink>
             <div className="grid gap-1 border-l border-black/10 pl-4 dark:border-white/10">

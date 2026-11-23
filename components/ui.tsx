@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { CountUp, Magnetic, Reveal, StaggerGroup, StaggerItem } from "./motion";
 import { MountainScene } from "./mountain-scene";
-import { SiteNavigation } from "./site-navigation";
+import { AlternativeNavigation } from "./alternative-navigation";
 import { TrackedAnchor, TrackedLink } from "./tracked-link";
 import { journey, principles, projects, testimonials } from "@/lib/content";
 
@@ -41,7 +41,7 @@ const principleIcons = [Route, Network, Gauge, Handshake, Repeat2];
 const journeyIcons = [Compass, Layers3, Store, Mountain];
 
 export function Navigation() {
-  return <SiteNavigation />;
+  return <AlternativeNavigation />;
 }
 
 export function Hero() {

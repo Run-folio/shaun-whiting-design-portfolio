@@ -1,0 +1,25 @@
+@font-face {
+  font-family: 'Portfolio Geist Mono';
+  src: url('/fonts/GeistMono-variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face { font-family: 'Portfolio SF Pro'; src: local('.SFNS-Regular'); font-weight: 1 1000; font-style: normal; }
+.alt-navigation { font-family: 'Portfolio SF Pro', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.alt-navigation .font-mono { font-family: 'Portfolio Geist Mono', monospace; }
+.alt-navigation :is(a, button, [tabindex]):focus-visible { outline: 2px solid #ff3d8b; outline-offset: 4px; }
+@media (min-width: 1024px) {
+  .alt-navigation nav > a { margin-right: auto; }
+  .alt-navigation nav { column-gap: 20px; }
+  .alt-nav-projects { gap: 20px; margin-right: 0; }
+  .alt-nav-actions { margin-left: 0; gap: 20px; }
+  .alt-navigation .alt-nav-pill { display: inline-flex; min-height: 44px; justify-content: center; align-items: center; border: 1px solid #000; background: #fff; padding: 0 20px; font-size: 15px; font-weight: 480; line-height: 22.5px; letter-spacing: -.384375px; }
+  .alt-navigation .alt-nav-work { width: 96px; gap: 8px; }
+  .alt-nav-work > svg { width: 8px; height: 4px; overflow: visible; }
+  .alt-navigation .alt-nav-beyond { width: 128px; white-space: nowrap; }
+  .alt-nav-actions > a { font-size: 15px; line-height: 22.5px; letter-spacing: -.384375px; }
+  .alt-nav-actions > a:first-child { width: 97px; }
+  .alt-nav-actions > a:nth-child(2) { width: 95px; }
+}
+@media (max-width: 1199px) and (min-width: 1024px) { .alt-navigation nav { padding-inline: 32px; } }
