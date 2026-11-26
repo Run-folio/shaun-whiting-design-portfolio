@@ -11,6 +11,13 @@ const cases = [
 // Visual evidence in reading and gallery order, captured from the rendered
 // pre-redesign portfolio (62c9ad4a), minus the retired Amazon prototype.
 const cloudinary = "https://res.cloudinary.com/dbt3wkwa3/image/upload/f_auto,q_auto/";
+const expectedHeader = {
+  "returns-platform": ["Founding Product Designer", "Doddle / Blue Yonder", "B2B SaaS / Reverse Logistics"],
+  "rio": ["Staff Product Designer", "Convergent IS", "Energy / AI Workflows"],
+  "morrovia": ["Founder &amp; Product Designer", "Independent side project", "Travel / AI-assisted planning"],
+  "returns-kiosk": ["Founding / Senior Staff Product Designer", "Doddle / Blue Yonder", "Logistics / Retail"],
+  "farfetch": ["Senior Product Designer (contract)", "iOS &amp; Android", "Luxury Ecommerce / AI Retail"],
+};
 const expectedMedia = {
   "returns-platform": [
     ["img", "/RP1.png"],
@@ -72,6 +79,13 @@ for (const [slug,title,...evidence] of cases) {
   const article = html.match(/<article\b[^>]*>[\s\S]*?<\/article>/)?.[0] || "";
   assert.doesNotMatch(article, /aria-label="Breadcrumb"/i, slug);
   assert.ok(article.includes(title), slug + ": case title");
+  const header = article.match(/<header\b[^>]*id="overview"[^>]*>[\s\S]*?<\/header>/)?.[0] ?? "";
+  const scope = header.match(/<dl\b[^>]*id="scope"[^>]*>[\s\S]*?<\/dl>/)?.[0] ?? "";
+  assert.ok(scope && header.indexOf(scope) < header.indexOf("<h1>"), slug + ": icon metadata belongs above the single title");
+  assert.equal([...header.matchAll(/<h1>/g)].length, 1);
+  assert.doesNotMatch(header, /case-detail-eyebrow/, slug + ": no duplicate project categories");
+  assert.equal([...scope.matchAll(/<svg\b/g)].length, 3, slug + ": retain three icons");
+  assert.deepEqual([...scope.matchAll(/<dd>(.*?)<\/dd>/g)].map(m => m[1]), expectedHeader[slug]);
   for (const value of evidence) assert.ok(article.includes(value), slug + ": " + value);
   for (const id of ["overview","scope","artifact","context","decisions","impact"]) assert.ok(article.includes('id="'+id+'"'), slug+": preserved anchor "+id);
   for (const id of ["context","decisions","impact"]) assert.ok(article.includes('href="#'+id+'"'), slug+": section jump "+id);

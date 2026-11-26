@@ -7,11 +7,12 @@ import { Footer, Navigation } from "@/components/ui";
 import { TrackedLink } from "@/components/tracked-link";
 import { ViewportVideo } from "@/components/viewport-video";
 import type { CaseStudy, CaseStudyMedia } from "@/lib/case-studies";
-import { caseStudyPresentation, caseStudyEyebrow, presentCaseStudyMedia } from "@/lib/case-study-presentation";
+import { caseStudyPresentation, caseStudyHeader, presentCaseStudyMedia } from "@/lib/case-study-presentation";
 import { caseStudyMediaPlan } from "@/lib/case-study-media-plan";
 
 export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextStudy: CaseStudy }) {
   const { hero: heroMedia, intro, outcomeScope } = caseStudyPresentation(study);
+  const { role, affiliation, affiliationLabel } = caseStudyHeader(study);
   const displayTitle = study.slug === "returns-platform" ? "Doddle Returns Platform" : study.shortTitle ?? study.title;
   const isMorrovia = study.slug === "morrovia";
   const usesStructuredDecisions = isMorrovia || study.slug === "rio" || study.slug === "returns-kiosk" || study.slug === "returns-platform";
@@ -37,14 +38,13 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
         <article>
           <header id="overview" className="case-detail-opening">
             <div className="case-detail-container">
-              <p className="case-detail-eyebrow">{caseStudyEyebrow(study)}</p>
+              <dl id="scope" className="case-detail-scope">
+                <Meta label="Role" icon={UserRound} value={role} />
+                <Meta label={affiliationLabel} icon={Layers3} value={affiliation} />
+                <Meta label="Industry" icon={UsersRound} value={study.industry} />
+              </dl>
               <h1>{displayTitle}<span>.</span></h1>
               <p className="case-detail-summary">{intro}</p>
-              <dl id="scope" className="case-detail-scope">
-                <Meta label="Role" icon={UserRound} value={study.slug === "returns-platform" ? "Founding Product Designer · " + study.role : study.role} />
-                <Meta label="Company" icon={Layers3} value={study.duration ?? study.year} />
-                <Meta label={study.team ? "Context" : "Industry"} icon={UsersRound} value={study.team ?? study.industry} />
-              </dl>
             </div>
           </header>
           <StatBand metrics={study.metrics} scope={outcomeScope} title={displayTitle} qualitative={isMorrovia} />

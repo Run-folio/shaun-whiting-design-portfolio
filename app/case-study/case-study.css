@@ -15,22 +15,30 @@
 .case-detail ::selection { background:var(--case-aqua); color:var(--case-navy); }
 .case-detail [id] { scroll-margin-top:6rem; }
 .case-detail-container { width:min(100%,106rem); padding-inline:var(--case-gutter); margin-inline:auto; }
-.case-detail-opening { position:relative; isolation:isolate; overflow:hidden; background:var(--case-navy); color:var(--case-paper); padding-block:clamp(1.1rem,1.7vw,1.9rem) 1.4rem; }
+.case-detail-opening {
+  position:relative; isolation:isolate; overflow:hidden; background:var(--case-navy); color:var(--case-paper);
+  padding-block:clamp(1.5rem,3vw,3.25rem) clamp(2.15rem,4vw,3.85rem);
+}
+.case-detail-opening .case-detail-container { position:relative; }
 .case-detail-opening::before {
-  content:""; position:absolute; pointer-events:none; top:-1rem; right:0; width:43%; height:clamp(7rem,14vw,14rem); z-index:-1;
-  background:url('/brand/wave-desktop.svg') 72% 58% / 152% 150% no-repeat;
-  opacity:.72; mask-image:linear-gradient(90deg,transparent,#000 22%);
+  content:""; position:absolute; pointer-events:none; bottom:0; right:var(--case-gutter);
+  width:min(47%,850px); height:100%; z-index:-1;
+  background:url('/brand/wave-desktop.svg') center 56% / 100% auto no-repeat;
+  opacity:.8; mask-image:linear-gradient(90deg,transparent 0%,#000 19%,#000 74%,transparent 100%);
 }
 .case-detail-scope,.case-detail-scope > div,.case-detail-jumps { display:flex; align-items:center; }
-.case-detail-eyebrow,.case-detail .font-mono,.case-detail-chip { font-family:'Portfolio Geist Mono',ui-monospace,SFMono-Regular,Consolas,monospace; }
+.case-detail-eyebrow,.case-detail-scope,.case-detail .font-mono,.case-detail-chip { font-family:'Portfolio Geist Mono',ui-monospace,SFMono-Regular,Consolas,monospace; }
 .case-detail-eyebrow { font-size:.73rem; font-weight:600; line-height:1.4; letter-spacing:.085em; text-transform:uppercase; color:var(--case-link); }
-.case-detail-opening .case-detail-eyebrow,.case-detail-opening h1 span { color:var(--case-aqua); }
+.case-detail-opening h1 span { color:var(--case-aqua); }
 .case-detail-opening h1 { max-width:21ch; margin:.35rem 0 .55rem; font-size:clamp(2.55rem,4.6vw,5.3rem); font-weight:450; letter-spacing:-.052em; line-height:1.03; text-wrap:balance; }
-.case-detail-summary { max-width:73ch; margin:0; font-size:clamp(1rem,1.18vw,1.28rem); line-height:1.45; color:#eeeef4; font-weight:390; }
-.case-detail-scope { flex-wrap:wrap; gap:.7rem 1.3rem; margin-top:clamp(.95rem,1.65vw,1.5rem); border-top:1px solid #646375; padding-top:.85rem; font-size:.9rem; line-height:1.45; color:#eeeeF4; }
-.case-detail-scope > div { gap:.58rem; }
-.case-detail-scope > div + div { border-left:1px solid #5cafa9; padding-left:1.3rem; }
+.case-detail-summary { max-width:52ch; margin:0; font-size:clamp(1rem,1.18vw,1.28rem); line-height:1.5; color:#eeeef4; font-weight:390; }
+.case-detail-scope {
+  flex-wrap:wrap; gap:.6rem 1.35rem; margin:0 0 .9rem; color:var(--case-aqua);
+  font-size:.75rem; font-weight:590; line-height:1.4; letter-spacing:.015em;
+}
+.case-detail-scope > div { gap:.45rem; min-width:0; }
 .case-detail-scope dt { flex:none; }
+.case-detail-scope svg { width:.9rem; height:.9rem; }
 .case-detail-outcomes { padding-top:clamp(1.4rem,2.1vw,2.3rem); padding-bottom:clamp(1.2rem,1.8vw,1.9rem); }
 .case-detail-outcomes-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; }
 .case-detail-outcomes-grid > div { display:flex; flex-direction:column; justify-content:flex-start; min-width:0; }
@@ -76,10 +84,10 @@
 .case-detail #impact h2 { max-width:440px; }
 .case-detail figure[data-portrait] { max-width:420px; margin-inline:auto; }
 @media (max-width:760px) {
-  .case-detail-opening::before { width:32%; top:-2rem; opacity:.48; }
-  .case-detail-scope { align-items:start; display:grid; grid-template-columns:minmax(0,1fr); gap:.5rem; font-size:.85rem; }
-  .case-detail-scope > div { align-items:baseline; }.case-detail-scope dt { align-self:start; }
-  .case-detail-scope > div + div { border:0; padding-left:0; }
+  .case-detail-opening::before { right:12px; top:0; bottom:auto; width:44%; height:92px; opacity:.38; background-position:center 30%; }
+  .case-detail-scope { gap:.5rem 1rem; max-width:100%; font-size:.69rem; }
+  .case-detail-opening h1 { text-wrap:initial; max-width:15ch; margin-block:.45rem .7rem; }
+  .case-detail-summary { max-width:35ch; }
   .case-detail-outcomes-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.2rem 1rem; }
   .case-detail-outcomes-grid > div:nth-child(odd) { border:0; padding-left:0; }
   .case-detail-outcomes-grid dd { font-size:clamp(1.45rem,7vw,2.7rem); }
