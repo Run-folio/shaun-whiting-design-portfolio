@@ -34,7 +34,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
     <>
       <CaseStudyAnalytics slug={study.slug} title={study.shortTitle ?? study.title} />
       <Navigation />
-      <main id="main" className="case-detail" data-case={study.slug}>
+      <main id="main" className="case-detail">
         <article>
           <header id="overview" className="case-detail-opening">
             <div className="case-detail-container">

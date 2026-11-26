@@ -8,6 +8,64 @@ const cases = [
   ["returns-kiosk", "Amazon Returns Kiosk", "$60M", "$22.5M"],
   ["farfetch", "Farfetch Mobile", "4.8★", "20M+"],
 ];
+// Visual evidence in reading and gallery order, captured from the rendered
+// pre-redesign portfolio (62c9ad4a). Restyling must not re-curate the stories.
+const cloudinary = "https://res.cloudinary.com/dbt3wkwa3/image/upload/f_auto,q_auto/";
+const expectedMedia = {
+  "returns-platform": [
+    ["img", "/RP1.png"],
+    ["img", "/Returns.png"],
+    ["img", "/rules.png"],
+    ["img", "/Grading.png"],
+    ["img", "/Carrier.png"],
+    ["img", cloudinary + "portal5_v2acug.png"],
+    ["img", cloudinary + "portal6_fv7tts.png"],
+    ["img", cloudinary + "store4_en3nyf.png"],
+  ],
+  "rio": [
+    ["img", "/rio/rio-hero-desktop.png"],
+    ["source", "/rio/ses-flow-video.mp4"],
+    ["img", "/Exceptions.png"],
+    ["img", "/Approve.png"],
+    ["img", "/Approvals.jpg"],
+    ["img", "/rio/rio-approval-stages.jpg"],
+  ],
+  "morrovia": [
+    ["img", "/morrovia/homepage-complete.png"],
+    ["img", "/morrovia/itinerary-current.png"],
+    ["img", "/morrovia/transport-current.png"],
+    ["img", "/morrovia/map-route-current.png"],
+  ],
+  "returns-kiosk": [
+    ["img", "/Multi-Kiosk.png"],
+    ["img", cloudinary + "amazoncase8_juwrkx.png"],
+    ["iframe", "https://embed.figma.com/proto/UsS0AkbvzdqwtZ54w4v1sw/AMAZON-Kiosk-V2?node-id=6168-1473&embed-host=share&scaling=scale-down&content-scaling=fixed"],
+    ["img", cloudinary + "amazoncase5_iojjuv"],
+    ["img", cloudinary + "amazoncase7_nqcd5t"],
+    ["img", cloudinary + "amazoncase4_w6zzqt.jpg"],
+    ["img", cloudinary + "amazoncase2_tgcmw0.png"],
+    ["img", cloudinary + "amazoncase3_wmo0i6.png"],
+  ],
+  "farfetch": [
+    ["img", "/ff.png"],
+    ["img", "/farfetch-mobile.png"],
+    ["img", cloudinary + "ff4_mhude1.png"],
+    ["img", cloudinary + "ff-android2_dhic2u.jpg"],
+    ["img", cloudinary + "ff5_ucwlrn.jpg"],
+    ["img", cloudinary + "ff6_qk193d.png"],
+  ],
+};
+
+function mediaOrder(html) {
+  return [...html.matchAll(/<(img|source|iframe)\b[^>]*?\ssrc="([^"]*)"[^>]*>/g)].map(([, tag, escapedSrc]) => {
+    const src = escapedSrc.replaceAll("&amp;", "&");
+    // Development can use Next's image proxy while the static export emits
+    // the original URLs. Compare the original source rather than the proxy.
+    const url = new URL(src, origin);
+    return [tag, url.pathname === "/_next/image" ? url.searchParams.get("url") : src];
+  });
+}
+
 for (const [slug,title,...evidence] of cases) {
   const response = await fetch(new URL("/case-study/" + slug, origin));
   assert.equal(response.status, 200, slug);
@@ -20,10 +78,9 @@ for (const [slug,title,...evidence] of cases) {
   for (const id of ["context","decisions","impact"]) assert.ok(article.includes('href="#'+id+'"'), slug+": section jump "+id);
   assert.ok(article.indexOf('class="case-detail-outcomes') < article.indexOf('id="artifact"'), slug+": show the outcomes before the walkthrough");
   assert.ok(article.includes('aria-label="Open '), slug+": product image zoom");
-  if (slug === "returns-platform") {
-    assert.ok(article.includes("Doddle paperless returns: choose an item"), "Use the approved original three-phone hero");
-    assert.ok(article.includes("Merchant return detail and item timeline"), "Keep the previous merchant screenshot accessible");
-  }
+  const artifact = article.match(/<figure\b[^>]*id="artifact"[^>]*>[\s\S]*?<\/figure>/)?.[0] ?? "";
+  assert.deepEqual(mediaOrder(artifact), [expectedMedia[slug][0]], slug + ": same lead image as before redesign");
+  assert.deepEqual(mediaOrder(article), expectedMedia[slug], slug + ": image, video and embed reading order matches pre-redesign");
   assert.ok(article.includes("Read next"), slug+": next study");
   console.log(slug+" OK");
 }
