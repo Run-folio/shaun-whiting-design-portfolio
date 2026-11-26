@@ -13,7 +13,7 @@ const featured = [
     image: "/folio-work/rio.webp", alt: "Rio service entry sheets with approval statuses and supplier details",
     summary: "87% fewer manual touchpoints" },
   { href: "/case-study/morrovia", title: "Morrovia", tag: "Independent project | Travel",
-    image: "/morrovia/homepage-2026-11.webp", alt: "The current Morrovia planner and seven suggested routes",
+    image: "/morrovia/map-2026-11.webp", alt: "Morrovia map of a seven-stop route through Japan and South Korea",
     summary: "AI-assisted multi-stop trip planning" },
   { href: "/case-study/returns-kiosk", title: "Amazon Returns Kiosk", tag: "Logistics | Retail",
     image: "/kiosk.jpg", alt: "Amazon self-service returns kiosk",

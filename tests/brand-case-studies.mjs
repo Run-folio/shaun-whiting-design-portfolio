@@ -32,9 +32,9 @@ const expectedMedia = {
   ],
   "morrovia": [
     ["img", "/morrovia/homepage-2026-11.webp"],
-    ["img", "/morrovia/itinerary-current.png"],
-    ["img", "/morrovia/transport-current.png"],
-    ["img", "/morrovia/map-route-current.png"],
+    ["img", "/morrovia/itinerary-2026-11.webp"],
+    ["img", "/morrovia/transport-2026-11.webp"],
+    ["img", "/morrovia/map-2026-11.webp"],
   ],
   "returns-kiosk": [
     ["img", "/Multi-Kiosk.png"],
@@ -79,7 +79,7 @@ for (const [slug,title,...evidence] of cases) {
   assert.ok(article.includes('aria-label="Open '), slug+": product image zoom");
   const artifact = article.match(/<figure\b[^>]*id="artifact"[^>]*>[\s\S]*?<\/figure>/)?.[0] ?? "";
   assert.deepEqual(mediaOrder(artifact), [expectedMedia[slug][0]], slug + ": same lead image as before redesign");
-  assert.deepEqual(mediaOrder(article), expectedMedia[slug], slug + ": image, video and embed reading order matches pre-redesign");
+  assert.deepEqual(mediaOrder(article), expectedMedia[slug], slug + ": media sequence preserves the original story order with intentional replacements");
   if (slug === "returns-kiosk") {
     assert.doesNotMatch(html, /25 fewer steps|450 journeys|AMAZON-Kiosk-V2|Interactive Figma prototype showing the multiple-return flow|20\.59%|6\.58%|56 seconds|56 sec/i);
     assert.doesNotMatch(article, /(?:10x|10×).{0,24}(?:kiosk|unit)|(?:kiosk|unit).{0,24}(?:10x|10×)/i);
