@@ -17,7 +17,7 @@ const featured = [
 
 export function FolioWorkCarousel() {
   return (
-    <LoopProjectGallery className="folio-carousel" id={null} items={featured} showPosition controlsBelow renderItem={(index, focusable) => {
+    <LoopProjectGallery className="folio-carousel" id={null} items={featured} showPosition controlsBelow snapToCard renderItem={(index, focusable) => {
       const { href, title, tag, image, alt, width, height } = featured[index];
       return (
         <article className="folio-card">

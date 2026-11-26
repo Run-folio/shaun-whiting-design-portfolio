@@ -8,11 +8,12 @@ import { loopOrigin, loopSlots, projectAtSlot, rebaseLoop, visibleLoop } from "@
 type Item = { title: string; href: string };
 type WindowState = { base: number; focusMask: number; height?: number };
 
-export function LoopProjectGallery({ items, renderItem, id = "work", className = "", showPosition = false, controlsBelow = false }: {
+export function LoopProjectGallery({ items, renderItem, id = "work", className = "", showPosition = false, controlsBelow = false, snapToCard = false }: {
   id?: string | null;
   className?: string;
   showPosition?: boolean;
   controlsBelow?: boolean;
+  snapToCard?: boolean;
   items: Item[];
   renderItem: (index: number, focusable: boolean) => ReactNode;
 }) {
@@ -82,12 +83,30 @@ export function LoopProjectGallery({ items, renderItem, id = "work", className =
     observer.observe(el);
     Array.from(el.children).forEach(card => observer.observe(card));
     el.querySelectorAll(".alt-project-heading-content").forEach(header => observer.observe(header));
-    const scrolled = () => sync();
+    let settleTimer: number | undefined;
+    const nativeScrollEnd = "onscrollend" in el;
+    const scrolled = () => {
+      sync();
+      if (snapToCard && !nativeScrollEnd) {
+        window.clearTimeout(settleTimer);
+        settleTimer = window.setTimeout(settled, 160);
+      }
+    };
     const directInput = () => { target.current = null; };
     const settled = () => {
       // Starting another smooth movement can emit scrollend for the cancelled
       // one. Only release the queued destination when the current one arrives.
-      if (target.current !== null && Math.abs(el!.scrollLeft - target.current) < 1) target.current = null;
+      if (target.current !== null) {
+        if (Math.abs(el!.scrollLeft - target.current) < 1) target.current = null;
+        return;
+      }
+      const stride = geometry.current.step;
+      if (!snapToCard || !stride) return;
+      const nearest = Math.round(el!.scrollLeft / stride) * stride;
+      if (Math.abs(nearest - el!.scrollLeft) > 1) {
+        target.current = nearest;
+        el!.scrollTo({ left: nearest, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+      }
     };
     el.addEventListener("scroll", scrolled, { passive: true });
     el.addEventListener("scrollend", settled);
@@ -96,13 +115,14 @@ export function LoopProjectGallery({ items, renderItem, id = "work", className =
     measure();
     return () => {
       mounted = false;
+      window.clearTimeout(settleTimer);
       observer.disconnect();
       el.removeEventListener("scroll", scrolled);
       el.removeEventListener("scrollend", settled);
       el.removeEventListener("wheel", directInput);
       el.removeEventListener("pointerdown", directInput);
     };
-  }, [items.length, origin]);
+  }, [items.length, origin, snapToCard]);
 
   useLayoutEffect(() => {
     if (!step || !track.current) return;

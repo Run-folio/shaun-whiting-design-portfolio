@@ -47,7 +47,8 @@
 }
 .folio-nav .alt-nav-projects .group > div { padding-top: .25rem; }
 .folio-nav .alt-nav-projects .group > div a, .folio-nav .folio-mobile-nav a { color: var(--folio-navy); }
-.folio-nav .alt-nav-projects .group > div a:hover, .folio-nav .folio-mobile-nav a:hover { background: #ebece9; color: var(--folio-link); }
+.folio-nav .alt-nav-projects .group > div a:is(:hover,[aria-current="page"]) { background: #ebece9; color: #bd155b; }
+.folio-nav .folio-mobile-nav a:hover { background: #ebece9; color: var(--folio-link); }
 .folio-nav .alt-nav-projects .group > div a span:last-child { color: #535266; }
 .folio-nav .alt-nav-actions > a[href^="mailto:"], .folio-nav .alt-nav-actions > button {
   border: 1px solid #e7e6ef; color: var(--folio-paper); background: transparent; border-radius: 999px;

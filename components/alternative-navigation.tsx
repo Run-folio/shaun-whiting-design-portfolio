@@ -87,6 +87,7 @@ export function AlternativeNavigation() {
                     <Link
                       key={study.slug}
                       href={`/case-study/${study.slug}`}
+                      aria-current={pathname === `/case-study/${study.slug}` ? "page" : undefined}
                       onClick={() => handleCaseStudyClick(study.slug, study.shortTitle ?? study.title, "Work dropdown")}
                       className="block rounded-xl px-4 py-3 transition duration-200 hover:bg-mist hover:text-signal dark:hover:bg-white/10"
                     >
