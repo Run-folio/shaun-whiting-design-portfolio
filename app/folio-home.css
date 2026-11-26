@@ -39,7 +39,7 @@
 .folio-card:focus-within .folio-shot, .folio-card:hover .folio-shot { border-color:var(--paper-link); }
 .folio-contact { max-width:106rem; margin:auto; padding:clamp(2.5rem,5vw,6rem) var(--gutter); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; border-top:1px solid #d1d0d7; scroll-margin-top:4.75rem; }
 .folio-contact h2 { font-weight:440; font-size:clamp(2.7rem,5.2vw,6rem); letter-spacing:-.055em; line-height:1.15; }
-.folio-contact h2 span { color:var(--paper-link); }
+.folio-contact h2 span { color:var(--aqua); }
 .folio-contact-links { display:flex; gap:1.6rem; }
 @media (max-width:1099px) and (min-width:720px) {
   .folio-hero-inner { padding-inline:var(--gutter); column-gap:4%; grid-template-columns:1.12fr .88fr; }
