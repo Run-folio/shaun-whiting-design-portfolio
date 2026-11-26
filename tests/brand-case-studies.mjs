@@ -5,7 +5,7 @@ const cases = [
   ["returns-platform", "Doddle Returns Platform", "$12M", "88.2%", "Average processing time"],
   ["rio", "Rio", "87%", "Across field and back-office operations."],
   ["morrovia", "Morrovia", "Public beta", "AI-assisted build", "Editable itinerary"],
-  ["returns-kiosk", "Amazon Returns Kiosk", "$60M", "$22.5M", "28% shorter", "69% lower"],
+  ["returns-kiosk", "Amazon Returns Kiosk", "$60M", "$22.5M", "28% shorter", "69% lower", "designed the self-service returns kiosk from scratch", "helped shape the hardware", "This case study focuses on the later redesign for high-volume stores."],
   ["farfetch", "Farfetch Mobile", "4.8★", "20M+"],
 ];
 // Visual evidence in reading and gallery order, captured from the rendered

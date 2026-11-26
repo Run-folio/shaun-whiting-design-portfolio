@@ -233,7 +233,7 @@ export const caseStudies: CaseStudy[] = [
     shortTitle: "Amazon Returns Kiosk",
     eyebrow: "Amazon / Logistics / Retail",
     title: "$60 million in cost savings through Amazon Return Kiosks",
-    summary: "Redesigned the self-service returns journey for high-volume stores.",
+    summary: "I designed the self-service returns kiosk from scratch, helped shape the hardware and refined the experience over several years.",
     image: "/amazon-returns-kiosk.jpg",
     imageAlt: "Amazon Returns Kiosk interface and physical kiosk",
     role: "Founding / Sr Staff Product Designer, end-to-end UX",
@@ -244,7 +244,7 @@ export const caseStudies: CaseStudy[] = [
         "Queues were building in high-volume stores and staff were turning kiosks off. Customers could not find the scanner, started the flow before finding their QR code and often dropped out before completing a return.",
       ],
       approach: [
-        "I led end-to-end UX from field research to handoff, combining the home and scan states, adding clearer parcel constraints and designing a multiple-return path for customers processing several orders.",
+        "This case study focuses on the later redesign for high-volume stores. I led the UX from field research to handoff, combining the home and scan states, clarifying parcel constraints and creating a way to return multiple orders in one session.",
       ],
       outcome: [
         "Completion time fell by 28% and abandonment by 69%. The follow-on kiosk order was worth $22.5 million.",
