@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 const featured = [
   { slug: "returns-platform", title: "Doddle Returns Platform", tag: "B2B SaaS | Reverse logistics",
-    image: "/folio-work/doddle.webp", alt: "Doddle’s retailer dashboard showing returns and their status",
+    image: "/folio-work/doddle.webp", alt: "Doddle’s returns dashboard showing request dates, customers and order references",
     summary: "Returns orchestration for major retailers" },
   { slug: "rio", title: "Rio: AI field ticketing", tag: "AI workflows | Energy",
     image: "/folio-work/rio.webp", alt: "Rio service entry sheets with approval statuses and supplier details",

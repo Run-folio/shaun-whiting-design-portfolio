@@ -12,11 +12,12 @@
   min-height:clamp(372px,27vw,450px); padding:clamp(2rem,4.2vw,5rem) clamp(2rem,8.8vw,10rem) 2rem;
   display:grid; grid-template-columns:1.16fr .84fr; column-gap:clamp(3rem,10vw,12rem);
 }
-.folio-hero h1 { margin:0; font-size:clamp(4.6rem,7.05vw,8.3rem); line-height:.96; letter-spacing:-.063em; font-weight:400; }
+.folio-hero h1 { margin:0; font-size:clamp(4.6rem,7.3vw,8.3rem); line-height:.96; letter-spacing:-.049em; font-weight:400; }
 .folio-hero h1 span { display:block; }
-.folio-hero h1 i { color:var(--aqua); font-style:normal; }
+.folio-hero h1 i { display:inline-block; width:.13em; height:.13em; margin-left:.025em; overflow:hidden; border-radius:50%; color:transparent; background:var(--aqua); font-style:normal; }
 .folio-intro { align-self:end; font-size:clamp(1.35rem,1.95vw,2.15rem); line-height:1.13; letter-spacing:-.028em; }
 .folio-intro > p + p { margin-top:.55rem; }
+.folio-intro > p:nth-child(2) { max-width:13.6em; }
 .folio-intro .folio-tags { font:550 clamp(.82rem,1.22vw,1.25rem)/1.5 'Portfolio Geist Mono',monospace; color:var(--aqua); letter-spacing:.005em; margin-top:.75rem; }
 .folio-primary {
   pointer-events:auto; display:inline-flex; align-items:center; gap:.7rem; min-height:50px; margin-top:1.25rem;
