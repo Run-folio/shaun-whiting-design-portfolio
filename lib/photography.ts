@@ -78,4 +78,7 @@ export const travelPhotos: TravelPhoto[] = [
   { country: "Vietnam", flag: "🇻🇳", publicId: "vietnam_jx1wqg" },
 ];
 
-export const featuredTravelPhotos = travelPhotos.slice(0, 9);
+const featuredCountries = ["Guatemala", "Norway", "Iceland", "Japan", "Argentina", "Namibia", "Peru", "Switzerland", "Australia"];
+export const featuredTravelPhotos = featuredCountries
+  .map(country => travelPhotos.find(photo => photo.country === country))
+  .filter((photo): photo is TravelPhoto => photo !== undefined);

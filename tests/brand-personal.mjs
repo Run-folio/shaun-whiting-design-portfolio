@@ -19,3 +19,9 @@ test("photographs retain their real sources, captions, full gallery and keyboard
   assert.ok(photos.includes("photos={travelPhotos}")); assert.ok(grid.includes("setSelectedIndex(index)")); assert.ok(grid.includes("<ImageLightbox"));
   assert.ok(grid.includes("personal-country")); assert.ok(grid.includes('aria-label={`Open photo from ${photo.country}`}'));
 });
+test("Beyond Design features Norway in the landscape row, without removing Nepal from the full collection",()=>{
+  const source=read("lib/photography.ts");
+  assert.match(source,/const featuredCountries = \["Guatemala", "Norway", "Iceland"/);
+  assert.match(source,/{ country: "Nepal", flag:/);
+  assert.match(source,/{ country: "Norway", flag:/);
+});
