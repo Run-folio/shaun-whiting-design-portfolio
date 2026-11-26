@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowRight, Layers3, UserRound, UsersRound } from "lucide-react";
 import { BeforeAfterSlider } from "@/components/before-after-slider";
 import { CaseStudyAnalytics } from "@/components/case-study-analytics";
@@ -38,7 +37,6 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
         <article>
           <header id="overview" className="case-detail-opening">
             <div className="case-detail-container">
-              <nav aria-label="Breadcrumb" className="case-detail-crumb"><Link href="/#work">Work</Link><span aria-hidden="true">/</span><span aria-current="page">{displayTitle}</span></nav>
               <p className="case-detail-eyebrow">{caseStudyEyebrow(study)}</p>
               <h1>{displayTitle}<span>.</span></h1>
               <p className="case-detail-summary">{intro}</p>

@@ -7,6 +7,7 @@ test("both personal pages use the shared editorial treatment and original routes
     const src=read("app/"+p+"/page.tsx");
     assert.ok(src.includes('className="personal-page"'));
     assert.ok(src.includes("personal-masthead"));
+    assert.doesNotMatch(src, /aria-label="Breadcrumb"/i);
     assert.ok(!src.includes("pt-[92px]"));
     assert.ok(src.includes('canonical: "/'+p+'"'));
   }

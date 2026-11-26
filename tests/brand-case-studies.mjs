@@ -70,7 +70,7 @@ for (const [slug,title,...evidence] of cases) {
   assert.equal(response.status, 200, slug);
   const html = await response.text();
   const article = html.match(/<article\b[^>]*>[\s\S]*?<\/article>/)?.[0] || "";
-  assert.match(article, /aria-label="Breadcrumb"/, slug);
+  assert.doesNotMatch(article, /aria-label="Breadcrumb"/i, slug);
   assert.ok(article.includes(title), slug + ": case title");
   for (const value of evidence) assert.ok(article.includes(value), slug + ": " + value);
   for (const id of ["overview","scope","artifact","context","decisions","impact"]) assert.ok(article.includes('id="'+id+'"'), slug+": preserved anchor "+id);

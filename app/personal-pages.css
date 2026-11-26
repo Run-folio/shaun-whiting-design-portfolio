@@ -41,7 +41,7 @@
   align-items: center;
   padding-block: clamp(1.75rem, 3.6vw, 3.75rem) clamp(2rem, 3.4vw, 3.75rem);
 }
-.personal-kicker,.personal-crumbs,.personal-race-photo figcaption {
+.personal-kicker,.personal-race-photo figcaption {
   font-family: var(--font-mono, "Portfolio Geist Mono", ui-monospace, monospace);
 }
 .personal-kicker {
@@ -78,8 +78,8 @@
 .personal-section-line {border-top:1px solid #c5c6c7;padding-block:clamp(1.2rem,2vw,2.35rem);}
 .personal-section-line .personal-kicker {font-family:inherit;font-size:clamp(.97rem,1.4vw,1.4rem);font-weight:600;line-height:1.25;color:var(--personal-ink);}
 .personal-link {display:inline-flex;align-items:center;min-height:2.75rem;gap:.45rem;font-size:clamp(.95rem,1.15vw,1.15rem);font-weight:550;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;color:var(--personal-link);}
-.personal-link:hover,.personal-crumbs a:hover {text-decoration-thickness:2px;}
-.personal-link:focus-visible,.personal-crumbs a:focus-visible,.personal-photo-button:focus-visible {outline:2px solid currentColor;outline-offset:4px;}
+.personal-link:hover {text-decoration-thickness:2px;}
+.personal-link:focus-visible,.personal-photo-button:focus-visible {outline:2px solid currentColor;outline-offset:4px;}
 .personal-travel-intro {padding-bottom:1.65rem;}
 .personal-travel-intro h2 {flex-shrink:0;}
 .personal-photo-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(.8rem,1.5vw,1.8rem);row-gap:clamp(1.2rem,2.35vw,2.5rem);}
@@ -95,9 +95,6 @@
 .personal-thread {margin-top:clamp(2.5rem,5vw,5rem);padding-block:clamp(2rem,5vw,5rem);border-top:1px solid #d2d2cf;}
 .personal-thread p:not(.personal-kicker) {font-size:clamp(1.8rem,3.2vw,3.7rem);max-width:31ch;line-height:1.13;letter-spacing:-.042em;margin:1rem 0;}
 .personal-gallery-mast {padding-block:clamp(1rem,2.2vw,2.5rem) clamp(1.4rem,3vw,3.2rem);}
-.personal-crumbs {display:flex;align-items:center;gap:.72rem;font-size:clamp(.72rem,.93vw,.88rem);line-height:1.5;letter-spacing:.025em;}
-.personal-crumbs a {text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.2em;}
-.personal-crumbs a:hover {text-decoration-color:currentColor;}
 .personal-gallery-intro {display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:1.4rem;align-items:center;margin-top:.6rem;}
 .personal-gallery-intro h1 {font-size:clamp(3rem,6.35vw,6.6rem);}
 .personal-gallery-intro p {font-size:clamp(1.05rem,1.9vw,1.8rem);max-width:30ch;line-height:1.26;letter-spacing:-.02em;}

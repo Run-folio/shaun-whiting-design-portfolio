@@ -17,9 +17,6 @@ export default function PhotographyPage() {
       <main id="main" className="personal-page">
         <section className="personal-masthead personal-gallery-mast" aria-labelledby="photos-heading">
           <div className="personal-frame">
-            <nav className="personal-crumbs" aria-label="Breadcrumb">
-              <Link href="/more-about-me">Beyond Design</Link><span aria-hidden="true">/</span><span aria-current="page">Photography</span>
-            </nav>
             <div className="personal-gallery-intro">
               <h1 id="photos-heading">What I see<span>.</span></h1>
               <p>Places that made me slow down, look closer and pay attention.</p>
