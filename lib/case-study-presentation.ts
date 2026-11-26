@@ -5,7 +5,7 @@ export const caseStudyOrder = ["rio", "returns-platform", "morrovia", "returns-k
 // Presentation choices use existing case evidence; underlying case data stays intact.
 export function caseStudyPresentation(study: CaseStudy) {
   const hero = study.slug === "rio" ? study.heroTestMedia!.desktop
-    : study.slug === "morrovia" ? { src: "/morrovia/homepage-complete.png", alt: "Morrovia trip search with complete suggested journey cards", caption: "Choose stops or describe a trip, with suggested journeys to explore." }
+    : study.slug === "morrovia" ? { src: "/morrovia/homepage-2026-11.webp", alt: "Morrovia’s Plan and Describe search above seven featured routes in Our Picks", caption: "Choose stops or describe a trip, with suggested journeys to explore." }
     : study.slug === "farfetch" ? study.postDecisionsShowcase!.media
     : study.overviewMedia![0];
   const intro = study.slug === "rio"
@@ -21,7 +21,7 @@ export function caseStudyPresentation(study: CaseStudy) {
 // This shows the entry point, not a fictional natural-language planning screen.
 export function presentCaseStudyMedia(item: CaseStudyMedia): CaseStudyMedia {
   return item.src === "/morrovia/planning-placeholder.svg"
-    ? { src: "/morrovia/homepage-search.png", alt: "Morrovia beta homepage with trip search and a Describe my trip option", caption: "Actual beta homepage. Travellers can start with stops or choose to describe their trip; this capture shows the entry point." }
+    ? { src: "/morrovia/homepage-2026-11.webp", alt: "Morrovia homepage with Plan and Describe options above Our Picks", caption: "Travellers can enter their stops, describe a trip or start with a featured route." }
     : item;
 }
 

@@ -8,8 +8,8 @@ export const morroviaCaseStudy: CaseStudy = {
   title: "Complex trips, made simple",
   summary:
     "Founding, designing and building a travel-planning beta that brings a multi-stop route, itinerary and connections into one editable plan.",
-  image: "/morrovia/homepage-complete.png",
-  imageAlt: "Morrovia trip search with complete suggested journey cards",
+  image: "/morrovia/homepage-2026-11.webp",
+  imageAlt: "Morrovia’s Plan and Describe search above seven featured routes in Our Picks",
   role: "Founder, product design and AI-assisted building",
   industry: "Travel / AI-assisted planning",
   year: "Morrovia",
