@@ -1,6 +1,6 @@
 .folio-home {
   --navy:var(--folio-navy); --paper:var(--folio-paper); --aqua:var(--folio-aqua); --paper-link:var(--folio-link);
-  --gutter:var(--folio-gutter);
+  --gutter:var(--folio-gutter); --pink:#ff3d8b; --pink-text:#b81557;
   background:var(--paper); color:var(--navy);
   font-family:'Portfolio SF Pro',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
 }
@@ -26,21 +26,29 @@
 }
 .folio-primary:hover { background:#8bfff0; }
 .folio-intro small { display:block; margin-top:.9rem; font-size:.985rem; line-height:1.4; letter-spacing:0; }
-.folio-home .folio-work { padding:clamp(2.5rem,4.6vw,5.5rem) var(--gutter) clamp(3rem,6vw,7rem); margin:auto; max-width:106rem; scroll-margin-top:4.7rem; }
+.folio-home .folio-work { padding:clamp(2.5rem,4.6vw,5.5rem) var(--gutter) clamp(3rem,6vw,7rem); margin:auto; scroll-margin-top:4.7rem; }
 .folio-card { position:relative; }
-.folio-eyebrow { color:var(--paper-link); font:560 clamp(.7rem,.96vw,.92rem)/1.4 'Portfolio Geist Mono',monospace; text-transform:uppercase; letter-spacing:.045em; }
+.folio-eyebrow { color:var(--pink-text); font:560 clamp(.7rem,.96vw,.92rem)/1.4 'Portfolio Geist Mono',monospace; text-transform:uppercase; letter-spacing:.045em; }
 .folio-card h3 { margin:.8rem 0 clamp(1.4rem,2.4vw,2.75rem); font-size:clamp(1.6rem,2.45vw,2.8rem); line-height:1.03; letter-spacing:-.048em; font-weight:450; }
-.folio-shot { overflow:hidden; aspect-ratio:80/47; border:1px solid #dedee4; border-radius:5px; background:#ecebf0; }
-.folio-shot img { display:block; width:100%; height:100%; object-fit:cover; }
+.folio-shot { border:1px solid #dedee4; border-radius:5px; overflow:hidden; background:var(--paper); }
+.folio-shot img { display:block; width:100%; height:auto; }
 .folio-summary { margin-top:1.25rem; font-size:clamp(1rem,1.23vw,1.35rem); line-height:1.4; letter-spacing:-.012em; }
-.folio-case-link, .folio-contact-links a { display:inline-flex; align-items:center; gap:.45rem; min-height:44px; width:fit-content; color:var(--paper-link); text-decoration:underline; text-underline-offset:.38em; text-decoration-thickness:1px; font-weight:500; }
-.folio-case-link { margin-top:.35rem; }
+.folio-case-link, .folio-contact-links a {
+  display:inline-flex; align-items:center; gap:.55rem; min-height:44px; width:fit-content;
+  border:1px solid var(--navy); border-radius:8px; padding:.55rem .95rem;
+  background:var(--navy); color:var(--paper); text-decoration:none; font-weight:600;
+}
+.folio-case-link { margin-top:.7rem; }
 .folio-case-link::after { content:""; position:absolute; inset:0; border-radius:5px; }
-.folio-card:focus-within .folio-shot, .folio-card:hover .folio-shot { border-color:var(--paper-link); }
-.folio-contact { max-width:106rem; margin:auto; padding:clamp(2.5rem,5vw,6rem) var(--gutter); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; border-top:1px solid #d1d0d7; scroll-margin-top:4.75rem; }
+.folio-case-link:hover { background:#353350; }
+.folio-case-link:focus-visible { outline-color:var(--navy); }
+.folio-card:focus-within .folio-shot, .folio-card:hover .folio-shot { border-color:var(--navy); }
+.folio-contact { max-width:106rem; margin:auto; padding:clamp(2.5rem,5vw,6rem) var(--gutter); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; scroll-margin-top:4.75rem; }
 .folio-contact h2 { font-weight:440; font-size:clamp(2.7rem,5.2vw,6rem); letter-spacing:-.055em; line-height:1.15; }
 .folio-contact h2 span { color:var(--aqua); }
-.folio-contact-links { display:flex; gap:1.6rem; }
+.folio-contact-links { display:flex; flex-wrap:wrap; gap:.7rem; margin-top:.65rem; }
+.folio-contact-links a { border-color:var(--pink); background:var(--pink); color:var(--navy); }
+.folio-contact-links a:hover { background:#ff80b5; border-color:#ff80b5; }
 @media (max-width:1099px) and (min-width:720px) {
   .folio-hero-inner { padding-inline:var(--gutter); column-gap:4%; grid-template-columns:1.12fr .88fr; }
   .folio-card h3 { font-size:clamp(1.5rem,2.8vw,1.925rem); }
@@ -57,18 +65,19 @@
 }
 
 /* Retain the original native looping rail, scoped to the navy homepage. */
-.folio-carousel { container-type:inline-size; }
-.folio-carousel .alt-gallery-toolbar { display:flex; justify-content:flex-end; margin-bottom:1.3rem; }
-.folio-carousel .alt-gallery-controls { display:flex; gap:.65rem; padding:4px; }
+.folio-carousel .alt-gallery-toolbar { display:flex; justify-content:flex-end; margin-bottom:1rem; }
+.folio-carousel .alt-gallery-controls { display:flex; align-items:center; gap:.65rem; padding:4px; }
+.folio-carousel .alt-gallery-position { font:500 .8rem/1 'Portfolio Geist Mono',monospace; min-width:3.5em; text-align:center; }
 .folio-carousel .alt-gallery-controls button {
   display:grid; width:44px; height:44px; place-items:center; border:1px solid var(--navy);
-  border-radius:50%; color:var(--navy); background:var(--paper); cursor:pointer;
+  border-radius:8px; color:var(--navy); background:var(--paper); cursor:pointer;
 }
 .folio-carousel .alt-gallery-controls button:last-child { background:var(--navy); color:var(--paper); }
 .folio-carousel .alt-gallery-controls button:hover { background:var(--aqua); color:var(--navy); }
+.folio-carousel .alt-gallery-controls button:focus-visible { outline-color:var(--navy); }
 .folio-carousel .alt-project-track {
   --folio-gap:clamp(1rem,2vw,2.3rem);
-  --alt-loop-card-width:calc((100% - 3 * var(--folio-gap)) / 3.18);
+  --alt-loop-card-width:100%;
   display:flex; position:relative; align-items:flex-start; gap:var(--folio-gap); overflow:auto hidden;
   overscroll-behavior-inline:contain; overflow-anchor:none; scrollbar-width:none; padding:0 0 .5rem;
 }
@@ -80,18 +89,4 @@
 .folio-carousel .folio-carousel-heading { min-height:var(--alt-heading-height, auto); }
 .folio-carousel .folio-carousel-heading h3 { margin-bottom:0; }
 .folio-carousel .folio-shot { margin-top:clamp(1.05rem,2.4vw,2.75rem); }
-.folio-carousel .alt-project-card-kiosk .folio-shot img { object-position:center 35%; }
-.folio-carousel .folio-case-link:focus-visible { outline-offset:2px; }
-@media (max-width:1099px) { .folio-carousel .alt-project-track { --alt-loop-card-width:calc((100% - 2 * var(--folio-gap)) / 2.22); } }
-@media (max-width:719px) {
-  .folio-carousel .alt-gallery-toolbar { margin-bottom:.7rem; }
-  .folio-carousel .alt-project-track { --alt-loop-card-width:calc((100% - var(--folio-gap)) * .9); }
-}
-
-@media (prefers-reduced-motion:no-preference) {
-  .folio-carousel .folio-shot img { transition:transform 280ms cubic-bezier(.2,.7,.3,1); }
-  .folio-carousel .folio-card:focus-within .folio-shot img { transform:scale(1.065); }
-}
-@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
-  .folio-carousel .folio-card:hover .folio-shot img { transform:scale(1.065); }
-}
+.folio-home .folio-carousel .folio-case-link:focus-visible { outline:2px solid var(--navy); outline-offset:3px; }

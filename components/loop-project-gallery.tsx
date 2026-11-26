@@ -8,9 +8,10 @@ import { loopOrigin, loopSlots, projectAtSlot, rebaseLoop, visibleLoop } from "@
 type Item = { title: string; href: string };
 type WindowState = { base: number; focusMask: number; height?: number };
 
-export function LoopProjectGallery({ items, renderItem, id = "work", className = "" }: {
+export function LoopProjectGallery({ items, renderItem, id = "work", className = "", singleSlide = false }: {
   id?: string | null;
   className?: string;
+  singleSlide?: boolean;
   items: Item[];
   renderItem: (index: number, focusable: boolean) => ReactNode;
 }) {
@@ -37,10 +38,11 @@ export function LoopProjectGallery({ items, renderItem, id = "work", className =
       const window = visibleLoop(rebased.left, el!.clientWidth, stride, width, count);
       const children = Array.from(el!.children) as HTMLLIElement[];
       const heights = new Map(children.map(child => [Number(child.dataset.projectIndex), child.getBoundingClientRect().height]));
+      const visibleHeights = singleSlide ? window.visible.map(slot => heights.get(projectAtSlot(slot, count)) ?? 0) : [...heights.values()];
       const next = {
         base: window.base,
         focusMask: window.fullyVisible.reduce((mask, slot) => mask | (1 << projectAtSlot(slot, count)), 0),
-        height: Math.max(0, ...heights.values()) + 24,
+        height: Math.max(0, ...visibleHeights) + 24,
       };
       const previous = viewRef.current;
       if (next.base !== previous.base || next.focusMask !== previous.focusMask || Math.abs((next.height ?? 0) - (previous.height ?? 0)) > .5) {
@@ -85,7 +87,17 @@ export function LoopProjectGallery({ items, renderItem, id = "work", className =
     const settled = () => {
       // Starting another smooth movement can emit scrollend for the cancelled
       // one. Only release the queued destination when the current one arrives.
-      if (target.current !== null && Math.abs(el!.scrollLeft - target.current) < 1) target.current = null;
+      if (target.current !== null) {
+        if (Math.abs(el!.scrollLeft - target.current) < 1) target.current = null;
+        return;
+      }
+      // Keep the wider home gallery on a whole card after native scrolling.
+      const stride = geometry.current.step;
+      if (!singleSlide || !stride) return;
+      const aligned = Math.round(el!.scrollLeft / stride) * stride;
+      if (Math.abs(el!.scrollLeft - aligned) <= 1) return;
+      target.current = aligned;
+      el!.scrollTo({ left: aligned, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
     };
     el.addEventListener("scroll", scrolled, { passive: true });
     el.addEventListener("scrollend", settled);
@@ -100,7 +112,7 @@ export function LoopProjectGallery({ items, renderItem, id = "work", className =
       el.removeEventListener("wheel", directInput);
       el.removeEventListener("pointerdown", directInput);
     };
-  }, [items.length, origin]);
+  }, [items.length, origin, singleSlide]);
 
   useLayoutEffect(() => {
     if (!step || !track.current) return;
@@ -140,6 +152,7 @@ export function LoopProjectGallery({ items, renderItem, id = "work", className =
         <p className="sr-only" aria-live="polite" aria-atomic="true">{items[first].title}, project {first + 1} of {items.length}. Gallery loops in both directions.</p>
         <div className="alt-gallery-controls" aria-label="Project gallery controls">
           <button type="button" aria-label="Previous projects" aria-controls="alt-projects" onClick={() => move(-1)}><ArrowLeft size={20} aria-hidden="true" /></button>
+          {singleSlide && <span className="alt-gallery-position" aria-hidden="true">{first + 1} / {items.length}</span>}
           <button type="button" aria-label="Next projects" aria-controls="alt-projects" onClick={() => move(1)}><ArrowRight size={20} aria-hidden="true" /></button>
         </div>
       </div>
