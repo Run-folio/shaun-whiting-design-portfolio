@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { FolioWorkCarousel } from "@/components/folio-work-carousel";
 import { Navigation, Footer } from "@/components/ui";
 import { BrandWave } from "@/components/brand-wave";
-import { TrackedAnchor, TrackedLink } from "@/components/tracked-link";
+import { TrackedAnchor } from "@/components/tracked-link";
 import "./folio-home.css";
 
 export const metadata: Metadata = {
@@ -15,10 +15,6 @@ export const metadata: Metadata = {
     url: "https://shaunwhiting.com", siteName: "Shaun Whiting", locale: "en_GB", type: "website",
   },
 };
-
-const moreWork = [
-  { slug: "farfetch", title: "Farfetch Mobile", tag: "Luxury ecommerce" },
-];
 
 export default function Home() {
   return (
@@ -42,16 +38,6 @@ export default function Home() {
         <section className="folio-work" id="work" aria-labelledby="folio-work-heading" tabIndex={-1}>
           <h2 className="sr-only" id="folio-work-heading">Selected work</h2>
           <FolioWorkCarousel />
-
-          <div className="folio-more">
-            <h2>More work</h2>
-            {moreWork.map(({ slug, title, tag }) =>
-              <TrackedLink key={slug} className="folio-more-link" href={`/case-study/${slug}`}
-                eventName="case_study_cta_clicked" eventData={{ case_study_title: title, location: "home_more_work" }}>
-                <span>{title}</span><small>{tag}</small><ArrowUpRight size={20} aria-hidden="true" />
-              </TrackedLink>
-            )}
-          </div>
         </section>
 
         <section id="contact" className="folio-contact" aria-labelledby="folio-contact-heading">

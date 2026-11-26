@@ -37,12 +37,6 @@
 .folio-case-link { margin-top:.35rem; }
 .folio-case-link::after { content:""; position:absolute; inset:0; border-radius:5px; }
 .folio-card:focus-within .folio-shot, .folio-card:hover .folio-shot { border-color:var(--paper-link); }
-.folio-more { display:grid; grid-template-columns:.72fr 2.12fr; align-items:start; column-gap:clamp(1rem,3vw,4rem); padding-top:clamp(2.5rem,5vw,6rem); }
-.folio-more h2 { padding-top:1rem; font-size:1.35rem; letter-spacing:-.04em; font-weight:500; }
-.folio-more-link { border-top:1px solid #c5c5ce; display:grid; align-items:center; grid-template-columns:1fr auto; gap:.2rem .65rem; padding:1rem 0; font-size:1.25rem; }
-.folio-more-link small { color:#56556c; font-size:.85rem; grid-column:1; }
-.folio-more-link svg { grid-column:2; grid-row:1/3; }
-.folio-more-link:hover { color:var(--paper-link); border-color:var(--paper-link); }
 .folio-contact { max-width:106rem; margin:auto; padding:clamp(2.5rem,5vw,6rem) var(--gutter); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; border-top:1px solid #d1d0d7; scroll-margin-top:4.75rem; }
 .folio-contact h2 { font-weight:440; font-size:clamp(2.7rem,5.2vw,6rem); letter-spacing:-.055em; line-height:1.15; }
 .folio-contact h2 span { color:var(--paper-link); }
@@ -59,8 +53,6 @@
   .folio-primary { min-height:46px; margin-top:1rem; font-size:1rem; }
   .folio-intro small { margin-top:.65rem; font-size:.85rem; }
   .folio-card h3 { font-size:clamp(1.85rem,6.5vw,2.5rem); margin:.55rem 0 1.2rem; }
-  .folio-more { display:block; }
-  .folio-more h2 { padding:0 0 .75rem; }
   .folio-contact { align-items:flex-start; flex-direction:column; }
 }
 
@@ -94,4 +86,12 @@
 @media (max-width:719px) {
   .folio-carousel .alt-gallery-toolbar { margin-bottom:.7rem; }
   .folio-carousel .alt-project-track { --alt-loop-card-width:calc((100% - var(--folio-gap)) * .9); }
+}
+
+@media (prefers-reduced-motion:no-preference) {
+  .folio-carousel .folio-shot img { transition:transform 280ms cubic-bezier(.2,.7,.3,1); }
+  .folio-carousel .folio-card:focus-within .folio-shot img { transform:scale(1.065); }
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  .folio-carousel .folio-card:hover .folio-shot img { transform:scale(1.065); }
 }

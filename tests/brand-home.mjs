@@ -22,7 +22,9 @@ for (const [i, slug] of ["returns-platform", "rio", "morrovia", "returns-kiosk"]
 }
 assert.match(cards[2], /Independent project/i);
 assert.ok(cards.every(card => !card.includes("/case-study/farfetch")), "Farfetch stays outside the carousel");
-for (const slug of ["returns-kiosk", "farfetch"]) assert.match(main, new RegExp('href="/case-study/' + slug + '"'));
+assert.doesNotMatch(main, /More work|folio-more/);
+assert.doesNotMatch(main, /href="\/case-study\/farfetch"/);
+assert.match(html, /href="\/case-study\/farfetch"/, "Farfetch remains in Work navigation");
 assert.match(main, /London on-site or hybrid/);
 assert.match(html, /href="\/resume.pdf"/);
 assert.match(html, /sw@shaunwhiting.com/);
