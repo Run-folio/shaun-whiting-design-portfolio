@@ -13,8 +13,7 @@ export function caseStudyPresentation(study: CaseStudy) {
     : study.slug === "returns-platform"
       ? "A B2B SaaS returns platform connecting customer initiation, merchant configuration, orchestration and store processing across five continents."
       : study.summary;
-  const outcomeScope = study.slug === "rio" ? "Across field and back-office operations."
-    : study.slug === "morrovia" ? "No established adoption, revenue or conversion outcomes." : undefined;
+  const outcomeScope = study.slug === "rio" ? "Across field and back-office operations." : undefined;
   return { hero, intro, outcomeScope };
 }
 

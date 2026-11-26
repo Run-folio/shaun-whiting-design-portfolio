@@ -56,7 +56,8 @@
 .case-detail-product > button > img { width:100%; height:auto; }
 .case-detail-product > button:focus-visible { outline-offset:-4px!important; }
 .case-detail-challenge { padding-top:clamp(.3rem,1.2vw,1.1rem); }
-.case-detail-challenge > p { max-width:33ch; margin-top:.55em; font-size:clamp(1.35rem,2.05vw,2.6rem); line-height:1.18; font-weight:430; letter-spacing:-.034em; }
+.case-detail-challenge-title { margin:0 0 .55rem; font-size:clamp(1.35rem,1.65vw,1.85rem); line-height:1.18; letter-spacing:-.025em; font-weight:550; }
+.case-detail-challenge > p { max-width:52ch; margin:.65rem 0 0; font-size:clamp(1rem,1.18vw,1.18rem); line-height:1.58; font-weight:400; color:var(--case-muted); }
 .case-detail-abstract { margin-top:clamp(2rem,4vw,4.5rem); padding-top:clamp(1.5rem,2.5vw,3rem); border-top:1px solid var(--case-rule); display:grid; grid-template-columns:1fr 1fr; gap:clamp(2rem,4vw,4.5rem); }
 .case-detail-abstract p { max-width:66ch; }
 .case-detail article > section:not(.case-detail-container) { padding-inline:var(--case-gutter); }
@@ -83,13 +84,19 @@
   .case-detail-outcomes-grid > div:nth-child(odd) { border:0; padding-left:0; }
   .case-detail-outcomes-grid dd { font-size:clamp(1.45rem,7vw,2.7rem); }
   .case-detail-feature,.case-detail-abstract { grid-template-columns:minmax(0,1fr); }
-  .case-detail-challenge { padding:0; }.case-detail-challenge > p { max-width:40ch; }
+  .case-detail-challenge { padding:0; }
   .case-detail #impact > div > div > div { grid-template-columns:minmax(0,1fr); gap:.375rem; }
   .case-detail #impact > div > div > div > p:last-child { text-align:left; }
 }
 @media (prefers-reduced-motion:reduce) { .case-detail img { transition:none!important; transform:none!important; } }
 
-.case-detail-challenge .case-detail-challenge-lead { max-width:20ch; font-size:clamp(1.6rem,2.75vw,3.3rem); line-height:1.09; }
-.case-detail-challenge .case-detail-challenge-lead ~ p { margin-top:1rem; font-size:1rem; font-weight:400; line-height:1.48; letter-spacing:0; color:var(--case-muted); max-width:52ch; }
+.case-detail-challenge .case-detail-challenge-lead { color:var(--case-navy); font-weight:520; }
 .case-detail #decisions figure figcaption { color:var(--case-muted); border-color:var(--case-rule); }
 .case-detail #decisions input[type="range"]:focus-visible ~ span { background:var(--case-link); }
+
+/* Product highlights are descriptions, not quantitative metrics. */
+.case-detail-highlights .case-detail-outcomes-grid dd {
+  font-size:clamp(1.07rem,1.55vw,1.55rem);
+  line-height:1.25; letter-spacing:-.022em; font-weight:550;
+}
+.case-detail-highlights .case-detail-outcomes-grid dt { margin-top:.3rem; }

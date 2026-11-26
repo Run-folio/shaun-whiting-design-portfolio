@@ -47,7 +47,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
               </dl>
             </div>
           </header>
-          <StatBand metrics={study.metrics} scope={outcomeScope} title={displayTitle} />
+          <StatBand metrics={study.metrics} scope={outcomeScope} title={displayTitle} qualitative={isMorrovia} />
           <nav className="case-detail-jumps case-detail-container" aria-label="Case study sections">
             <a href="#context">Overview</a>
             {decisions.length ? <a href="#decisions">Decisions</a> : null}
@@ -59,7 +59,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
                 <CaseStudyImage item={heroMedia} gallery={imageGallery} hero />
               </figure>
               <div className="case-detail-challenge">
-                <h2 className="case-detail-eyebrow">The challenge</h2>
+                <h2 className="case-detail-challenge-title">The challenge</h2>
                 {study.slug === "returns-platform" ? <p className="case-detail-challenge-lead">Make paperless returns work for customers, merchants and store teams.</p> : null}
                 {study.intro.challenge.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
               </div>
@@ -229,9 +229,9 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
   return <p className="font-mono text-xs uppercase tracking-[0.18em] text-signal">{children}</p>;
 }
 
-function StatBand({ metrics, scope, title }: { metrics: Array<{ value: string; label: string }>; scope?: string; title: string }) {
+function StatBand({ metrics, scope, title, qualitative = false }: { metrics: Array<{ value: string; label: string }>; scope?: string; title: string; qualitative?: boolean }) {
   return (
-    <section aria-label={`${title} outcomes`} className="case-detail-outcomes case-detail-container">
+    <section aria-label={`${title} ${qualitative ? "product highlights" : "outcomes"}`} className={`case-detail-outcomes case-detail-container${qualitative ? " case-detail-highlights" : ""}`}>
       <dl className="case-detail-outcomes-grid">
         {metrics.map(metric => <div key={metric.label}>
           <dt>{metric.label}</dt><dd>{metric.value}</dd>

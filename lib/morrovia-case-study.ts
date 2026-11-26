@@ -16,7 +16,7 @@ export const morroviaCaseStudy: CaseStudy = {
   team: "Independent product",
   intro: {
     challenge: [
-      "A multi-stop trip is a system of connected decisions: where to go, how long to stay, how to get there and what changes when one stop moves. Those decisions are often scattered across maps, spreadsheets, booking sites and notes. A convincing itinerary is only useful if the journey works in practice.",
+      "Changing one stop can mean rechecking nights, connections and bookings across maps, spreadsheets and booking sites. Travellers need a plan they can edit without rebuilding the trip.",
     ],
     approach: [
       "I shaped the product direction, planning flows and interface, using AI-assisted implementation to turn design decisions into working screens. The focus is one editable plan, visible uncertainty and traveller control.",
@@ -26,10 +26,10 @@ export const morroviaCaseStudy: CaseStudy = {
     ],
   },
   metrics: [
-    { value: "Beta", label: "Product stage" },
-    { value: "AI-assisted", label: "Design-to-build workflow" },
-    { value: "Multi-modal", label: "Connected journey planning" },
-    { value: "Editable", label: "Traveller stays in control" },
+    { value: "Public beta", label: "Product stage" },
+    { value: "AI-assisted build", label: "From design to working product" },
+    { value: "Connected planning", label: "Stops and transport in one plan" },
+    { value: "Editable itinerary", label: "Travellers stay in control" },
   ],
   overviewMedia: [
     {
