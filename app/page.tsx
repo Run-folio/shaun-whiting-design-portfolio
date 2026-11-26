@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowDown, Linkedin, Mail } from "lucide-react";
+import { FolioCollaborations } from "@/components/folio-collaborations";
 import { FolioWorkCarousel } from "@/components/folio-work-carousel";
 import { Navigation, Footer } from "@/components/ui";
 import { BrandWave } from "@/components/brand-wave";
@@ -34,6 +35,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <FolioCollaborations />
 
         <section className="folio-work" id="work" aria-labelledby="folio-work-heading" tabIndex={-1}>
           <h2 className="sr-only" id="folio-work-heading">Selected work</h2>
