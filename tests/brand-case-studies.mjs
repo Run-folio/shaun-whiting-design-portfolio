@@ -4,7 +4,7 @@ const origin = process.argv[2] || "http://localhost:3000";
 const cases = [
   ["returns-platform", "Doddle Returns Platform", "$12M", "88.2%", "Average processing time"],
   ["rio", "Rio", "87%", "Across field and back-office operations."],
-  ["morrovia", "Morrovia", "Beta", "No established adoption, revenue or conversion outcomes."],
+  ["morrovia", "Morrovia", "Public beta", "AI-assisted build", "Editable itinerary"],
   ["returns-kiosk", "Amazon Returns Kiosk", "$60M", "$22.5M", "28% shorter", "69% lower"],
   ["farfetch", "Farfetch Mobile", "4.8★", "20M+"],
 ];
@@ -88,6 +88,11 @@ for (const [slug,title,...evidence] of cases) {
   if (slug === "returns-platform") assert.doesNotMatch(html, /to process two items|two-item processing|two items processed in 53 seconds/i);
   if (slug === "rio") assert.doesNotMatch(html, /zero re-keying/i);
   if (slug === "farfetch") assert.doesNotMatch(html, /boosted farfetch ipo/i);
+  assert.match(article, /class="case-detail-challenge-title">The challenge/, slug + ": readable challenge hierarchy");
+  if (slug === "morrovia") {
+    assert.match(article, /aria-label="Morrovia product highlights"/);
+    assert.doesNotMatch(html, /No established adoption, revenue or conversion outcomes/);
+  }
   assert.ok(article.includes("Read next"), slug+": next study");
   console.log(slug+" OK");
 }
