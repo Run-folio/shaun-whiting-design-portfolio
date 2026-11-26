@@ -1,0 +1,126 @@
+/* The personal pages share the portfolio shell but let the photographs set the pace. */
+.personal-page {
+  --personal-ink: var(--folio-navy, #1c1b37);
+  --personal-paper: var(--folio-paper, #f8f8f6);
+  --personal-aqua: var(--folio-aqua, #2bf0d7);
+  --personal-link: var(--folio-link, #006763);
+  --personal-gutter: var(--folio-gutter, clamp(1.25rem, 3.45vw, 4.75rem));
+  background: var(--personal-paper);
+  color: var(--personal-ink);
+}
+.personal-frame {
+  width: 100%;
+  max-width: 106rem;
+  padding-inline: var(--personal-gutter);
+  margin-inline: auto;
+}
+.personal-masthead {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #fff;
+  background: var(--personal-ink);
+}
+.personal-masthead::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: auto -2.5% -8% auto;
+  width: 25%;
+  height: 95%;
+  opacity: .6;
+  pointer-events: none;
+  background: url('/brand/wave-desktop.svg') right bottom / 180% 100% no-repeat;
+  mask-image: linear-gradient(95deg, transparent, #000 32%);
+}
+.personal-portrait-layout {
+  display: grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap: 2rem;
+  align-items: center;
+  padding-block: clamp(1.75rem, 3.6vw, 3.75rem) clamp(2rem, 3.4vw, 3.75rem);
+}
+.personal-kicker,.personal-crumbs,.personal-race-photo figcaption {
+  font-family: var(--font-mono, "Portfolio Geist Mono", ui-monospace, monospace);
+}
+.personal-kicker {
+  color: var(--personal-link);
+  font-size: clamp(.73rem, 1vw, .88rem);
+  font-weight: 560;
+  letter-spacing: .085em;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+.personal-masthead .personal-kicker {color:var(--personal-aqua);}
+.personal-page h1,.personal-page h2 {font-weight:420;letter-spacing:-.055em;}
+.personal-page h1 {font-size:clamp(2.8rem,5.35vw,5.75rem);line-height:.99;}
+.personal-portrait-layout h1 {max-width:14ch;margin-top:.85rem;text-wrap:balance;}
+.personal-masthead h1 span {color:var(--personal-aqua);}
+.personal-portrait {width:clamp(10rem,22vw,21rem);aspect-ratio:1;position:relative;justify-self:center;border-radius:50%;overflow:hidden;background:var(--personal-aqua);}
+.personal-portrait img {object-fit:cover;}
+.personal-run {
+  display:grid;
+  grid-template-columns:1.12fr .98fr;
+  align-items:center;
+  gap:clamp(1.5rem,3.5vw,4.75rem);
+  padding-block:clamp(1.9rem,3.3vw,3.5rem);
+}
+.personal-race-photo {position:relative;aspect-ratio:1.78;overflow:hidden;border-radius:.45rem;background:#e5e6df;}
+.personal-race-photo img {object-fit:cover;}
+.personal-race-photo figcaption {position:absolute;left:1rem;bottom:1rem;background:rgba(20,22,35,.91);color:#fff;padding:.35rem .55rem;font-size:.71rem;letter-spacing:.045em;}
+.personal-page h2 {font-size:clamp(2rem,4.05vw,4.4rem);line-height:1.02;}
+.personal-page h2 span {color:var(--personal-link);}
+.personal-run-copy h2 {max-width:16ch;margin:.75rem 0 1.15rem;text-wrap:balance;}
+.personal-run-copy p:not(.personal-kicker),.personal-travel-intro p {max-width:59ch;font-size:clamp(1rem,1.24vw,1.32rem);line-height:1.48;}
+.personal-run-copy p+p {margin-top:.7em;}
+.personal-section-line,.personal-travel-intro {display:flex;align-items:baseline;justify-content:space-between;gap:1.5rem;}
+.personal-section-line {border-top:1px solid #c5c6c7;padding-block:clamp(1.2rem,2vw,2.35rem);}
+.personal-section-line .personal-kicker {font-family:inherit;font-size:clamp(.97rem,1.4vw,1.4rem);font-weight:600;line-height:1.25;color:var(--personal-ink);}
+.personal-link {display:inline-flex;align-items:center;min-height:2.75rem;gap:.45rem;font-size:clamp(.95rem,1.15vw,1.15rem);font-weight:550;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;color:var(--personal-link);}
+.personal-link:hover,.personal-crumbs a:hover {text-decoration-thickness:2px;}
+.personal-link:focus-visible,.personal-crumbs a:focus-visible,.personal-photo-button:focus-visible {outline:2px solid currentColor;outline-offset:4px;}
+.personal-travel-intro {padding-bottom:1.65rem;}
+.personal-travel-intro h2 {flex-shrink:0;}
+.personal-photo-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(.8rem,1.5vw,1.8rem);row-gap:clamp(1.2rem,2.35vw,2.5rem);}
+.personal-photo-button {display:block;min-width:0;color:inherit;background:none;border:0;text-align:left;}
+.personal-print {position:relative;display:block;width:100%;aspect-ratio:1.54;}
+.personal-print img {object-fit:contain;}
+.personal-country {display:block;margin-top:.38rem;font-size:clamp(.9rem,1.18vw,1.2rem);font-weight:470;line-height:1.38;}
+.personal-photo-button:hover .personal-country {text-decoration:underline;text-underline-offset:3px;}
+.personal-thread {margin-top:clamp(2.5rem,5vw,5rem);padding-block:clamp(2rem,5vw,5rem);border-top:1px solid #d2d2cf;}
+.personal-thread p:not(.personal-kicker) {font-size:clamp(1.8rem,3.2vw,3.7rem);max-width:31ch;line-height:1.13;letter-spacing:-.042em;margin:1rem 0;}
+.personal-gallery-mast {padding-block:clamp(1rem,2.2vw,2.5rem) clamp(1.4rem,3vw,3.2rem);}
+.personal-crumbs {display:flex;align-items:center;gap:.72rem;font-size:clamp(.72rem,.93vw,.88rem);line-height:1.5;letter-spacing:.025em;}
+.personal-crumbs a {text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.2em;}
+.personal-crumbs a:hover {text-decoration-color:currentColor;}
+.personal-gallery-intro {display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:1.4rem;align-items:center;margin-top:.6rem;}
+.personal-gallery-intro h1 {font-size:clamp(3rem,6.35vw,6.6rem);}
+.personal-gallery-intro p {font-size:clamp(1.05rem,1.9vw,1.8rem);max-width:30ch;line-height:1.26;letter-spacing:-.02em;}
+.personal-gallery {padding-block:clamp(1.5rem,3.3vw,3.75rem);}
+.personal-back {margin-top:clamp(2.25rem,4vw,4.5rem);}
+@media (max-width:899px) {
+  .personal-photo-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .personal-travel-intro {display:grid;gap:1rem;}
+  .personal-run-copy h2 {font-size:clamp(2rem,4.4vw,3rem);}
+}
+@media (max-width:719px) {
+  .personal-run {grid-template-columns:1fr;}
+  .personal-run-copy h2 {max-width:21ch;}
+  .personal-gallery-intro {grid-template-columns:1fr;gap:.7rem;}
+  .personal-gallery-intro p {max-width:32ch;}
+  .personal-portrait-layout {grid-template-columns:minmax(0,1fr) auto;gap:1rem;}
+  .personal-portrait {width:clamp(5.65rem,22vw,9rem);}
+  .personal-portrait-layout h1 {font-size:clamp(2.2rem,6.2vw,2.9rem);}
+  .personal-masthead::after {width:25%;opacity:.3;}
+}
+@media (max-width:599px) {
+  .personal-photo-grid {grid-template-columns:minmax(0,1fr);}
+  .personal-travel-intro h2 {flex-shrink:1;}
+  .personal-section-line {gap:.5rem;}
+  .personal-section-line .personal-kicker {letter-spacing:.05em;}
+}
+@media (max-width:359px) {
+  .personal-portrait-layout {gap:.6rem;}
+  .personal-portrait {width:4.8rem;}
+  .personal-portrait-layout h1 {font-size:2rem;}
+}
