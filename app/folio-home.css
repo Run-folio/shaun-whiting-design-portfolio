@@ -27,8 +27,7 @@
 .folio-primary:hover { background:#8bfff0; }
 .folio-intro small { display:block; margin-top:.9rem; font-size:.985rem; line-height:1.4; letter-spacing:0; }
 .folio-home .folio-work { padding:clamp(2.5rem,4.6vw,5.5rem) var(--gutter) clamp(3rem,6vw,7rem); margin:auto; max-width:106rem; scroll-margin-top:4.7rem; }
-.folio-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:clamp(.95rem,2vw,2.5rem); row-gap:0; }
-.folio-card { position:relative; display:grid; grid-template-rows:subgrid; grid-row:span 5; align-items:start; }
+.folio-card { position:relative; }
 .folio-eyebrow { color:var(--paper-link); font:560 clamp(.7rem,.96vw,.92rem)/1.4 'Portfolio Geist Mono',monospace; text-transform:uppercase; letter-spacing:.045em; }
 .folio-card h3 { margin:.8rem 0 clamp(1.4rem,2.4vw,2.75rem); font-size:clamp(1.6rem,2.45vw,2.8rem); line-height:1.03; letter-spacing:-.048em; font-weight:450; }
 .folio-shot { overflow:hidden; aspect-ratio:80/47; border:1px solid #dedee4; border-radius:5px; background:#ecebf0; }
@@ -38,7 +37,7 @@
 .folio-case-link { margin-top:.35rem; }
 .folio-case-link::after { content:""; position:absolute; inset:0; border-radius:5px; }
 .folio-card:focus-within .folio-shot, .folio-card:hover .folio-shot { border-color:var(--paper-link); }
-.folio-more { display:grid; grid-template-columns:.72fr 1fr 1fr; align-items:start; column-gap:clamp(1rem,3vw,4rem); padding-top:clamp(2.5rem,5vw,6rem); }
+.folio-more { display:grid; grid-template-columns:.72fr 2.12fr; align-items:start; column-gap:clamp(1rem,3vw,4rem); padding-top:clamp(2.5rem,5vw,6rem); }
 .folio-more h2 { padding-top:1rem; font-size:1.35rem; letter-spacing:-.04em; font-weight:500; }
 .folio-more-link { border-top:1px solid #c5c5ce; display:grid; align-items:center; grid-template-columns:1fr auto; gap:.2rem .65rem; padding:1rem 0; font-size:1.25rem; }
 .folio-more-link small { color:#56556c; font-size:.85rem; grid-column:1; }
@@ -59,10 +58,40 @@
   .folio-intro .folio-tags { font-size:.85rem; }
   .folio-primary { min-height:46px; margin-top:1rem; font-size:1rem; }
   .folio-intro small { margin-top:.65rem; font-size:.85rem; }
-  .folio-cards, .folio-card { display:block; }
-  .folio-card + .folio-card { margin-top:2.75rem; }
   .folio-card h3 { font-size:clamp(1.85rem,6.5vw,2.5rem); margin:.55rem 0 1.2rem; }
   .folio-more { display:block; }
   .folio-more h2 { padding:0 0 .75rem; }
   .folio-contact { align-items:flex-start; flex-direction:column; }
+}
+
+/* Retain the original native looping rail, scoped to the navy homepage. */
+.folio-carousel { container-type:inline-size; }
+.folio-carousel .alt-gallery-toolbar { display:flex; justify-content:flex-end; margin-bottom:1.3rem; }
+.folio-carousel .alt-gallery-controls { display:flex; gap:.65rem; padding:4px; }
+.folio-carousel .alt-gallery-controls button {
+  display:grid; width:44px; height:44px; place-items:center; border:1px solid var(--navy);
+  border-radius:50%; color:var(--navy); background:var(--paper); cursor:pointer;
+}
+.folio-carousel .alt-gallery-controls button:last-child { background:var(--navy); color:var(--paper); }
+.folio-carousel .alt-gallery-controls button:hover { background:var(--aqua); color:var(--navy); }
+.folio-carousel .alt-project-track {
+  --folio-gap:clamp(1rem,2vw,2.3rem);
+  --alt-loop-card-width:calc((100% - 3 * var(--folio-gap)) / 3.18);
+  display:flex; position:relative; align-items:flex-start; gap:var(--folio-gap); overflow:auto hidden;
+  overscroll-behavior-inline:contain; overflow-anchor:none; scrollbar-width:none; padding:0 0 .5rem;
+}
+.folio-carousel .alt-project-track:focus-visible { outline:2px solid var(--paper-link); outline-offset:4px; }
+.folio-carousel .alt-project-track::-webkit-scrollbar { display:none; }
+.folio-carousel .alt-project-card { flex:0 0 var(--alt-loop-card-width); min-width:0; }
+.folio-carousel .alt-project-track-loop > .alt-project-card { position:absolute; inset:0 auto auto 0; width:var(--alt-loop-card-width); }
+.folio-carousel .alt-project-track-loop::after { content:''; display:block; flex:0 0 calc(var(--alt-loop-step) * var(--alt-loop-slots)); height:1px; pointer-events:none; }
+.folio-carousel .folio-carousel-heading { min-height:var(--alt-heading-height, auto); }
+.folio-carousel .folio-carousel-heading h3 { margin-bottom:0; }
+.folio-carousel .folio-shot { margin-top:clamp(1.05rem,2.4vw,2.75rem); }
+.folio-carousel .alt-project-card-kiosk .folio-shot img { object-position:center 35%; }
+.folio-carousel .folio-case-link:focus-visible { outline-offset:2px; }
+@media (max-width:1099px) { .folio-carousel .alt-project-track { --alt-loop-card-width:calc((100% - 2 * var(--folio-gap)) / 2.22); } }
+@media (max-width:719px) {
+  .folio-carousel .alt-gallery-toolbar { margin-bottom:.7rem; }
+  .folio-carousel .alt-project-track { --alt-loop-card-width:calc((100% - var(--folio-gap)) * .9); }
 }

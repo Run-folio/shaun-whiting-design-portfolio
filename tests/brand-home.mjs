@@ -12,12 +12,16 @@ assert.match(main, /AI products \| B2B SaaS \| 0→1/);
 assert.match(main, /href="#work"/);
 assert.match(main, /id="work"/);
 const cards = [...main.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map(m => m[1]);
-assert.equal(cards.length, 3, "Three featured projects, no carousel duplicates");
-for (const [i, slug] of ["returns-platform", "rio", "morrovia"].entries()) {
+assert.match(main, /aria-roledescription="carousel"/, "Restore the looping selected work carousel");
+assert.match(main, /Previous projects/);
+assert.match(main, /Next projects/);
+assert.equal(cards.length, 4, "Four featured projects, no carousel duplicates");
+for (const [i, slug] of ["returns-platform", "rio", "morrovia", "returns-kiosk"].entries()) {
   assert.match(cards[i], new RegExp('href="/case-study/' + slug + '"'));
   assert.match(cards[i], /<img[^>]*\balt="[^"]+"/);
 }
 assert.match(cards[2], /Independent project/i);
+assert.ok(cards.every(card => !card.includes("/case-study/farfetch")), "Farfetch stays outside the carousel");
 for (const slug of ["returns-kiosk", "farfetch"]) assert.match(main, new RegExp('href="/case-study/' + slug + '"'));
 assert.match(main, /London on-site or hybrid/);
 assert.match(html, /href="\/resume.pdf"/);

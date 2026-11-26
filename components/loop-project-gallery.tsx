@@ -8,7 +8,9 @@ import { loopOrigin, loopSlots, projectAtSlot, rebaseLoop, visibleLoop } from "@
 type Item = { title: string; href: string };
 type WindowState = { base: number; focusMask: number; height?: number };
 
-export function LoopProjectGallery({ items, renderItem }: {
+export function LoopProjectGallery({ items, renderItem, id = "work", className = "" }: {
+  id?: string | null;
+  className?: string;
   items: Item[];
   renderItem: (index: number, focusable: boolean) => ReactNode;
 }) {
@@ -133,7 +135,7 @@ export function LoopProjectGallery({ items, renderItem }: {
     : Array.from({ length: items.length }, (_, index) => index);
   const first = projectAtSlot(view.base, items.length);
   return (
-    <section id="work" role="region" aria-roledescription="carousel" aria-label="Selected work" className="alt-work alt-work-loop">
+    <section id={id ?? undefined} role="region" aria-roledescription="carousel" aria-label="Selected work" className={`alt-work alt-work-loop ${className}`}>
       <div className="alt-gallery-toolbar">
         <p className="sr-only" aria-live="polite" aria-atomic="true">{items[first].title}, project {first + 1} of {items.length}. Gallery loops in both directions.</p>
         <div className="alt-gallery-controls" aria-label="Project gallery controls">
@@ -141,7 +143,7 @@ export function LoopProjectGallery({ items, renderItem }: {
           <button type="button" aria-label="Next projects" aria-controls="alt-projects" onClick={() => move(1)}><ArrowRight size={20} aria-hidden="true" /></button>
         </div>
       </div>
-      <p id="alt-gallery-help" className="sr-only">Use the left and right arrow keys to explore projects in a continuous loop. Home moves to Rio; End moves to Amazon Returns Kiosk. You can also swipe horizontally. Tab visits links in fully visible cards.</p>
+      <p id="alt-gallery-help" className="sr-only">Use the left and right arrow keys to explore projects in a continuous loop. Home moves to {items[0].title}; End moves to {items[items.length - 1].title}. You can also swipe horizontally. Tab visits links in fully visible cards.</p>
       <ul id="alt-projects" ref={track} className={`alt-project-track${step ? " alt-project-track-loop" : ""}`}
         style={{ height: view.height, "--alt-loop-step": `${step}px`, "--alt-loop-slots": loopSlots(items.length) } as CSSProperties}
         aria-label="Case studies" aria-describedby="alt-gallery-help" tabIndex={0} onKeyDown={keyDown}>
