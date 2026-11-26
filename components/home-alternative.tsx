@@ -173,7 +173,7 @@ function ProjectCardContent({ project, layout, focusable = true }: {
               </TrackedLink>
               {layout === "grid" ? <p className="alt-project-summary">{projectContext[project.href]}</p> : null}
               <p className="alt-outcome-label">Key outcomes</p>
-              <dl className="alt-outcomes">{project.outcomes.map((originalOutcome, index) => { const outcome = project.href === "/case-study/returns-kiosk" && index === 2 ? { value: "56 sec", label: "Journey time, down from 90 sec" } : originalOutcome; return <div key={outcome.label}><dd>{outcome.value}</dd><dt>{outcome.label}</dt></div>; })}</dl>
+              <dl className="alt-outcomes">{project.outcomes.map(outcome => <div key={outcome.label}><dd>{outcome.value}</dd><dt>{outcome.label}</dt></div>)}</dl>
               <TrackedLink tabIndex={layout === "carousel" ? (focusable ? 0 : -1) : undefined} href={project.href} eventName="case_study_cta_clicked" eventData={{ case_study_title: project.title, cta_label: "View", location: "alternative_gallery" }} className="alt-view" aria-label={`View ${project.title} case study`}>View <ArrowRight size={16} aria-hidden="true" /></TrackedLink>
             </article>
   );

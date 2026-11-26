@@ -46,13 +46,13 @@ export const projects = [
     title: "Amazon Returns Kiosk",
     industry: "Logistics / Retail",
     role: "Founding / Sr Staff Product Designer, end-to-end UX",
-    outcome: "$60M in cost savings, 10x unit order worth $22.5M, dropout rate improved from 20.59% to 6.58%.",
+    outcome: "$60M in cost savings, follow-on order worth $22.5M, 69% lower abandonment.",
     summary:
       "Redesigned the high-volume kiosk journey by combining home and scan states, reducing hesitation, clarifying parcel constraints and supporting multiple returns.",
     outcomes: [
       { value: "$60M", label: "Cost savings" },
-      { value: "10x", label: "Increase in unit order value" },
-      { value: "20.6%", label: "Dropout reduction" },
+      { value: "$22.5M", label: "Follow-on kiosk order" },
+      { value: "69%", label: "Lower abandonment" },
     ],
     image: "/kiosk.jpg",
     href: "/case-study/returns-kiosk",

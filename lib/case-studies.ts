@@ -105,12 +105,12 @@ export const caseStudies: CaseStudy[] = [
         "Led the design of an AI-powered workflow for automated ticket extraction, purchase-order validation, exception-first review and orchestrated approvals.",
       ],
       outcome: [
-        "Rio cut manual touch-points by 87%, replacing manual re-keying with one connected system across field and back-office operations.",
+        "Rio cut manual touch-points by 87% across field and back-office operations and integrated the workflow with SAP.",
       ],
     },
     metrics: [
       { value: "87%", label: "Fewer manual touch-points" },
-      { value: "Zero", label: "Re-keying into SAP" },
+      { value: "AI", label: "Field-ticket extraction" },
       { value: "One", label: "Connected operational workflow" },
       { value: "SAP", label: "Automated service-entry posting" },
     ],
@@ -148,7 +148,7 @@ export const caseStudies: CaseStudy[] = [
         eyebrow: "Decision 01 / 03",
         title: "Let extraction do the typing",
         body: "Field tickets carry dozens of labour, equipment and materials lines. Rio extracts them into structured draft sheets automatically, shifting the reviewer's job from data entry to verification while keeping every value traceable to its source.",
-        resultChip: "Result → manual touch-points down 87%",
+        resultChip: "Design decision → extract a draft for people to verify",
         media: [
           {
             src: "/Rio.png",
@@ -161,7 +161,7 @@ export const caseStudies: CaseStudy[] = [
         eyebrow: "Decision 02 / 03",
         title: "Review only what needs reviewing",
         body: "Every extracted line is validated against the purchase order. Clean sheets flow through untouched; only mismatches ask for human attention, with a reason captured for every accepted exception or rejected line.",
-        resultChip: "Result → errors caught before they reach SAP",
+        resultChip: "Design decision → flag mismatches for review before posting",
         media: [
           {
             src: "/Exceptions.png",
@@ -175,7 +175,7 @@ export const caseStudies: CaseStudy[] = [
         eyebrow: "Decision 03 / 03",
         title: "Approvals as a workflow, not an inbox",
         body: "Construction managers, coordinators and back-office roles see the sheets waiting on them as sequenced tasks with clear statuses. When the final approval lands, Rio posts the service entry sheet into SAP automatically.",
-        resultChip: "Result → zero re-keying into SAP",
+        resultChip: "Design decision → post approved sheets to SAP",
         media: [
           {
             src: "/Approve.png",
@@ -218,7 +218,7 @@ export const caseStudies: CaseStudy[] = [
         "Systems in the flow|Many → one connected workflow",
       ],
       qualitative: [
-        "Errors and duplicates|Caught before posting",
+        "Exception handling|Flagged mismatches for review",
         "Operational visibility|A shared queue replaced the paper pile",
         "Human review|Focused on consequential exceptions",
         "Status model|Shared across field and back-office teams",
@@ -231,7 +231,7 @@ export const caseStudies: CaseStudy[] = [
     shortTitle: "Amazon Returns Kiosk",
     eyebrow: "Amazon / Logistics / Retail",
     title: "$60 million in cost savings through Amazon Return Kiosks",
-    summary: "A major improvement to the customer journey led to a 10x order worth $22.5 million.",
+    summary: "Redesigned the self-service returns journey for high-volume stores.",
     image: "/amazon-returns-kiosk.jpg",
     imageAlt: "Amazon Returns Kiosk interface and physical kiosk",
     role: "Founding / Sr Staff Product Designer, end-to-end UX",
@@ -245,13 +245,13 @@ export const caseStudies: CaseStudy[] = [
         "I led end-to-end UX from field research to handoff, combining the home and scan states, adding clearer parcel constraints and designing a multiple-return path for customers processing several orders.",
       ],
       outcome: [
-        "The redesigned journey cut completion time from 90 seconds to 56 seconds, reduced drop-out from 20.59% to 6.58% and helped secure a 10x unit order worth $22.5 million.",
+        "Completion time fell by 28% and abandonment by 69%. The follow-on kiosk order was worth $22.5 million.",
       ],
     },
     metrics: [
       { value: "$60M", label: "Operational cost savings" },
-      { value: "40M+", label: "Returns in three years" },
-      { value: "56 sec", label: "Journey time, down from 90 sec" },
+      { value: "40M+", label: "Returns processed" },
+      { value: "28%", label: "Shorter completion time" },
       { value: "$22.5M", label: "10x follow-on kiosk order" },
     ],
     overviewMedia: [
@@ -295,7 +295,7 @@ export const caseStudies: CaseStudy[] = [
       {
         eyebrow: "Decision 01 / 03",
         title: "Scan from the very first screen",
-        body: "Onsite research showed customers spent up to 45 seconds looking for their QR code mid-flow, or for the scanner itself. Combining the home and scan screens removed a full step and made the scanner location explicit. Warning messaging kept oversized, sharp and fragile items out of the kiosk before they could jam it, while a scan-success animation confirmed progress the moment customers needed reassurance.",
+        body: "Onsite research found that customers paused to find their QR code or the scanner. I combined the home and scan screens and made the scanner location explicit. The new flow warned against unsuitable items and used an animation to confirm a successful scan.",
         media: [
           {
             src: cloudinaryImage("amazoncase8_juwrkx.png"),
@@ -306,15 +306,15 @@ export const caseStudies: CaseStudy[] = [
       },
       {
         eyebrow: "Decision 02 / 03",
-        title: "Multiple returns, without slowing the queue",
-        body: "Some customers processed up to 20 orders in a single visit, restarting the journey each time while the queue grew. A dedicated multiple-return path let them chain QR codes in one session. A dark theme signalled they were still in-flow, and animations were sped up throughout to keep the line moving.",
-        resultChip: "Result → fewer repeat journeys, faster queues",
+        title: "Process multiple returns in one session",
+        body: "People returning several orders had to start again for each one. The dedicated path let them scan multiple QR codes in one session. A dark theme signalled that the session was still active.",
+        resultChip: "Design decision → scan several QR codes without restarting",
       },
       {
         eyebrow: "Decision 03 / 03",
         title: "Designed in the store, not the studio",
         body: "Drop-out data pointed at the screens, but the failures were physical: hidden scanners, jammed hatch doors, parcels that did not fit and staff workarounds. I validated against real kiosk hardware, observed handover with engineering and used store context to protect uptime as much as screen completion.",
-        resultChip: "Result → increased kiosk uptime",
+        resultChip: "Validation → tested on real kiosk hardware",
         comparison: {
           before: {
             src: cloudinaryImage("amazoncase7_nqcd5t"),
@@ -339,7 +339,7 @@ export const caseStudies: CaseStudy[] = [
       {
         eyebrow: "The tradeoff",
         title: "Balancing revenue pressure with the happy path",
-        body: "One stakeholder group wanted a screensaver to drive revenue; another wanted to protect the core journey. The compromise was a QR code on the final screen linking to a discount voucher in the customer’s Amazon account wallet, increasing sales without touching happy-path completion.",
+        body: "One stakeholder group wanted a screensaver to drive revenue; another wanted to protect the core journey. The compromise was a QR code on the final screen linking to a discount voucher in the customer’s Amazon account wallet, so customers could finish their return before seeing the offer.",
       },
       {
         eyebrow: "Process",
@@ -366,9 +366,9 @@ export const caseStudies: CaseStudy[] = [
     ],
     impact: {
       quantitative: [
-        "Journey time|90s → 56s",
-        "Drop-out rate|20.59% → 6.58%",
-        "Returns processed|40M in 3 years",
+        "Completion time|28% shorter",
+        "Abandonment|69% lower",
+        "Returns processed|40M+",
         "Follow-on unit order|10x, $22.5M",
       ],
       qualitative: [
@@ -399,14 +399,14 @@ export const caseStudies: CaseStudy[] = [
         "I owned product strategy and UX architecture across the suite: consumer initiation, merchant rules and branding, orchestration and the store staff app, validated through usability testing and UAT on real flows.",
       ],
       outcome: [
-        "A unified platform helped merchants run returns across five continents, with 32% more efficient processing, 88.2% user satisfaction and $12 million saved through smarter routing and store handling.",
+        "A unified platform helped merchants run returns across five continents, with 32% more efficient processing, 88.2% user satisfaction and $12 million in operating cost savings.",
       ],
     },
     metrics: [
-      { value: "$12M", label: "Saved through optimized logistics" },
+      { value: "$12M", label: "Operating cost savings" },
       { value: "+32%", label: "Processing efficiency" },
       { value: "88.2%", label: "User satisfaction" },
-      { value: "53 sec", label: "To process two items" },
+      { value: "53 sec", label: "Average processing time" },
     ],
     overviewMedia: [
       {
@@ -435,7 +435,7 @@ export const caseStudies: CaseStudy[] = [
         eyebrow: "Decision 01 / 03",
         title: "Returns start in the merchant's brand",
         body: "Customers initiate a paperless return inside the retailer's own look and feel, then get a reason, pick the best drop-off point nearby and continue with a choice shaped by the merchant's rules. The product had to feel simple for shoppers while still respecting the policies, branding and routing logic behind the scenes.",
-        resultChip: "Result → paper labels removed from the flow",
+        resultChip: "Design decision → merchant-branded, label-free returns",
         media: [
           {
             src: "/Returns.png",
@@ -448,7 +448,7 @@ export const caseStudies: CaseStudy[] = [
         eyebrow: "Decision 02 / 03",
         title: "Rules merchants can read",
         body: "Reverse logistics is really a policy problem. Instead of vendor tickets and config files, merchants write plain-language if/then rules for carrier selection, return windows, warehouse routing, non-resellable items and re-order them by priority. The same grammar covers branding, policies and routing, so one mental model runs the whole platform.",
-        resultChip: "Result → merchants configure routing without tickets",
+        resultChip: "Design decision → routing rules merchants can configure",
         media: [
           {
             src: "/rules.png",
@@ -460,8 +460,8 @@ export const caseStudies: CaseStudy[] = [
       {
         eyebrow: "Decision 03 / 03",
         title: "Grade at the counter, not the warehouse",
-        body: "Store staff answer two plain questions about each item's condition. That early grade decides the item's route: resale, repair or warehouse, before it is ever shipped. The flow was measured on task success, time on task and satisfaction, and became sharper as staff learned it.",
-        resultChip: "Result → two items processed in 53 seconds",
+        body: "Store staff record each item’s condition at the counter so that its next destination can be decided before shipping.",
+        resultChip: "Design decision → capture the item’s condition before dispatch",
         media: [
           {
             src: "/Carrier.png",
@@ -503,7 +503,7 @@ export const caseStudies: CaseStudy[] = [
         "Logistics cost savings|$12M",
         "Processing efficiency|+32%",
         "User satisfaction|88.2%",
-        "Two-item processing|53 sec",
+        "Average processing time|53 sec",
       ],
       qualitative: [
         "Merchant control|Clearer",
@@ -522,7 +522,7 @@ export const caseStudies: CaseStudy[] = [
     slug: "farfetch",
     shortTitle: "Farfetch Mobile",
     eyebrow: "Ecommerce / AI Retail",
-    title: "Boosted Farfetch IPO with apps tallying 20 million+ downloads",
+    title: "Farfetch’s native shopping apps reached 20 million+ downloads",
     summary: "Native ecommerce apps and a future retail concept exhibited at the London Design Museum.",
     image: "/farfetch-mobile.png",
     imageAlt: "Farfetch mobile commerce interface",
