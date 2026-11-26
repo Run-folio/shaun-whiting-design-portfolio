@@ -9,7 +9,7 @@ const cases = [
   ["farfetch", "Farfetch Mobile", "4.8★", "20M+"],
 ];
 // Visual evidence in reading and gallery order, captured from the rendered
-// pre-redesign portfolio (62c9ad4a). Restyling must not re-curate the stories.
+// pre-redesign portfolio (62c9ad4a), minus the retired Amazon prototype.
 const cloudinary = "https://res.cloudinary.com/dbt3wkwa3/image/upload/f_auto,q_auto/";
 const expectedMedia = {
   "returns-platform": [
@@ -39,7 +39,6 @@ const expectedMedia = {
   "returns-kiosk": [
     ["img", "/Multi-Kiosk.png"],
     ["img", cloudinary + "amazoncase8_juwrkx.png"],
-    ["iframe", "https://embed.figma.com/proto/UsS0AkbvzdqwtZ54w4v1sw/AMAZON-Kiosk-V2?node-id=6168-1473&embed-host=share&scaling=scale-down&content-scaling=fixed"],
     ["img", cloudinary + "amazoncase5_iojjuv"],
     ["img", cloudinary + "amazoncase7_nqcd5t"],
     ["img", cloudinary + "amazoncase4_w6zzqt.jpg"],
@@ -81,6 +80,11 @@ for (const [slug,title,...evidence] of cases) {
   const artifact = article.match(/<figure\b[^>]*id="artifact"[^>]*>[\s\S]*?<\/figure>/)?.[0] ?? "";
   assert.deepEqual(mediaOrder(artifact), [expectedMedia[slug][0]], slug + ": same lead image as before redesign");
   assert.deepEqual(mediaOrder(article), expectedMedia[slug], slug + ": image, video and embed reading order matches pre-redesign");
+  if (slug === "returns-kiosk") {
+    assert.doesNotMatch(html, /25 fewer steps|450 journeys|AMAZON-Kiosk-V2|Interactive Figma prototype showing the multiple-return flow/i);
+    assert.doesNotMatch(article, /<iframe\b/, "Retired private Amazon prototype is not rendered");
+    assert.match(article, /Amazon Returns Kiosk multiple-return redesign screens/, "Keep the static multiple-return walkthrough");
+  }
   assert.ok(article.includes("Read next"), slug+": next study");
   console.log(slug+" OK");
 }

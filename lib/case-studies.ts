@@ -296,7 +296,6 @@ export const caseStudies: CaseStudy[] = [
         eyebrow: "Decision 01 / 03",
         title: "Scan from the very first screen",
         body: "Onsite research showed customers spent up to 45 seconds looking for their QR code mid-flow, or for the scanner itself. Combining the home and scan screens removed a full step and made the scanner location explicit. Warning messaging kept oversized, sharp and fragile items out of the kiosk before they could jam it, while a scan-success animation confirmed progress the moment customers needed reassurance.",
-        resultChip: "Result → 25 fewer steps in 450 journeys",
         media: [
           {
             src: cloudinaryImage("amazoncase8_juwrkx.png"),
@@ -310,14 +309,6 @@ export const caseStudies: CaseStudy[] = [
         title: "Multiple returns, without slowing the queue",
         body: "Some customers processed up to 20 orders in a single visit, restarting the journey each time while the queue grew. A dedicated multiple-return path let them chain QR codes in one session. A dark theme signalled they were still in-flow, and animations were sped up throughout to keep the line moving.",
         resultChip: "Result → fewer repeat journeys, faster queues",
-        media: [
-          {
-            type: "embed",
-            src: "https://embed.figma.com/proto/UsS0AkbvzdqwtZ54w4v1sw/AMAZON-Kiosk-V2?node-id=6168-1473&embed-host=share&scaling=scale-down&content-scaling=fixed",
-            caption: "Interactive Figma prototype showing the multiple-return flow in motion.",
-            portrait: true,
-          },
-        ],
       },
       {
         eyebrow: "Decision 03 / 03",
