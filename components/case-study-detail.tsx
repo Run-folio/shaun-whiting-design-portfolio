@@ -34,7 +34,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
     <>
       <CaseStudyAnalytics slug={study.slug} title={study.shortTitle ?? study.title} />
       <Navigation />
-      <main id="main" className="case-detail">
+      <main id="main" className="case-detail" data-case={study.slug}>
         <article>
           <header id="overview" className="case-detail-opening">
             <div className="case-detail-container">
@@ -43,7 +43,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
               <h1>{displayTitle}<span>.</span></h1>
               <p className="case-detail-summary">{intro}</p>
               <dl id="scope" className="case-detail-scope">
-                <Meta label="Role" icon={UserRound} value={study.role} />
+                <Meta label="Role" icon={UserRound} value={study.slug === "returns-platform" ? "Founding Product Designer · " + study.role : study.role} />
                 <Meta label="Company" icon={Layers3} value={study.duration ?? study.year} />
                 <Meta label={study.team ? "Context" : "Industry"} icon={UsersRound} value={study.team ?? study.industry} />
               </dl>
@@ -62,6 +62,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
               </figure>
               <div className="case-detail-challenge">
                 <h2 className="case-detail-eyebrow">The challenge</h2>
+                {study.slug === "returns-platform" ? <p className="case-detail-challenge-lead">Make paperless returns work for customers, merchants and store teams.</p> : null}
                 {study.intro.challenge.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
               </div>
             </div>

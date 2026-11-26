@@ -16,6 +16,9 @@ export function caseStudyMediaPlan(study: CaseStudy, hero: CaseStudyMedia) {
       break;
     case "returns-platform":
       decisions[0].media = decisions[0].media?.map(item => ({ ...item, alt: "Merchant returns queue with statuses and exceptions", caption: "The merchant returns queue showing return status and exceptions." }));
+      // The consumer journey now leads the page; keep the original merchant
+      // detail view in the gallery, paired with the merchant queue.
+      decisions[0].media?.push({ ...study.overviewMedia![0], alt: "Merchant return detail and item timeline", caption: "The individual return detail view used alongside the merchant returns queue." });
       decisions[2].media = [
         { ...study.postDecisionsShowcase!.media, wide: true },
         ...decisions[2].media!.map(item => ({ ...item, alt: "Configured carrier methods for return routing", caption: "Carrier methods configured for return routing." })),

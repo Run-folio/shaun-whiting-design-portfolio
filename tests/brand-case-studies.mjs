@@ -20,6 +20,10 @@ for (const [slug,title,...evidence] of cases) {
   for (const id of ["context","decisions","impact"]) assert.ok(article.includes('href="#'+id+'"'), slug+": section jump "+id);
   assert.ok(article.indexOf('class="case-detail-outcomes') < article.indexOf('id="artifact"'), slug+": show the outcomes before the walkthrough");
   assert.ok(article.includes('aria-label="Open '), slug+": product image zoom");
+  if (slug === "returns-platform") {
+    assert.ok(article.includes("Doddle paperless returns: choose an item"), "Use the approved original three-phone hero");
+    assert.ok(article.includes("Merchant return detail and item timeline"), "Keep the previous merchant screenshot accessible");
+  }
   assert.ok(article.includes("Read next"), slug+": next study");
   console.log(slug+" OK");
 }

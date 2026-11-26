@@ -37,7 +37,7 @@
 .case-detail-scope dt { flex:none; }
 .case-detail-outcomes { padding-top:clamp(1.4rem,2.1vw,2.3rem); padding-bottom:clamp(1.2rem,1.8vw,1.9rem); }
 .case-detail-outcomes-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; }
-.case-detail-outcomes-grid > div { display:flex; flex-direction:column; justify-content:flex-end; min-width:0; }
+.case-detail-outcomes-grid > div { display:flex; flex-direction:column; justify-content:flex-start; min-width:0; }
 .case-detail-outcomes-grid > div + div { padding-left:clamp(1rem,2.6vw,3rem); border-left:1px solid var(--case-rule); }
 .case-detail-outcomes-grid dt { order:2; font-size:clamp(.78rem,1.03vw,1.05rem); line-height:1.4; margin-top:.26rem; color:var(--case-muted); }
 .case-detail-outcomes-grid dd { order:1; font-size:clamp(1.55rem,3.8vw,4.4rem); line-height:1; letter-spacing:-.055em; font-weight:490; }
@@ -92,3 +92,9 @@
   .case-detail #impact > div > div > div > p:last-child { text-align:left; }
 }
 @media (prefers-reduced-motion:reduce) { .case-detail img { transition:none!important; transform:none!important; } }
+
+.case-detail[data-case="returns-platform"] .case-detail-product > button > img { aspect-ratio:1.8; object-fit:cover; }
+.case-detail-challenge .case-detail-challenge-lead { max-width:20ch; font-size:clamp(1.6rem,2.75vw,3.3rem); line-height:1.09; }
+.case-detail-challenge .case-detail-challenge-lead ~ p { margin-top:1rem; font-size:1rem; font-weight:400; line-height:1.48; letter-spacing:0; color:var(--case-muted); max-width:52ch; }
+.case-detail #decisions figure figcaption { color:var(--case-muted); border-color:var(--case-rule); }
+.case-detail #decisions input[type="range"]:focus-visible ~ span { background:var(--case-link); }

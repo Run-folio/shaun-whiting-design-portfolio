@@ -32,7 +32,7 @@ export function CaseStudyPreviewImage({ item, gallery, hero = false, textOnly }:
   }, [open]);
   return <>
     <button type="button" onClick={() => setSelectedIndex(itemIndex)} className={`group cursor-zoom-in text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-inset ${textOnly ? "underline underline-offset-4" : "block w-full"}`} aria-label={textOnly ?? `Open ${item.alt ?? item.caption}`}>
-      {textOnly ?? <Image src={item.src} alt={item.alt ?? item.caption} width={caseStudyMediaSizes[item.src]?.width ?? 1800} height={caseStudyMediaSizes[item.src]?.height ?? 1100} priority={hero} sizes={hero ? "(min-width: 1600px) 1400px, (min-width: 1024px) 88vw, 94vw" : "100vw"} className="h-auto w-full transition duration-300 group-hover:scale-[1.01]" />}
+      {textOnly ?? <Image src={item.src} alt={item.alt ?? item.caption} width={caseStudyMediaSizes[item.src]?.width ?? 1800} height={caseStudyMediaSizes[item.src]?.height ?? 1100} priority={hero} sizes={hero ? "(min-width: 1696px) 980px, (min-width: 761px) 59vw, 94vw" : "100vw"} className="h-auto w-full transition duration-300 group-hover:scale-[1.01]" />}
     </button>
     {selectedIndex !== null ? <div ref={scope}><ImageLightbox images={images} selectedIndex={selectedIndex} onClose={() => setSelectedIndex(null)} onSelect={setSelectedIndex} /></div> : null}
   </>;

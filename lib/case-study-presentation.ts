@@ -6,6 +6,7 @@ export const caseStudyOrder = ["rio", "returns-platform", "morrovia", "returns-k
 export function caseStudyPresentation(study: CaseStudy) {
   const hero = study.slug === "rio" ? study.heroTestMedia!.desktop
     : study.slug === "morrovia" ? { src: "/morrovia/homepage-complete.png", alt: "Morrovia trip search with complete suggested journey cards", caption: "Choose stops or describe a trip, with suggested journeys to explore." }
+    : study.slug === "returns-platform" ? { src: study.image, alt: "Doddle paperless returns: choose an item, give a reason and find a drop-off point", caption: "The merchant-branded return journey, from item selection to the drop-off map." }
     : study.slug === "farfetch" ? study.postDecisionsShowcase!.media
     : study.overviewMedia![0];
   const intro = study.slug === "rio"
