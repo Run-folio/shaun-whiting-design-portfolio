@@ -6,7 +6,7 @@ import { TrackedLink } from "./tracked-link";
 
 const featured = [
   { href: "/case-study/returns-platform", title: "Doddle Returns Platform", tag: "B2B SaaS | Reverse logistics",
-    image: "/Returns.png", width: 2800, height: 2100, alt: "Doddle’s desktop returns dashboard showing the full returns list and processing status" },
+    image: "/RP1.png", width: 3840, height: 2160, alt: "Doddle’s desktop return detail showing items, resolution controls and parcel tracking" },
   { href: "/case-study/rio", title: "Rio: AI field ticketing", tag: "AI workflows | Energy",
     image: "/rio/rio-hero-desktop.png", width: 2800, height: 2100, alt: "Rio service entry sheets with approval statuses and supplier details" },
   { href: "/case-study/morrovia", title: "Morrovia", tag: "Independent project | Travel",
@@ -29,7 +29,7 @@ export function FolioWorkCarousel() {
                 aria-label={`View ${title} case study`}>{title}</TrackedLink></h3>
             </div>
           </div>
-          <div className="folio-shot">
+          <div className="folio-shot" data-preview={href === "/case-study/returns-platform" ? "return-detail" : undefined}>
             <Image src={image} alt={alt} width={width} height={height} sizes="(max-width: 719px) 85vw, (max-width: 1099px) 43vw, 30vw" />
           </div>
         </article>

@@ -171,13 +171,14 @@ export function AlternativeNavigation() {
                     closeMenu();
                   }}
                   small
+                  current={pathname === `/case-study/${study.slug}`}
                 >
                   {study.shortTitle ?? study.title}
                 </MobileLink>
               ))}
             </div>
             {primaryLinks.map((item) => (
-              <MobileLink key={item.href} href={item.href} onClick={closeMenu}>
+              <MobileLink key={item.href} href={item.href} onClick={closeMenu} current={pathname === item.href}>
                 {item.label}
               </MobileLink>
             ))}
@@ -208,15 +209,18 @@ function MobileLink({
   children,
   onClick,
   small = false,
+  current = false,
 }: {
   href: string;
   children: React.ReactNode;
   onClick: () => void;
   small?: boolean;
+  current?: boolean;
 }) {
   return (
     <Link
       href={href}
+      aria-current={current ? "page" : undefined}
       onClick={onClick}
       className={`rounded-xl px-3 py-3 tracking-[-0.01em] transition duration-200 hover:bg-mist hover:text-signal dark:hover:bg-white/10 ${
         small ? "text-base font-[420]" : "text-xl font-[430]"

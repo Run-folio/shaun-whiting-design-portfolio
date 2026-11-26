@@ -38,7 +38,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
       <main id="main" className="case-detail">
         <article>
           <header id="overview" className="case-detail-opening">
-            <BrandWave mobileOnly />
+            <BrandWave variant="case" />
             <div className="case-detail-container">
               <dl id="scope" className="case-detail-scope">
                 <Meta label="Role" icon={UserRound} value={role} />
@@ -228,7 +228,7 @@ function Meta({ label, value, icon: Icon }: { label: string; value: string; icon
 }
 
 function SectionEyebrow({ children }: { children: React.ReactNode }) {
-  return <p className="font-mono text-xs uppercase tracking-[0.18em] text-signal">{children}</p>;
+  return <p className="font-mono text-xs uppercase tracking-[0.18em] case-detail-label">{children}</p>;
 }
 
 function StatBand({ metrics, scope, title, qualitative = false }: { metrics: Array<{ value: string; label: string }>; scope?: string; title: string; qualitative?: boolean }) {
@@ -277,7 +277,7 @@ function DecisionSection({
   const media = section.media;
   const text = (
     <div className="max-w-xl">
-      {section.eyebrow ? <p className="mb-5 font-mono text-xs uppercase tracking-[0.18em] text-signal">{section.eyebrow}</p> : null}
+      {section.eyebrow ? <p className="mb-5 font-mono text-xs uppercase tracking-[0.18em] case-detail-label">{section.eyebrow}</p> : null}
       <h2 className="text-balance text-3xl font-[340] leading-[1.08] tracking-[-0.025em] sm:text-4xl">
         {section.title}
         <span className="text-signal">.</span>

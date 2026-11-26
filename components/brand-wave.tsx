@@ -5,12 +5,11 @@ import styles from "./brand-wave.module.css";
 import type { WaveHandle } from "./brand-wave-renderer";
 
 /** Static branded art is present at first paint, even with JS or WebGL disabled. */
-export function BrandWave({ mobileOnly = false }: { mobileOnly?: boolean }) {
+export function BrandWave({ variant = "home" }: { variant?: "home" | "case" }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const host = ref.current;
     if (!host || !("IntersectionObserver" in window)) return;
-    const mobile = window.matchMedia("(max-width: 760px)");
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const forced = window.matchMedia("(forced-colors: active)");
     let visible = false;
@@ -29,7 +28,7 @@ export function BrandWave({ mobileOnly = false }: { mobileOnly?: boolean }) {
       renderer = null;
     };
     const update = () => {
-      if ((mobileOnly && !mobile.matches) || motion.matches || forced.matches) { clear(); return; }
+      if (motion.matches || forced.matches) { clear(); return; }
       active = visible && !document.hidden;
       if (renderer) { renderer.setActive(active); return; }
       if (!active || loading || failed) return;
@@ -62,18 +61,16 @@ export function BrandWave({ mobileOnly = false }: { mobileOnly?: boolean }) {
       update();
     });
     observer.observe(host);
-    if (mobileOnly) mobile.addEventListener("change", update);
     motion.addEventListener("change", update);
     forced.addEventListener("change", update);
     document.addEventListener("visibilitychange", update);
     return () => {
       observer.disconnect();
-      if (mobileOnly) mobile.removeEventListener("change", update);
       motion.removeEventListener("change", update);
       forced.removeEventListener("change", update);
       document.removeEventListener("visibilitychange", update);
       clear();
     };
-  }, [mobileOnly]);
-  return <div ref={ref} className={mobileOnly ? `${styles.layer} ${styles.mobileOnly}` : styles.layer} data-brand-wave="" aria-hidden="true" />;
+  }, []);
+  return <div ref={ref} className={variant === "case" ? `${styles.layer} ${styles.caseLayer}` : styles.layer} data-brand-wave="" aria-hidden="true" />;
 }

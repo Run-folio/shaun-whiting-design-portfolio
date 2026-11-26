@@ -47,9 +47,12 @@
 }
 .folio-nav .alt-nav-projects .group > div { padding-top: .25rem; }
 .folio-nav .alt-nav-projects .group > div a, .folio-nav .folio-mobile-nav a { color: var(--folio-navy); }
-.folio-nav .alt-nav-projects .group > div a:is(:hover,[aria-current="page"]) { background: #ebece9; color: #bd155b; }
-.folio-nav .folio-mobile-nav a:hover { background: #ebece9; color: var(--folio-link); }
 .folio-nav .alt-nav-projects .group > div a span:last-child { color: #535266; }
+/* Keep menu states outlined without changing the size of the row. */
+.folio-nav :is(.alt-nav-projects .group > div,.folio-mobile-nav) a:is(:hover,:focus-visible,[aria-current="page"]) {
+  background:transparent; box-shadow:inset 0 0 0 1px #b7b7c4; color:#ff3d8b;
+}
+.folio-nav :is(.alt-nav-projects .group > div,.folio-mobile-nav) a[aria-current="page"] { color:var(--folio-aqua); }
 .folio-nav .alt-nav-actions > a[href^="mailto:"], .folio-nav .alt-nav-actions > button {
   border: 1px solid #e7e6ef; color: var(--folio-paper); background: transparent; border-radius: 999px;
 }

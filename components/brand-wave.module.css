@@ -30,6 +30,13 @@
   .layer { display: none; }
 }
 
+/* On wide case studies the copy occupies the left column, while the same
+   dot diameter and spacing as Home remain visible on the right. */
 @media (min-width: 761px) {
-  .mobileOnly { display: none; }
+  .caseLayer {
+    mask-image:linear-gradient(to right,transparent 0%,#000 43%);
+  }
+}
+@media (min-width: 1024px) {
+  .caseLayer { left:18%; }
 }
