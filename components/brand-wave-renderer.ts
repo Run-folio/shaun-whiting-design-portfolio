@@ -14,7 +14,7 @@ precision highp float;
 attribute vec3 position;
 attribute float accent;
 uniform vec2 viewport;
-uniform vec2 pointer;
+uniform vec3 pointer;
 uniform float time;
 uniform float dpr;
 uniform float mobile;
@@ -22,12 +22,31 @@ varying float isAccent;
 varying float diameter;
 void main() {
   vec2 p = position.xy;
-  float envelope = .63 + .37 * sin(3.14159 * clamp(p.x,0.,1.));
-  float phase = p.x*5.2 + position.z*.36;
-  float drift = (sin(time*.44 + phase) - sin(phase)) * 1.55;
-  float weight = exp(-9.0 * pow(p.x - pointer.x,2.0));
-  p.y += (drift + weight*pointer.y*3.2) * envelope * mix(1.,.30,mobile) / viewport.y;
-  p.x += .75*(cos(time*.32+p.x*3.)-cos(p.x*3.))/viewport.x;
+  float row = position.z - .5;
+  float edge = sin(3.14159 * p.x);
+  float start = smoothstep(0.,.75,time);
+  // Use two travelling phases for a rolling, gently twisting ribbon, rather
+  // than moving the whole silhouette in lockstep. Start at the fallback pose.
+  float sweep = sin(time*2.15 - p.x*7.9);
+  float fold = sin(time*1.54 - p.x*12.4 + row*.65);
+  vec2 drift = vec2(7.0*sin(time*1.8 - p.x*6.5)*edge,
+    (18.0*sweep + 6.0*fold + 9.0*row*sin(time*1.86 - p.x*6.5)) * (.65 + .35*edge));
+  drift *= start * mix(vec2(1.),vec2(.58,.37),mobile);
+
+  // A desktop pointer bends only the part of the ribbon it is near. The
+  // field follows a damped pointer, without relying on overlays or click events.
+  vec2 relative = (pointer.xy-p)*viewport;
+  vec2 local = relative / vec2(clamp(viewport.x*.13,110.,220.),104.);
+  float proximity = pointer.z * exp(-dot(local,local));
+  drift += proximity * vec2(clamp(relative.x*.2,-8.,8.)*edge,
+    -mix(13.,31.,smoothstep(-20.,30.,relative.y)));
+
+  // Ease into the frame bounds rather than chopping off the crest or marker.
+  float margin = mix(2.,mix(9.,6.,mobile),accent);
+  float room = (drift.y > 0. ? (1.-p.y) : p.y) * viewport.y - margin;
+  float maximum = max(0.,room);
+  drift.y *= maximum/(maximum + abs(drift.y) + .001);
+  p += drift/viewport;
   gl_Position = vec4(p.x*2.-1., 1.-p.y*2., 0., 1.);
   diameter = mix(mix(2.15,1.65,mobile),mix(15.,9.,mobile),accent) * dpr;
   gl_PointSize = diameter+2.;
@@ -49,7 +68,7 @@ export function createWaveRenderer(host: HTMLDivElement, onLost: () => void): Wa
   if (!context) throw new Error("Optional WebGL2 decorative surface unavailable");
   const renderer = new WebGLRenderer({ canvas, context, alpha: true, antialias: false });
   renderer.setClearColor(0, 0);
-  const uniforms = { viewport: { value: { x: 1, y: 1 } }, pointer: { value: { x: .5, y: 0 } }, time: { value: 0 }, dpr: { value: 1 }, mobile: { value: 0 } };
+  const uniforms = { viewport: { value: { x: 1, y: 1 } }, pointer: { value: { x: .5, y: .5, z: 0 } }, time: { value: 0 }, dpr: { value: 1 }, mobile: { value: 0 } };
   const material = new RawShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, transparent: true, depthTest:false, depthWrite: false, uniforms });
   const geometry = new BufferGeometry();
   const points = new Points(geometry,material);
@@ -64,15 +83,23 @@ export function createWaveRenderer(host: HTMLDivElement, onLost: () => void): Wa
   let width = 0;
   let height = 0;
   const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-  const target = { x: .5, y: 0 };
+  const target = { x: .5, y: .5, strength: 0 };
   const parent = host.parentElement;
   const move = (e: PointerEvent) => {
-    if (!finePointer.matches || e.pointerType === "touch") return;
+    if (!running || !finePointer.matches || e.pointerType === "touch") return;
     const rect = host.getBoundingClientRect();
-    target.x = Math.max(0,Math.min(1,(e.clientX-rect.left)/Math.max(1,width)));
-    target.y = Math.max(-1,Math.min(1,2*(e.clientY-rect.top)/Math.max(1,height)-1));
+    const x = Math.max(0,Math.min(1,(e.clientX-rect.left)/Math.max(1,rect.width)));
+    const y = Math.max(0,Math.min(1,(e.clientY-rect.top)/Math.max(1,rect.height)));
+    if (!target.strength && uniforms.pointer.value.z < .025) {
+      // Enter at the pointer, not with a spurious sweep from the last location.
+      uniforms.pointer.value.x = x;
+      uniforms.pointer.value.y = y;
+    }
+    target.x = x;
+    target.y = y;
+    target.strength = 1;
   };
-  const leave = () => { target.y = 0; };
+  const leave = () => { target.strength = 0; };
   const resize = () => {
     if (disposed) return;
     const w = Math.round(host.clientWidth), h = Math.round(host.clientHeight);
@@ -95,10 +122,15 @@ export function createWaveRenderer(host: HTMLDivElement, onLost: () => void): Wa
   const draw = (t: number) => {
     if (!running || disposed) return;
     if (!last || t-last >= 1000/30 - .5) {
-      if (last) uniforms.time.value += Math.min(.1,(t-last)/1000);
+      const seconds = last ? Math.min(.1,(t-last)/1000) : 0;
+      uniforms.time.value += seconds;
       last = t;
-      uniforms.pointer.value.x += .1*(target.x-uniforms.pointer.value.x);
-      uniforms.pointer.value.y += .1*(target.y-uniforms.pointer.value.y);
+      const follow = 1 - Math.exp(-seconds * 10);
+      const release = 1 - Math.exp(-seconds * 6);
+      const pointer = uniforms.pointer.value;
+      pointer.x += follow*(target.x-pointer.x);
+      pointer.y += follow*(target.y-pointer.y);
+      pointer.z += (target.strength ? follow : release)*(target.strength-pointer.z);
       resize();
       if (width && height) {
         try {
@@ -120,7 +152,11 @@ export function createWaveRenderer(host: HTMLDivElement, onLost: () => void): Wa
       if (disposed || running === value) return;
       running=value; last=0;
       if (running) frame=requestAnimationFrame(draw);
-      else { cancelAnimationFrame(frame); target.y = 0; }
+      else {
+        cancelAnimationFrame(frame);
+        target.strength = 0;
+        uniforms.pointer.value.z = 0;
+      }
     },
     dispose() {
       disposed=true; running=false; cancelAnimationFrame(frame);
