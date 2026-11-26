@@ -32,3 +32,9 @@ test("static art and WebGL share the same geometry; only one accent and no rando
     assert.ok(markup.length < 30000);
   }
 });
+
+test("keeps the full upper crest inside short desktop headers", () => {
+  for (const [w,h] of [[1440,430],[1024,300]]) {
+    assert.ok(Math.min(...buildWave(w,h).dots.map(p=>p.y*h)) >= 6);
+  }
+});

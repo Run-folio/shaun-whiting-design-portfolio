@@ -104,7 +104,7 @@ export function createWaveRenderer(host: HTMLDivElement, onLost: () => void): Wa
         try {
           renderer.render(scene,camera);
           if (context.isContextLost()) { onLost(); return; }
-          host.dataset.renderer="webgl";
+          if (host.dataset.renderer !== "webgl") host.dataset.renderer="webgl";
         } catch { onLost(); return; }
       }
     }
