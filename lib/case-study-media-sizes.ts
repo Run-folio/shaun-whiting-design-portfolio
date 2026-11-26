@@ -1,5 +1,8 @@
 // Existing product assets: measured intrinsic dimensions, no cropped/stretched UI.
 export const caseStudyMediaSizes: Record<string, {width:number; height:number}> = {
+  "/morrovia/itinerary-2026-11.webp": { width: 1600, height: 1050 },
+  "/morrovia/transport-2026-11.webp": { width: 1600, height: 1050 },
+  "/morrovia/map-2026-11.webp": { width: 1600, height: 1000 },
   "/morrovia/homepage-2026-11.webp": { width: 1800, height: 1066 },
   "/morrovia/homepage-complete.png": { width: 1800, height: 930 },
   "/morrovia/itinerary-current.png": { width: 1800, height: 1070 },
@@ -45,7 +48,7 @@ export const caseStudyMediaSizes: Record<string, {width:number; height:number}> 
   },
   "/morrovia/transport-mobile.webp": {
     "width": 390,
-    "height": 1292
+    "height": 844
   },
   "/morrovia/map-desktop.webp": {
     "width": 1440,

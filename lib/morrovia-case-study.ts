@@ -33,8 +33,8 @@ export const morroviaCaseStudy: CaseStudy = {
   ],
   overviewMedia: [
     {
-      src: "/morrovia/transport-current.png",
-      alt: "Morrovia Japan, China and Hong Kong connections with transport estimates and booking states",
+      src: "/morrovia/transport-2026-11.webp",
+      alt: "Morrovia’s Japan and South Korea connections, with the estimated Tokyo–Kanazawa rail leg expanded",
       caption: "Transport mode, estimated duration and booking state stay visible between stops.",
       wide: true,
     },
@@ -57,8 +57,8 @@ export const morroviaCaseStudy: CaseStudy = {
       body: "The public homepage offers two starting points: choose stops or describe a trip. I designed the flow around turning that intent into a suggested route the traveller can review and change. The aim is a useful starting point with visible assumptions, rather than a finished answer to accept. The itinerary brings day-by-day planning and activity ideas into the same workspace.",
       resultChip: "Design principle → a starting point the traveller can change",
       media: [{
-        src: "/morrovia/itinerary-current.png",
-        alt: "Current Tokyo itinerary with day parts, trip stops and activity suggestions",
+        src: "/morrovia/itinerary-2026-11.webp",
+        alt: "Tokyo day plan with a Mount Fuji and Hakone activity, the itinerary and a map",
         caption: "A day-by-day itinerary keeps travel, open time and activity ideas together.",
       }],
     },
@@ -69,7 +69,7 @@ export const morroviaCaseStudy: CaseStudy = {
       resultChip: "Design principle → show uncertainty where the decision happens",
       media: [
         {
-          src: "/morrovia/transport-current.png",
+          src: "/morrovia/transport-2026-11.webp",
           alt: "Morrovia connections showing transport mode, estimated duration and booking state",
           caption: "Transport mode, estimated duration and booking state stay visible between stops.",
           wide: true,
@@ -83,8 +83,8 @@ export const morroviaCaseStudy: CaseStudy = {
       resultChip: "Design principle → reliability earns the right to feel simple",
       media: [
         {
-          src: "/morrovia/map-route-current.png",
-          alt: "Whole-trip map connecting London, Japan, China and Hong Kong with numbered stops and transport modes",
+          src: "/morrovia/map-2026-11.webp",
+          alt: "Morrovia route map linking seven Japanese and South Korean stops, with the first Tokyo day selected",
           caption: "The full route keeps stop order and travel between places in view.",
           wide: true,
         },

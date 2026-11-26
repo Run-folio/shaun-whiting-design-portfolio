@@ -39,7 +39,7 @@ export const projects = [
       { value: "AI-assisted", label: "Design and build workflow" },
       { value: "Editable", label: "Traveller stays in control" },
     ],
-    image: "/morrovia/transport-desktop.webp",
+    image: "/morrovia/transport-2026-11.webp",
     href: "/case-study/morrovia",
   },
   {
