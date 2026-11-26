@@ -68,4 +68,4 @@ body {
   --folio-gutter: clamp(1.25rem, 3.45vw, 4.75rem);
 }
 .folio-footer { max-width:106rem; margin-inline:auto; padding-inline:var(--folio-gutter); }
-.folio-footer > div { color:#535266; border-color:#d1d0d7; }
+.folio-footer > div { color:#535266; }

@@ -143,7 +143,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
           </section>
 
           {processSection ? (
-            <section id="process" className="border-y border-black/10 px-6 py-14 sm:px-8 lg:px-20 xl:px-24">
+            <section id="process" className="border-t border-black/10 px-6 py-14 sm:px-8 lg:px-20 xl:px-24">
               <Reveal className="mx-auto max-w-[1200px]">
                 <div className="grid gap-8 lg:grid-cols-[minmax(0,0.32fr)_minmax(0,0.68fr)]">
                   <div>
@@ -366,7 +366,7 @@ function MediaFigure({ item: originalItem, gallery }: { item: CaseStudyMedia; ga
         }
       >
         {item.type === "video" ? (
-          <ViewportVideo src={item.src} autoplayOnView={false} className="h-full w-full object-contain" />
+          <ViewportVideo src={item.src} poster={item.poster} autoplayOnView={item.autoplayOnView} className="h-full w-full object-contain" />
         ) : item.type === "embed" ? (
           <iframe
             src={item.src}

@@ -21,6 +21,7 @@ export type CaseStudyMedia = {
   callouts?: CaseStudyCallout[];
   /** When true, muted video begins playback once it enters the viewport. */
   autoplayOnView?: boolean;
+  poster?: string;
 };
 
 export type CaseStudy = {
@@ -118,6 +119,7 @@ export const caseStudies: CaseStudy[] = [
       {
         type: "video",
         src: "/rio/ses-flow-video.mp4",
+        poster: "/rio/ses-flow-poster.webp",
         caption: "SES flow prototype showing how Rio moves field tickets through extraction, review, approval and SAP posting.",
         wide: true,
         autoplayOnView: true,
@@ -252,7 +254,7 @@ export const caseStudies: CaseStudy[] = [
       { value: "$60M", label: "Operational cost savings" },
       { value: "40M+", label: "Returns processed" },
       { value: "28%", label: "Shorter completion time" },
-      { value: "$22.5M", label: "10x follow-on kiosk order" },
+      { value: "$22.5M", label: "Follow-on kiosk order" },
     ],
     overviewMedia: [
       {
@@ -369,7 +371,7 @@ export const caseStudies: CaseStudy[] = [
         "Completion time|28% shorter",
         "Abandonment|69% lower",
         "Returns processed|40M+",
-        "Follow-on unit order|10x, $22.5M",
+        "Follow-on kiosk order|$22.5M",
       ],
       qualitative: [
         "Kiosk uptime|Increased",

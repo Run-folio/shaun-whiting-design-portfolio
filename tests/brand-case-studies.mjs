@@ -82,6 +82,7 @@ for (const [slug,title,...evidence] of cases) {
   assert.deepEqual(mediaOrder(article), expectedMedia[slug], slug + ": image, video and embed reading order matches pre-redesign");
   if (slug === "returns-kiosk") {
     assert.doesNotMatch(html, /25 fewer steps|450 journeys|AMAZON-Kiosk-V2|Interactive Figma prototype showing the multiple-return flow|20\.59%|6\.58%|56 seconds|56 sec/i);
+    assert.doesNotMatch(article, /(?:10x|10×).{0,24}(?:kiosk|unit)|(?:kiosk|unit).{0,24}(?:10x|10×)/i);
     assert.doesNotMatch(article, /<iframe\b/, "Retired private Amazon prototype is not rendered");
     assert.match(article, /Amazon Returns Kiosk multiple-return redesign screens/, "Keep the static multiple-return walkthrough");
   }
@@ -93,6 +94,12 @@ for (const [slug,title,...evidence] of cases) {
     assert.match(article, /aria-label="Morrovia product highlights"/);
     assert.doesNotMatch(html, /No established adoption, revenue or conversion outcomes/);
   }
+  if (slug === "rio") {
+    assert.match(article, /<video\b[^>]*poster="\/rio\/ses-flow-poster.webp"/);
+    assert.match(article, /<video\b[^>]*loop=""/);
+  }
+  assert.doesNotMatch(article, /id="process" class="border-y/);
+  assert.doesNotMatch(html, /class="flex flex-col gap-4 border-t hairline pt-8/);
   assert.ok(article.includes("Read next"), slug+": next study");
   console.log(slug+" OK");
 }
