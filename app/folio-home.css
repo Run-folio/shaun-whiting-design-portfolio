@@ -26,7 +26,7 @@
 }
 .folio-primary:hover { background:#8bfff0; }
 .folio-intro small { display:block; margin-top:.9rem; font-size:.985rem; line-height:1.4; letter-spacing:0; }
-.folio-home .folio-work { padding:clamp(2rem,3.7vw,4.25rem) var(--gutter) clamp(2rem,3.75vw,4rem); margin:auto; scroll-margin-top:4.7rem; }
+.folio-home .folio-work { padding:clamp(1.5rem,2.6vw,3rem) var(--gutter) clamp(2rem,3.75vw,4rem); margin:auto; scroll-margin-top:4.7rem; }
 .folio-card { position:relative; }
 .folio-eyebrow { color:var(--pink); font:500 .75rem/1.45 'Portfolio Geist Mono',monospace; text-transform:uppercase; letter-spacing:.075em; }
 .folio-card h3 { margin:.8rem 0 clamp(1.4rem,2.4vw,2.75rem); font-size:clamp(1.6rem,2.45vw,2.8rem); line-height:1.03; letter-spacing:-.048em; font-weight:450; }
@@ -64,7 +64,7 @@
 }
 
 /* Retain the original native looping rail, scoped to the navy homepage. */
-.folio-carousel .alt-gallery-toolbar { display:flex; justify-content:flex-end; margin-bottom:1rem; }
+.folio-carousel .alt-gallery-toolbar { display:flex; justify-content:flex-end; margin-top:.15rem; }
 .folio-carousel .alt-gallery-controls { display:flex; align-items:center; gap:.65rem; padding:4px; }
 .folio-carousel .alt-gallery-position { font:500 .8rem/1 'Portfolio Geist Mono',monospace; min-width:3.5em; text-align:center; }
 .folio-carousel .alt-gallery-controls button {

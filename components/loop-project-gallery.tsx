@@ -8,10 +8,11 @@ import { loopOrigin, loopSlots, projectAtSlot, rebaseLoop, visibleLoop } from "@
 type Item = { title: string; href: string };
 type WindowState = { base: number; focusMask: number; height?: number };
 
-export function LoopProjectGallery({ items, renderItem, id = "work", className = "", showPosition = false }: {
+export function LoopProjectGallery({ items, renderItem, id = "work", className = "", showPosition = false, controlsBelow = false }: {
   id?: string | null;
   className?: string;
   showPosition?: boolean;
+  controlsBelow?: boolean;
   items: Item[];
   renderItem: (index: number, focusable: boolean) => ReactNode;
 }) {
@@ -135,16 +136,19 @@ export function LoopProjectGallery({ items, renderItem, id = "work", className =
   const slots = step ? Array.from({ length: items.length }, (_, offset) => view.base + offset)
     : Array.from({ length: items.length }, (_, index) => index);
   const first = projectAtSlot(view.base, items.length);
+  const toolbar = (
+    <div className="alt-gallery-toolbar">
+      <p className="sr-only" aria-live="polite" aria-atomic="true">{items[first].title}, project {first + 1} of {items.length}. Gallery loops in both directions.</p>
+      <div className="alt-gallery-controls" aria-label="Project gallery controls">
+        <button type="button" aria-label="Previous projects" aria-controls="alt-projects" onClick={() => move(-1)}><ArrowLeft size={20} aria-hidden="true" /></button>
+        {showPosition && <span className="alt-gallery-position" aria-hidden="true">{first + 1} / {items.length}</span>}
+        <button type="button" aria-label="Next projects" aria-controls="alt-projects" onClick={() => move(1)}><ArrowRight size={20} aria-hidden="true" /></button>
+      </div>
+    </div>
+  );
   return (
     <section id={id ?? undefined} role="region" aria-roledescription="carousel" aria-label="Selected work" className={`alt-work alt-work-loop ${className}`}>
-      <div className="alt-gallery-toolbar">
-        <p className="sr-only" aria-live="polite" aria-atomic="true">{items[first].title}, project {first + 1} of {items.length}. Gallery loops in both directions.</p>
-        <div className="alt-gallery-controls" aria-label="Project gallery controls">
-          <button type="button" aria-label="Previous projects" aria-controls="alt-projects" onClick={() => move(-1)}><ArrowLeft size={20} aria-hidden="true" /></button>
-          {showPosition && <span className="alt-gallery-position" aria-hidden="true">{first + 1} / {items.length}</span>}
-          <button type="button" aria-label="Next projects" aria-controls="alt-projects" onClick={() => move(1)}><ArrowRight size={20} aria-hidden="true" /></button>
-        </div>
-      </div>
+      {!controlsBelow && toolbar}
       <p id="alt-gallery-help" className="sr-only">Use the left and right arrow keys to explore projects in a continuous loop. Home moves to {items[0].title}; End moves to {items[items.length - 1].title}. You can also swipe horizontally. Tab visits links in fully visible cards.</p>
       <ul id="alt-projects" ref={track} className={`alt-project-track${step ? " alt-project-track-loop" : ""}`}
         style={{ height: view.height, "--alt-loop-step": `${step}px`, "--alt-loop-slots": loopSlots(items.length) } as CSSProperties}
@@ -160,6 +164,7 @@ export function LoopProjectGallery({ items, renderItem, id = "work", className =
           </li>;
         })}
       </ul>
+      {controlsBelow && toolbar}
     </section>
   );
 }

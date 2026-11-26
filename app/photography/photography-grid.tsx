@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { ImageLightbox } from "@/components/image-lightbox";
-import { cloudinaryImage, type TravelPhoto } from "@/lib/photography";
+import { travelPhotoSource, type TravelPhoto } from "@/lib/photography";
 
 export function PhotographyGrid({
   photos,
@@ -37,8 +37,8 @@ export function PhotographyGrid({
           >
             <span className="personal-print">
               <Image
-                src={cloudinaryImage(photo.publicId)}
-                alt={`Travel photography from ${photo.country}`}
+                src={travelPhotoSource(photo)}
+                alt={photo.alt ?? `Travel photography from ${photo.country}`}
                 fill
                 sizes={variant === "featured"
                   ? "(min-width: 1024px) 31vw, (min-width: 640px) 50vw, 100vw"
@@ -69,8 +69,8 @@ export function PhotographyGrid({
         }}>
           <ImageLightbox
             images={photos.map((photo) => ({
-              src: cloudinaryImage(photo.publicId),
-              alt: `Travel photography from ${photo.country}`,
+              src: travelPhotoSource(photo),
+              alt: photo.alt ?? `Travel photography from ${photo.country}`,
               label: photo.country,
               detail: photo.flag,
             }))}

@@ -36,3 +36,11 @@ test("photo cards use the original separate grid proportions with a flag-and-cou
   assert.match(css, /@media \(hover: hover\) and \(pointer: fine\)/);
   assert.match(css, /\.personal-photo-button:focus-visible \.personal-photo-caption/);
 });
+
+test("Cyprus uses Shaun’s supplied local photograph in the grid and lightbox",()=>{
+  const source=read("lib/photography.ts"),grid=read("app/photography/photography-grid.tsx");
+  assert.match(source,/{ country: "Cyprus", flag: "🇨🇾", publicId: "cyprus", src: "\/photography\/cyprus.webp"/);
+  assert.equal((source.match(/country: "Cyprus"/g)||[]).length,1);
+  assert.ok(readFileSync(new URL("../public/photography/cyprus.webp",import.meta.url)).length>10000);
+  assert.equal((grid.match(/travelPhotoSource\(photo\)/g)||[]).length,2);
+});

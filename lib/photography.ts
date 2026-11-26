@@ -2,10 +2,14 @@ export type TravelPhoto = {
   country: string;
   flag: string;
   publicId: string;
+  src?: string;
+  alt?: string;
 };
 
 export const cloudinaryImage = (publicId: string) =>
   `https://res.cloudinary.com/dbt3wkwa3/image/upload/f_auto,q_auto/${publicId}`;
+
+export const travelPhotoSource = (photo: TravelPhoto) => photo.src ?? cloudinaryImage(photo.publicId);
 
 export const travelPhotos: TravelPhoto[] = [
   { country: "Guatemala", flag: "🇬🇹", publicId: "guatemala_jkuqfl" },
@@ -29,7 +33,7 @@ export const travelPhotos: TravelPhoto[] = [
   { country: "Colombia", flag: "🇨🇴", publicId: "colombia_kosli8" },
   { country: "Costa Rica", flag: "🇨🇷", publicId: "costarica_pctzft" },
   { country: "Croatia", flag: "🇭🇷", publicId: "croatia_bqhab6" },
-  { country: "Cyprus", flag: "🇨🇾", publicId: "cyprus_v4o7jk" },
+  { country: "Cyprus", flag: "🇨🇾", publicId: "cyprus", src: "/photography/cyprus.webp", alt: "A small white building on a rocky islet off the coast of Cyprus" },
   { country: "Czech Republic", flag: "🇨🇿", publicId: "czechrepublic_x2pl85" },
   { country: "Denmark", flag: "🇩🇰", publicId: "denmark_b2ksko" },
   { country: "Ecuador", flag: "🇪🇨", publicId: "ecuador_nak1ga" },
