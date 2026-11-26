@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight, Layers3, UserRound, UsersRound } from "lucide-react";
 import { BeforeAfterSlider } from "@/components/before-after-slider";
 import { CaseStudyAnalytics } from "@/components/case-study-analytics";
 import { CaseStudyPreviewImage as CaseStudyImage } from "@/components/case-study-preview-image";
@@ -13,6 +13,7 @@ import { caseStudyMediaPlan } from "@/lib/case-study-media-plan";
 
 export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextStudy: CaseStudy }) {
   const { hero: heroMedia, intro, outcomeScope } = caseStudyPresentation(study);
+  const displayTitle = study.slug === "returns-platform" ? "Doddle Returns Platform" : study.shortTitle ?? study.title;
   const isMorrovia = study.slug === "morrovia";
   const usesStructuredDecisions = isMorrovia || study.slug === "rio" || study.slug === "returns-kiosk" || study.slug === "returns-platform";
   const { sections, walkthrough, gallery: imageGallery } = caseStudyMediaPlan(study, heroMedia);
@@ -33,31 +34,40 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
     <>
       <CaseStudyAnalytics slug={study.slug} title={study.shortTitle ?? study.title} />
       <Navigation />
-      <main id="main" className="case-detail bg-paper text-ink dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
+      <main id="main" className="case-detail">
         <article>
           <header id="overview" className="case-detail-opening">
             <div className="case-detail-container">
-              <Link href="/#work" className="case-detail-back"><ArrowLeft size={16} aria-hidden="true" /> Back to selected work</Link>
-              <p className="case-detail-eyebrow font-mono text-signal">{caseStudyEyebrow(study)}</p>
-              <h1>{study.shortTitle}<span className="text-signal">.</span></h1>
+              <nav aria-label="Breadcrumb" className="case-detail-crumb"><Link href="/#work">Work</Link><span aria-hidden="true">/</span><span aria-current="page">{displayTitle}</span></nav>
+              <p className="case-detail-eyebrow">{caseStudyEyebrow(study)}</p>
+              <h1>{displayTitle}<span>.</span></h1>
+              <p className="case-detail-summary">{intro}</p>
+              <dl id="scope" className="case-detail-scope">
+                <Meta label="Role" icon={UserRound} value={study.role} />
+                <Meta label="Company" icon={Layers3} value={study.duration ?? study.year} />
+                <Meta label={study.team ? "Context" : "Industry"} icon={UsersRound} value={study.team ?? study.industry} />
+              </dl>
             </div>
           </header>
-          <section id="scope" className="case-detail-scope case-detail-container">
-            <div><p className="case-detail-summary">{intro}</p></div>
-            <dl><Meta label="Role" value={study.role} /><Meta label="Team" value={study.team ?? study.industry} /><Meta label="Company" value={study.duration ?? study.year} /></dl>
-          </section>
-          <section id="artifact" aria-label={`${study.shortTitle ?? study.title} product workspace`} className="case-detail-product case-detail-container">
-            <figure>
-              <CaseStudyImage item={heroMedia} gallery={imageGallery} hero />
-            </figure>
-          </section>
-          <StatBand metrics={study.metrics} scope={outcomeScope} title={study.shortTitle ?? study.title} />
-
-          <section id="context" className="px-6 py-12 sm:px-8 sm:py-14 lg:px-20 lg:py-16 xl:px-24">
-            <div className="mx-auto grid max-w-[1400px] gap-8 lg:grid-cols-3 lg:gap-12">
-              <TldrColumn title="The Problem" paragraphs={study.intro.challenge} />
-              <TldrColumn title="What I Did" paragraphs={study.intro.approach ?? [study.role]} />
-              <TldrColumn title="The Outcome" paragraphs={study.intro.outcome} />
+          <StatBand metrics={study.metrics} scope={outcomeScope} title={displayTitle} />
+          <nav className="case-detail-jumps case-detail-container" aria-label="Case study sections">
+            <a href="#context">Overview</a>
+            {decisions.length ? <a href="#decisions">Decisions</a> : null}
+            <a href="#impact">Impact</a>
+          </nav>
+          <section id="context" className="case-detail-context case-detail-container" aria-label="Project overview">
+            <div className="case-detail-feature">
+              <figure id="artifact" className="case-detail-product">
+                <CaseStudyImage item={heroMedia} gallery={imageGallery} hero />
+              </figure>
+              <div className="case-detail-challenge">
+                <h2 className="case-detail-eyebrow">The challenge</h2>
+                {study.intro.challenge.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+              </div>
+            </div>
+            <div className="case-detail-abstract">
+              <TldrColumn title="What I did" paragraphs={study.intro.approach ?? [study.role]} />
+              <TldrColumn title="The outcome" paragraphs={study.intro.outcome} />
             </div>
           </section>
 
@@ -66,13 +76,13 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
               <Reveal className="mx-auto max-w-[1200px]">
                 <SectionEyebrow>Product vision</SectionEyebrow>
                 <h2 className="mt-4 text-3xl font-[340] leading-[1.08] tracking-[-0.025em]">{visionSection.title}</h2>
-                <p className="mt-6 max-w-4xl text-lg font-[330] leading-[1.55] text-black/72 dark:text-white/72">{visionSection.body}</p>
+                <p className="mt-6 max-w-4xl text-lg font-[330] leading-[1.55] text-black/72">{visionSection.body}</p>
               </Reveal>
             </section>
           ) : null}
 
           {walkthrough ? (
-            <section id="walkthrough" className="bg-mist px-6 py-14 dark:bg-[#151514] sm:px-8 sm:py-16 lg:px-20 lg:py-20 xl:px-24">
+            <section id="walkthrough" className="bg-mist px-6 py-14 sm:px-8 sm:py-16 lg:px-20 lg:py-20 xl:px-24">
               <Reveal className="mx-auto max-w-[1100px]">
                 <SectionEyebrow>Workflow in motion</SectionEyebrow>
                 <div className="mt-6"><MediaFigure item={{ ...walkthrough, wide: true }} gallery={imageGallery} /></div>
@@ -91,7 +101,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
           ) : null}
 
           {callout ? (
-            <section className="border-y border-black/10 px-6 py-14 dark:border-white/10 sm:px-8 lg:px-20 xl:px-24">
+            <section className="border-y border-black/10 px-6 py-14 sm:px-8 lg:px-20 xl:px-24">
               <Reveal className="mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-[minmax(0,0.34fr)_minmax(0,0.66fr)] lg:items-start">
                 <div>
                   <SectionEyebrow>{callout.eyebrow ?? "Callout"}</SectionEyebrow>
@@ -100,7 +110,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
                     <span className="text-signal">.</span>
                   </h2>
                 </div>
-                <div className="rounded-lg bg-block-lime p-7 text-ink sm:p-8">
+                <div className="case-detail-callout p-7 sm:p-8">
                   <p className="text-balance text-[clamp(1.15rem,1.6vw,1.55rem)] font-[340] leading-[1.34] tracking-[-0.02em]">
                     {callout.body}
                   </p>
@@ -110,13 +120,13 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
           ) : null}
 
           {buildingSection ? (
-            <section id="building" className="border-y border-black/10 px-6 py-14 dark:border-white/10 sm:px-8 lg:px-20 xl:px-24">
+            <section id="building" className="border-y border-black/10 px-6 py-14 sm:px-8 lg:px-20 xl:px-24">
               <Reveal className="mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-[minmax(0,0.32fr)_minmax(0,0.68fr)]">
                 <div>
                   <SectionEyebrow>AI-assisted building</SectionEyebrow>
                   <h2 className="mt-4 text-3xl font-[340] leading-[1.08] tracking-[-0.025em]">{buildingSection.title}</h2>
                 </div>
-                <p className="text-lg font-[330] leading-[1.55] text-black/72 dark:text-white/72">{buildingSection.body}</p>
+                <p className="text-lg font-[330] leading-[1.55] text-black/72">{buildingSection.body}</p>
               </Reveal>
             </section>
           ) : null}
@@ -134,7 +144,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
           </section>
 
           {processSection ? (
-            <section id="process" className="border-y border-black/10 px-6 py-14 dark:border-white/10 sm:px-8 lg:px-20 xl:px-24">
+            <section id="process" className="border-y border-black/10 px-6 py-14 sm:px-8 lg:px-20 xl:px-24">
               <Reveal className="mx-auto max-w-[1200px]">
                 <div className="grid gap-8 lg:grid-cols-[minmax(0,0.32fr)_minmax(0,0.68fr)]">
                   <div>
@@ -145,7 +155,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
                   </div>
                   <div>
                     {processSection.body ? (
-                      <p className="max-w-4xl text-base font-[330] leading-[1.55] tracking-[-0.01em] text-black/68 dark:text-white/68">
+                      <p className="max-w-4xl text-base font-[330] leading-[1.55] tracking-[-0.01em] text-black/68">
                         {processSection.body}
                       </p>
                     ) : null}
@@ -168,10 +178,10 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
                   {study.nextSteps.map((step) => (
                     <StaggerItem
                       key={step.title}
-                      className="rounded-lg bg-mist p-6 ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5 dark:bg-[#151514]"
+                      className="rounded-lg bg-mist p-6 ring-1 ring-transparent transition-[transform,box-shadow] duration-[180ms] ease-premium hover:-translate-y-[3px] hover:shadow-lift hover:ring-black/5"
                     >
                       <h3 className="text-xl font-[540] tracking-[-0.015em]">{step.title}</h3>
-                      <p className="mt-3 text-base font-[330] leading-[1.45] text-black/64 dark:text-white/64">{step.text}</p>
+                      <p className="mt-3 text-base font-[330] leading-[1.45] text-black/64">{step.text}</p>
                     </StaggerItem>
                   ))}
                 </StaggerGroup>
@@ -181,7 +191,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
 
           <section className="px-6 pb-20 pt-14 sm:px-8 lg:px-20 xl:px-24">
             <Reveal className="mx-auto max-w-[1200px]">
-              <div className="rounded-lg border border-black/5 bg-block-lime/80 p-8 text-ink shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-lg transition-[transform,box-shadow] duration-300 ease-premium hover:-translate-y-1 hover:shadow-[0_28px_80px_rgba(0,0,0,0.12)] dark:border-white/10 sm:p-10 lg:p-14">
+              <div className="case-detail-next p-8 sm:p-10 lg:p-14">
                 <p className="font-mono text-xs uppercase tracking-[0.18em]">Next case study</p>
                 <div className="mt-8 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
                   <h2 className="max-w-3xl text-balance text-4xl font-[340] leading-[1.06] tracking-[-0.03em] sm:text-5xl">
@@ -197,7 +207,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
                       cta_label: "Read next",
                       location: "next_case_study",
                     }}
-                    className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-white transition duration-200 hover:bg-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-block-lime"
+                    className="case-detail-next-link inline-flex min-h-11 w-fit items-center gap-2 rounded-full px-5 text-[15px]"
                   >
                     Read next <ArrowRight size={16} aria-hidden="true" />
                   </TrackedLink>
@@ -212,13 +222,8 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
   );
 }
 
-function Meta({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-signal">{label}</dt>
-      <dd className="mt-2 font-[330] leading-[1.35] text-black/70 dark:text-white/70">{value}</dd>
-    </div>
-  );
+function Meta({ label, value, icon: Icon }: { label: string; value: string; icon: typeof UserRound }) {
+  return <div><dt><span className="sr-only">{label}</span><Icon size={17} aria-hidden="true" /></dt><dd>{value}</dd></div>;
 }
 
 function SectionEyebrow({ children }: { children: React.ReactNode }) {
@@ -226,18 +231,14 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
 }
 
 function StatBand({ metrics, scope, title }: { metrics: Array<{ value: string; label: string }>; scope?: string; title: string }) {
-  const [lead, ...supporting] = metrics;
   return (
-    <section aria-label={`${title} outcomes`} className="case-detail-outcomes bg-ink text-white">
-      <div className="case-detail-outcomes-grid">
-        <div className="case-detail-primary-outcome">
-          <p className="case-detail-primary-value">{lead.value}</p>
-          <div><p className="case-detail-primary-label">{lead.label}</p>{scope ? <p className="case-detail-outcome-scope">{scope}</p> : null}</div>
-        </div>
-        {supporting.slice(0, 3).map(metric => <div key={`${metric.value}-${metric.label}`} className="case-detail-supporting-outcome">
-          <p>{metric.value}</p><p>{metric.label}</p>
+    <section aria-label={`${title} outcomes`} className="case-detail-outcomes case-detail-container">
+      <dl className="case-detail-outcomes-grid">
+        {metrics.map(metric => <div key={metric.label}>
+          <dt>{metric.label}</dt><dd>{metric.value}</dd>
         </div>)}
-      </div>
+      </dl>
+      {scope ? <p className="case-detail-outcome-scope">{scope}</p> : null}
     </section>
   );
 }
@@ -245,8 +246,8 @@ function StatBand({ metrics, scope, title }: { metrics: Array<{ value: string; l
 function TldrColumn({ title, paragraphs }: { title: string; paragraphs: string[] }) {
   return (
     <Reveal>
-      <p className="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-signal">{title}</p>
-      <div className="space-y-4 text-base font-[330] leading-[1.5] tracking-[-0.01em] text-black/72 dark:text-white/72">
+      <h2 className="case-detail-eyebrow mb-4">{title}</h2>
+      <div className="space-y-4 text-base font-[330] leading-[1.5] tracking-[-0.01em] text-black/72">
         {paragraphs.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
@@ -281,15 +282,15 @@ function DecisionSection({
         <span className="text-signal">.</span>
       </h2>
       {section.body ? (
-        <div className="mt-5 space-y-4 text-base font-[330] leading-[1.55] tracking-[-0.01em] text-black/70 dark:text-white/70">
+        <div className="mt-5 space-y-4 text-base font-[330] leading-[1.55] tracking-[-0.01em] text-black/70">
           {splitDecisionBody(section.body).map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
         </div>
       ) : null}
-      {section.bullets?.length ? <ul className="mt-5 list-disc space-y-2 pl-5 text-base font-[330] leading-[1.55] text-black/70 dark:text-white/70">{section.bullets.map(point => <li key={point}>{point}</li>)}</ul> : null}
+      {section.bullets?.length ? <ul className="mt-5 list-disc space-y-2 pl-5 text-base font-[330] leading-[1.55] text-black/70">{section.bullets.map(point => <li key={point}>{point}</li>)}</ul> : null}
       {section.resultChip ? (
-        <p className="mt-6 inline-block rounded-md bg-block-lime px-3 py-2 font-mono text-[0.68rem] font-[540] uppercase tracking-[0.08em] text-ink">
+        <p className="case-detail-chip mt-6 inline-block px-3 py-2 font-mono text-[0.68rem] font-[540] uppercase tracking-[0.08em]">
           {section.resultChip}
         </p>
       ) : null}
@@ -335,13 +336,13 @@ function ImpactTable({ items }: { items: string[] }) {
   return (
     <div className="grid gap-x-10 lg:grid-cols-2">
       {items.map((item) => {
-        if (!item.includes("|") && !/:\s/.test(item)) return <div key={item} className="border-t border-black/12 py-4 text-sm font-[330] leading-[1.5] text-black/72 dark:border-white/12 dark:text-white/72">{item}</div>;
+        if (!item.includes("|") && !/:\s/.test(item)) return <div key={item} className="border-t border-black/12 py-4 text-sm font-[330] leading-[1.5] text-black/72">{item}</div>;
         const [label, value] = item.includes("|") ? item.split("|") : item.split(/:\s(.+)/);
 
         return (
-          <div key={item} className="grid grid-cols-[minmax(0,1fr)_auto] gap-6 border-t border-black/12 py-4 text-sm dark:border-white/12">
-            <p className="font-[330] leading-[1.35] text-black/62 dark:text-white/62">{label}</p>
-            <p className="text-right font-[560] leading-[1.35] text-ink dark:text-white">{value ?? ""}</p>
+          <div key={item} className="grid grid-cols-[minmax(0,1fr)_auto] gap-6 border-t border-black/12 py-4 text-sm">
+            <p className="font-[330] leading-[1.35] text-black/62">{label}</p>
+            <p className="text-right font-[560] leading-[1.35] text-ink">{value ?? ""}</p>
           </div>
         );
       })}
@@ -353,7 +354,7 @@ function MediaFigure({ item: originalItem, gallery }: { item: CaseStudyMedia; ga
   const item = presentCaseStudyMedia(originalItem);
   gallery = gallery ?? [item];
   return (
-    <figure data-portrait={item.portrait || undefined} className="overflow-hidden rounded-lg bg-mist dark:bg-white/6">
+    <figure data-portrait={item.portrait || undefined} className="overflow-hidden rounded-lg bg-mist">
       <div
         className={
           item.type === "video" || item.type === "embed"
@@ -395,7 +396,7 @@ function MediaFigure({ item: originalItem, gallery }: { item: CaseStudyMedia; ga
             ))
           : null}
       </div>
-      <figcaption className="border-t border-black/10 px-5 py-4 text-sm font-[330] leading-[1.45] text-black/62 dark:border-white/10 dark:text-white/62">
+      <figcaption className="border-t border-black/10 px-5 py-4 text-sm font-[330] leading-[1.45] text-black/62">
         {item.caption}
       </figcaption>
     </figure>
