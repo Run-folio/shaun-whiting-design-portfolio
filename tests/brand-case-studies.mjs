@@ -31,7 +31,7 @@ const expectedMedia = {
     ["img", "/rio/rio-approval-stages.jpg"],
   ],
   "morrovia": [
-    ["img", "/morrovia/homepage-complete.png"],
+    ["img", "/morrovia/homepage-2026-11.webp"],
     ["img", "/morrovia/itinerary-current.png"],
     ["img", "/morrovia/transport-current.png"],
     ["img", "/morrovia/map-route-current.png"],
