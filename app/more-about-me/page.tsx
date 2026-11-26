@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Footer, Navigation } from "@/components/ui";
 import { cloudinaryImage, featuredTravelPhotos } from "@/lib/photography";
+import { PhotographyGrid } from "../photography/photography-grid";
 import "../personal-pages.css";
 
 export const metadata = {
@@ -52,14 +53,7 @@ export default function MoreAboutMePage() {
             <h2 id="travel-heading">75 countries visited<span>.</span></h2>
             <p>Travel keeps me curious about how people move, decide and adapt to different environments. Photography slows me down and helps me notice texture, rhythm, weather and the quiet details that shape everyday experiences.</p>
           </div>
-          <div className="personal-photo-grid">
-            {featuredTravelPhotos.map((photo) => (
-              <figure key={photo.publicId}>
-                <div className="personal-print"><Image src={cloudinaryImage(photo.publicId)} alt={`Travel photography from ${photo.country}`} fill sizes="(min-width: 900px) 31vw, (min-width: 600px) 47vw, 94vw" /></div>
-                <figcaption className="personal-country">{photo.country}</figcaption>
-              </figure>
-            ))}
-          </div>
+          <PhotographyGrid photos={featuredTravelPhotos} variant="featured" />
         </section>
 
         <section className="personal-frame personal-thread">

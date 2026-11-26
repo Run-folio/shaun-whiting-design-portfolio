@@ -82,16 +82,65 @@
 .personal-link:focus-visible,.personal-photo-button:focus-visible {outline:2px solid currentColor;outline-offset:4px;}
 .personal-travel-intro {padding-bottom:1.65rem;}
 .personal-travel-intro h2 {flex-shrink:0;}
-.personal-photo-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(.8rem,1.5vw,1.8rem);row-gap:clamp(1.2rem,2.35vw,2.5rem);}
-.personal-photo-button {display:block;min-width:0;color:inherit;background:none;border:0;text-align:left;}
-.personal-print {position:relative;display:block;width:100%;aspect-ratio:1.54;}
-.personal-print img {object-fit:contain;}
-.personal-country {display:block;margin-top:.38rem;font-size:clamp(.9rem,1.18vw,1.2rem);font-weight:470;line-height:1.38;}
-/* Match the caption edge to the photograph, including narrow vertical prints. */
-.personal-photo-button .personal-country {
-  padding-inline-start: max(0px, calc((100% - 100% * var(--personal-photo-aspect, 1.54) / 1.54) / 2));
+/* Retain the proportions of the two original grids. The photos, not the
+   labels, lead on hover devices; keep labels explicit on touch. */
+.personal-photo-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 71.5rem;
+  margin-inline: auto;
 }
-.personal-photo-button:hover .personal-country {text-decoration:underline;text-underline-offset:3px;}
+.personal-photo-grid--featured { --photo-aspect: 3 / 2; gap: 1rem; }
+.personal-photo-grid--gallery { --photo-aspect: 4 / 3; gap: 1.25rem; }
+.personal-photo-button {
+  position: relative;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 24px;
+  background: #e5e6df;
+  color: var(--personal-ink);
+  text-align: left;
+  transition: transform 200ms ease;
+}
+.personal-print { position: relative; display: block; width: 100%; aspect-ratio: var(--photo-aspect); }
+.personal-print img { object-fit: cover; transition: transform 300ms ease; }
+.personal-photo-caption {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: clamp(2.5rem, 6vw, 5rem) 1.25rem 1.25rem;
+  background: linear-gradient(0deg, rgb(0 0 0 / .76), rgb(0 0 0 / .2) 56%, transparent);
+  color: #fff;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.personal-country { font-size: 1.125rem; font-weight: 520; line-height: 1.25; }
+.personal-photo-flag { font-size: 1.5rem; line-height: 1; }
+.personal-photo-button:focus-visible { outline-color: var(--personal-link); }
+@media (hover: hover) and (pointer: fine) {
+  .personal-photo-caption { opacity: 0; }
+  .personal-photo-button:hover .personal-photo-caption,
+  .personal-photo-button:focus-visible .personal-photo-caption { opacity: 1; }
+  .personal-photo-button:hover { transform: translateY(-.25rem); }
+  .personal-photo-button:hover img { transform: scale(1.03); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .personal-photo-button:hover, .personal-photo-button:hover img { transform: none; }
+}
+@media (min-width: 640px) {
+  .personal-photo-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (min-width: 1024px) {
+  .personal-photo-grid--featured { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (min-width: 1280px) {
+  .personal-photo-grid--gallery { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
 .personal-thread {margin-top:clamp(2.5rem,5vw,5rem);padding-block:clamp(2rem,5vw,5rem);border-top:1px solid #d2d2cf;}
 .personal-thread p:not(.personal-kicker) {font-size:clamp(1.8rem,3.2vw,3.7rem);max-width:31ch;line-height:1.13;letter-spacing:-.042em;margin:1rem 0;}
 .personal-gallery-mast {padding-block:clamp(1rem,2.2vw,2.5rem) clamp(1.4rem,3vw,3.2rem);}
@@ -101,7 +150,6 @@
 .personal-gallery {padding-block:clamp(1.5rem,3.3vw,3.75rem);}
 .personal-back {margin-top:clamp(2.25rem,4vw,4.5rem);}
 @media (max-width:899px) {
-  .personal-photo-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
   .personal-travel-intro {display:grid;gap:1rem;}
   .personal-run-copy h2 {font-size:clamp(2rem,4.4vw,3rem);}
 }
@@ -116,7 +164,6 @@
   .personal-masthead::after {width:25%;opacity:.3;}
 }
 @media (max-width:599px) {
-  .personal-photo-grid {grid-template-columns:minmax(0,1fr);}
   .personal-travel-intro h2 {flex-shrink:1;}
   .personal-section-line {gap:.5rem;}
   .personal-section-line .personal-kicker {letter-spacing:.05em;}
