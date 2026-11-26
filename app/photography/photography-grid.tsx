@@ -25,6 +25,11 @@ export function PhotographyGrid({ photos }: { photos: TravelPhoto[] }) {
                 src={cloudinaryImage(photo.publicId)}
                 alt={`Travel photography from ${photo.country}`}
                 fill
+                onLoad={({ currentTarget: image }) => {
+                  if (image.naturalHeight) {
+                    image.closest("button")?.style.setProperty("--personal-photo-aspect", String(image.naturalWidth / image.naturalHeight));
+                  }
+                }}
                 sizes="(min-width: 900px) 31vw, (min-width: 600px) 47vw, 94vw"
               />
             </span>

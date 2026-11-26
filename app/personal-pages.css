@@ -5,6 +5,7 @@
   --personal-aqua: var(--folio-aqua, #2bf0d7);
   --personal-link: var(--folio-link, #006763);
   --personal-gutter: var(--folio-gutter, clamp(1.25rem, 3.45vw, 4.75rem));
+  font-family: "Portfolio SF Pro", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
   background: var(--personal-paper);
   color: var(--personal-ink);
 }
@@ -30,7 +31,7 @@
   height: 95%;
   opacity: .6;
   pointer-events: none;
-  background: url('/brand/wave-desktop.svg') right bottom / 180% 100% no-repeat;
+  background: url('/brand/wave-desktop.svg') 55% bottom / 220% 100% no-repeat;
   mask-image: linear-gradient(95deg, transparent, #000 32%);
 }
 .personal-portrait-layout {
@@ -71,7 +72,7 @@
 .personal-page h2 {font-size:clamp(2rem,4.05vw,4.4rem);line-height:1.02;}
 .personal-page h2 span {color:var(--personal-link);}
 .personal-run-copy h2 {max-width:16ch;margin:.75rem 0 1.15rem;text-wrap:balance;}
-.personal-run-copy p:not(.personal-kicker),.personal-travel-intro p {max-width:59ch;font-size:clamp(1rem,1.24vw,1.32rem);line-height:1.48;}
+.personal-run-copy p:not(.personal-kicker),.personal-travel-intro p {max-width:59ch;font-size:clamp(1rem,1.42vw,1.38rem);line-height:1.48;}
 .personal-run-copy p+p {margin-top:.7em;}
 .personal-section-line,.personal-travel-intro {display:flex;align-items:baseline;justify-content:space-between;gap:1.5rem;}
 .personal-section-line {border-top:1px solid #c5c6c7;padding-block:clamp(1.2rem,2vw,2.35rem);}
@@ -86,6 +87,10 @@
 .personal-print {position:relative;display:block;width:100%;aspect-ratio:1.54;}
 .personal-print img {object-fit:contain;}
 .personal-country {display:block;margin-top:.38rem;font-size:clamp(.9rem,1.18vw,1.2rem);font-weight:470;line-height:1.38;}
+/* Match the caption edge to the photograph, including narrow vertical prints. */
+.personal-photo-button .personal-country {
+  padding-inline-start: max(0px, calc((100% - 100% * var(--personal-photo-aspect, 1.54) / 1.54) / 2));
+}
 .personal-photo-button:hover .personal-country {text-decoration:underline;text-underline-offset:3px;}
 .personal-thread {margin-top:clamp(2.5rem,5vw,5rem);padding-block:clamp(2rem,5vw,5rem);border-top:1px solid #d2d2cf;}
 .personal-thread p:not(.personal-kicker) {font-size:clamp(1.8rem,3.2vw,3.7rem);max-width:31ch;line-height:1.13;letter-spacing:-.042em;margin:1rem 0;}
