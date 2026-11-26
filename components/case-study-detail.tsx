@@ -1,3 +1,4 @@
+import { BrandWave } from "@/components/brand-wave";
 import { ArrowRight, Layers3, UserRound, UsersRound } from "lucide-react";
 import { BeforeAfterSlider } from "@/components/before-after-slider";
 import { CaseStudyAnalytics } from "@/components/case-study-analytics";
@@ -37,6 +38,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
       <main id="main" className="case-detail">
         <article>
           <header id="overview" className="case-detail-opening">
+            <BrandWave mobileOnly />
             <div className="case-detail-container">
               <dl id="scope" className="case-detail-scope">
                 <Meta label="Role" icon={UserRound} value={role} />

@@ -1,5 +1,5 @@
 /* All five project stories share the same page frame. The product UI in each
-   screenshot stays original; the dotted fragment is static on every viewport. */
+   screenshot stays original; desktop retains the original static wave. */
 .case-detail {
   --case-gutter: var(--folio-gutter,clamp(1.25rem,3.45vw,4.75rem));
   --case-navy: var(--folio-navy,#1c1b37);
@@ -93,7 +93,11 @@
 .case-detail #impact h2 { max-width:440px; }
 .case-detail figure[data-portrait] { max-width:420px; margin-inline:auto; }
 @media (max-width:760px) {
-  .case-detail-opening::before { right:12px; top:0; bottom:auto; width:44%; height:92px; opacity:.38; background-position:center 30%; }
+  .case-detail-opening::before { display:none; }
+  /* Calm the dots only immediately around the copy; the ribbon keeps its contrast elsewhere. */
+  .case-detail-opening :is(h1,.case-detail-summary,.case-detail-scope) {
+    text-shadow:0 0 3px var(--case-navy),0 0 7px var(--case-navy),0 0 13px var(--case-navy);
+  }
   .case-detail-scope { gap:.5rem 1rem; max-width:100%; font-size:.69rem; }
   .case-detail-opening h1 { text-wrap:initial; max-width:15ch; margin-block:.45rem .7rem; }
   .case-detail-summary { max-width:35ch; }

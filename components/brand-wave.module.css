@@ -29,3 +29,7 @@
 @media (forced-colors: active) {
   .layer { display: none; }
 }
+
+@media (min-width: 761px) {
+  .mobileOnly { display: none; }
+}
