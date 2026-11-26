@@ -58,6 +58,9 @@
 .case-detail:has(#decisions:target) .case-detail-jumps a[href="#decisions"]::after,
 .case-detail:has(#impact:target) .case-detail-jumps a[href="#impact"]::after { content:""; position:absolute; left:0; right:0; height:2px; bottom:1px; background:#00847b; }
 .case-detail-context { padding-block:clamp(1.6rem,2.55vw,2.9rem) clamp(3rem,6vw,6rem); }
+/* An overview and its following section share one gap rather than stacking their default spacing. */
+.case-detail-context:has(+ :is(#vision,#walkthrough,#decisions)) { padding-block-end:clamp(1.5rem,2.5vw,2.25rem); }
+.case-detail-context + :is(#vision,#walkthrough,#decisions) { padding-block-start:clamp(1.5rem,2.5vw,2.25rem); }
 .case-detail-feature { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(0,.8fr); gap:clamp(1.75rem,3.6vw,4rem); align-items:start; }
 .case-detail figure { border-radius:.7rem; }
 .case-detail-product { border:1px solid #d8d9e0; background:#e8e9ed; overflow:hidden; }

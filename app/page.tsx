@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { ArrowDown, Linkedin, Mail } from "lucide-react";
 import { FolioWorkCarousel } from "@/components/folio-work-carousel";
 import { Navigation, Footer } from "@/components/ui";
 import { BrandWave } from "@/components/brand-wave";
@@ -44,8 +44,8 @@ export default function Home() {
           <div><p className="folio-eyebrow">Get in touch</p><h2 id="folio-contact-heading">Let’s talk<span>.</span></h2></div>
           <div><p>London on-site or hybrid | UK remote</p>
             <div className="folio-contact-links">
-              <TrackedAnchor href="mailto:sw@shaunwhiting.com" eventName="email_contact_clicked" eventData={{ location: "home_contact" }}>Email Shaun <ArrowUpRight size={16} aria-hidden="true" /></TrackedAnchor>
-              <TrackedAnchor href="https://www.linkedin.com/in/shaunwhiting/" eventName="linkedin_clicked" eventData={{ location: "home_contact" }}>LinkedIn <ArrowUpRight size={16} aria-hidden="true" /></TrackedAnchor>
+              <TrackedAnchor href="mailto:sw@shaunwhiting.com" eventName="email_contact_clicked" eventData={{ location: "home_contact" }}><Mail size={17} aria-hidden="true" /> <span>Email Shaun</span></TrackedAnchor>
+              <TrackedAnchor href="https://www.linkedin.com/in/shaunwhiting/" eventName="linkedin_clicked" eventData={{ location: "home_contact" }}><Linkedin size={17} aria-hidden="true" /> <span>LinkedIn</span></TrackedAnchor>
             </div>
           </div>
         </section>
