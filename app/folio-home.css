@@ -1,0 +1,106 @@
+/* Only the portfolio homepage adopts the approved brand direction; the existing
+   navigation component still owns menus, focus order, tracking and mobile links. */
+.folio-home {
+  --navy:#1c1b37; --paper:#f8f8f6; --aqua:#2bf0d7; --paper-link:#006763;
+  --gutter:clamp(1.25rem,3.45vw,4.75rem);
+  background:var(--paper); color:var(--navy);
+  font-family:'Portfolio SF Pro',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+}
+.folio-home ::selection { background:var(--aqua); color:var(--navy); }
+.folio-home a:focus-visible, .folio-home button:focus-visible { outline:2px solid currentColor; outline-offset:5px; }
+.folio-home .alt-navigation {
+  position:sticky; top:0; background:var(--navy); color:var(--paper); border:0;
+}
+.folio-home .alt-navigation nav { max-width:106rem; margin:auto; height:4.75rem; padding:0 var(--gutter); }
+.folio-home .alt-navigation nav > a img { width:44px; height:auto; filter:brightness(0) invert(1); }
+.folio-home .alt-navigation nav > a > span:first-child { width:44px; height:44px; }
+.folio-home .alt-navigation nav > a > span:nth-child(2) { display:block; font-size:clamp(.9rem,1.7vw,1.55rem); letter-spacing:.075em; font-weight:430; color:white; }
+.folio-home .alt-nav-projects,
+.folio-home .alt-nav-actions { color:var(--paper); gap:clamp(.9rem,2.4vw,3rem); }
+.folio-home .alt-nav-projects .alt-nav-pill, .folio-home .alt-nav-actions > a {
+  width:auto; min-height:44px; padding:.25rem .3rem; background:transparent; border:0; color:var(--paper);
+  font-size:1rem; font-weight:400;
+}
+.folio-home .alt-nav-projects .group > div > div, .folio-home .alt-navigation > div {
+  background:var(--paper); color:var(--navy); border-color:#d4d3dc;
+}
+.folio-home .alt-nav-projects .group > div a, .folio-home .alt-navigation > div a { color:var(--navy); }
+.folio-home .alt-nav-projects .group > div a span:last-child { color:#535266; }
+.folio-home .alt-navigation .alt-nav-actions > a[href^="mailto:"],
+.folio-home .alt-navigation .alt-nav-actions > button {
+  border:1px solid #e7e6ef; color:var(--paper); background:transparent; border-radius:999px;
+}
+.folio-home .alt-navigation .alt-nav-actions > a[href^="mailto:"] { padding:.3rem 1.25rem; }
+.folio-home .alt-navigation nav :is(.alt-nav-pill,.alt-nav-actions > a,.alt-nav-actions > button):hover { color:var(--aqua); }
+.folio-home .alt-navigation :is(a,button):focus-visible { outline-color:var(--aqua); }
+.folio-home .alt-nav-projects .group > div a:focus-visible,.folio-home .alt-navigation > div a:focus-visible { outline-color:var(--paper-link); }
+.folio-home .folio-hero { position:relative; isolation:isolate; overflow:hidden; background:var(--navy); color:var(--paper); }
+.folio-hero-inner {
+  position:relative; z-index:1; pointer-events:none; max-width:100rem; margin:auto;
+  min-height:clamp(372px,27vw,450px); padding:clamp(2rem,4.2vw,5rem) clamp(2rem,8.8vw,10rem) 2rem;
+  display:grid; grid-template-columns:1.16fr .84fr; column-gap:clamp(3rem,10vw,12rem);
+}
+.folio-hero h1 { margin:0; font-size:clamp(4.6rem,7.05vw,8.3rem); line-height:.96; letter-spacing:-.063em; font-weight:400; }
+.folio-hero h1 span { display:block; }
+.folio-hero h1 i { color:var(--aqua); font-style:normal; }
+.folio-intro { align-self:end; font-size:clamp(1.35rem,1.95vw,2.15rem); line-height:1.13; letter-spacing:-.028em; }
+.folio-intro > p + p { margin-top:.55rem; }
+.folio-intro .folio-tags { font:550 clamp(.82rem,1.22vw,1.25rem)/1.5 'Portfolio Geist Mono',monospace; color:var(--aqua); letter-spacing:.005em; margin-top:.75rem; }
+.folio-primary {
+  pointer-events:auto; display:inline-flex; align-items:center; gap:.7rem; min-height:50px; margin-top:1.25rem;
+  border-radius:999px; padding:.65rem 1.35rem; background:var(--aqua); color:var(--navy);
+  font-size:1.125rem; font-weight:520; letter-spacing:-.015em;
+}
+.folio-primary:hover { background:#8bfff0; }
+.folio-intro small { display:block; margin-top:.9rem; font-size:.985rem; line-height:1.4; letter-spacing:0; }
+.folio-home .folio-work { padding:clamp(2.5rem,4.6vw,5.5rem) var(--gutter) clamp(3rem,6vw,7rem); margin:auto; max-width:106rem; scroll-margin-top:4.7rem; }
+.folio-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:clamp(.95rem,2vw,2.5rem); row-gap:0; }
+.folio-card { position:relative; display:grid; grid-template-rows:subgrid; grid-row:span 5; align-items:start; }
+.folio-eyebrow { color:var(--paper-link); font:560 clamp(.7rem,.96vw,.92rem)/1.4 'Portfolio Geist Mono',monospace; text-transform:uppercase; letter-spacing:.045em; }
+.folio-card h3 { margin:.8rem 0 clamp(1.4rem,2.4vw,2.75rem); font-size:clamp(1.6rem,2.45vw,2.8rem); line-height:1.03; letter-spacing:-.048em; font-weight:450; }
+.folio-shot { overflow:hidden; aspect-ratio:80/47; border:1px solid #dedee4; border-radius:5px; background:#ecebf0; }
+.folio-shot img { display:block; width:100%; height:100%; object-fit:cover; }
+.folio-summary { margin-top:1.25rem; font-size:clamp(1rem,1.23vw,1.35rem); line-height:1.4; letter-spacing:-.012em; }
+.folio-case-link, .folio-contact-links a { display:inline-flex; align-items:center; gap:.45rem; min-height:44px; width:fit-content; color:var(--paper-link); text-decoration:underline; text-underline-offset:.38em; text-decoration-thickness:1px; font-weight:500; }
+.folio-case-link { margin-top:.35rem; }
+.folio-case-link::after { content:""; position:absolute; inset:0; border-radius:5px; }
+.folio-card:focus-within .folio-shot, .folio-card:hover .folio-shot { border-color:var(--paper-link); }
+.folio-more { display:grid; grid-template-columns:.72fr 1fr 1fr; align-items:start; column-gap:clamp(1rem,3vw,4rem); padding-top:clamp(2.5rem,5vw,6rem); }
+.folio-more h2 { padding-top:1rem; font-size:1.35rem; letter-spacing:-.04em; font-weight:500; }
+.folio-more-link { border-top:1px solid #c5c5ce; display:grid; align-items:center; grid-template-columns:1fr auto; gap:.2rem .65rem; padding:1rem 0; font-size:1.25rem; }
+.folio-more-link small { color:#56556c; font-size:.85rem; grid-column:1; }
+.folio-more-link svg { grid-column:2; grid-row:1/3; }
+.folio-more-link:hover { color:var(--paper-link); border-color:var(--paper-link); }
+.folio-contact { max-width:106rem; margin:auto; padding:clamp(2.5rem,5vw,6rem) var(--gutter); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; border-top:1px solid #d1d0d7; scroll-margin-top:4.75rem; }
+.folio-contact h2 { font-weight:440; font-size:clamp(2.7rem,5.2vw,6rem); letter-spacing:-.055em; line-height:1.15; }
+.folio-contact h2 span { color:var(--paper-link); }
+.folio-contact-links { display:flex; gap:1.6rem; }
+.folio-home footer { max-width:106rem; padding-inline:var(--gutter); }
+.folio-home footer > div { color:#535266; border-color:#d1d0d7; }
+@media (min-width:1024px) {
+  .folio-home .alt-navigation nav { column-gap:clamp(.9rem,2.4vw,3rem); }
+  .folio-home .alt-navigation nav > a { gap:1.1rem; }
+}
+@media (max-width:1099px) and (min-width:720px) {
+  .folio-hero-inner { padding-inline:var(--gutter); column-gap:4%; grid-template-columns:1.12fr .88fr; }
+  .folio-card h3 { font-size:clamp(1.5rem,2.8vw,1.925rem); }
+}
+@media (max-width:719px) {
+  .folio-home .alt-navigation nav { height:4rem; padding-inline:var(--gutter); }
+  .folio-home .alt-navigation nav > a { gap:.55rem; padding:0; }
+  .folio-home .alt-navigation nav > a img, .folio-home .alt-navigation nav > a > span:first-child { width:31px; }
+  .folio-home .alt-navigation .alt-nav-actions > a[href^="mailto:"] { padding:.25rem .7rem; font-size:.85rem; }
+  .folio-home .alt-navigation > div { max-height:calc(100dvh - 4rem); overflow:auto; }
+  .folio-hero-inner { min-height:0; padding:2.4rem var(--gutter) 4rem; grid-template-columns:1fr; gap:2.2rem; }
+  .folio-hero h1 { font-size:clamp(3.6rem,12vw,5.3rem); }
+  .folio-intro { max-width:30rem; font-size:1.3rem; }
+  .folio-intro .folio-tags { font-size:.85rem; }
+  .folio-primary { min-height:46px; margin-top:1rem; font-size:1rem; }
+  .folio-intro small { margin-top:.65rem; font-size:.85rem; }
+  .folio-cards, .folio-card { display:block; }
+  .folio-card + .folio-card { margin-top:2.75rem; }
+  .folio-card h3 { font-size:clamp(1.85rem,6.5vw,2.5rem); margin:.55rem 0 1.2rem; }
+  .folio-more { display:block; }
+  .folio-more h2 { padding:0 0 .75rem; }
+  .folio-contact { align-items:flex-start; flex-direction:column; }
+}
