@@ -22,7 +22,7 @@ const featured = [
 
 export function FolioWorkCarousel() {
   return (
-    <LoopProjectGallery className="folio-carousel" id={null} items={featured} singleSlide renderItem={(index, focusable) => {
+    <LoopProjectGallery className="folio-carousel" id={null} items={featured} showPosition renderItem={(index, focusable) => {
       const { href, title, tag, image, alt, summary, width, height } = featured[index];
       return (
         <article className="folio-card">
@@ -33,7 +33,7 @@ export function FolioWorkCarousel() {
             </div>
           </div>
           <div className="folio-shot">
-            <Image src={image} alt={alt} width={width} height={height} sizes="94vw" />
+            <Image src={image} alt={alt} width={width} height={height} sizes="(max-width: 719px) 85vw, (max-width: 1099px) 43vw, 30vw" />
           </div>
           <p className="folio-summary">{summary}</p>
           <TrackedLink className="folio-case-link" href={href} tabIndex={focusable ? 0 : -1}
