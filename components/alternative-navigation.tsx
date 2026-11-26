@@ -3,13 +3,14 @@
 import "./portfolio-navigation.css";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { caseStudies } from "@/lib/case-studies";
 import { projects } from "@/lib/content";
 
-const alternativeOrder = ["rio", "returns-platform", "morrovia", "returns-kiosk"];
+const alternativeOrder = ["returns-platform", "rio", "morrovia", "returns-kiosk"];
 const navigationCaseStudies = [...caseStudies].sort((a, b) => {
   const rank = (slug: string) => {
     const featured = alternativeOrder.indexOf(slug);
@@ -26,6 +27,9 @@ const primaryLinks = [
 
 export function AlternativeNavigation() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const pathname = usePathname();
+  const beyondActive = pathname === "/more-about-me" || pathname === "/photography";
 
   function closeMenu() {
     setMenuOpen(false);
@@ -40,7 +44,9 @@ export function AlternativeNavigation() {
   }
 
   return (
-    <header className="alt-navigation fixed inset-x-0 top-0 z-50 border-b border-hairline bg-white text-ink dark:border-white/10 dark:bg-[#0d0d0c] dark:text-[#f4f3ef]">
+    <header className="alt-navigation folio-nav z-50" onKeyDown={(event) => {
+      if (event.key === "Escape" && menuOpen) { closeMenu(); menuButton.current?.focus(); }
+    }}>
       <a
         href="#main"
         className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:left-4 focus-visible:top-4 focus-visible:rounded-full focus-visible:bg-white focus-visible:px-4 focus-visible:py-2 focus-visible:text-ink focus-visible:ring-2 focus-visible:ring-signal"
@@ -67,6 +73,7 @@ export function AlternativeNavigation() {
           <div className="group relative">
             <Link
               href="/#work"
+              data-active={pathname.startsWith("/case-study/") || undefined}
               className="alt-nav-work alt-nav-pill inline-flex items-center gap-1 rounded-full px-2 py-2 transition duration-200 hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:focus-visible:ring-offset-[#0d0d0c]"
             >
               Work <ChevronDown viewBox="6 9 12 6" size={16} strokeWidth={1.8} aria-hidden="true" />
@@ -97,6 +104,8 @@ export function AlternativeNavigation() {
             <Link
               key={item.href}
               href={item.href}
+              data-active={beyondActive || undefined}
+              aria-current={pathname === item.href ? "page" : undefined}
               className="alt-nav-beyond alt-nav-pill rounded-full px-2 py-2 transition duration-200 hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:focus-visible:ring-offset-[#0d0d0c]"
             >
               {item.label}
@@ -116,7 +125,7 @@ export function AlternativeNavigation() {
             }
             className="hidden min-h-11 items-center justify-center rounded-full border border-ink bg-white px-5 text-[15px] font-[480] tracking-[-0.01em] text-ink transition duration-200 hover:bg-white hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:border-white dark:bg-transparent dark:text-white dark:hover:bg-transparent sm:inline-flex"
           >
-            Resume
+            Résumé
           </Link>
           <a
             href="mailto:sw@shaunwhiting.com"
@@ -136,6 +145,8 @@ export function AlternativeNavigation() {
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-ink text-ink transition duration-200 hover:bg-mist focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:border-white dark:text-white dark:hover:bg-white/10 lg:hidden"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
+            aria-controls="folio-mobile-nav"
+            ref={menuButton}
             onClick={() => setMenuOpen((value) => !value)}
           >
             {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
@@ -143,8 +154,7 @@ export function AlternativeNavigation() {
         </div>
       </nav>
 
-      {menuOpen ? (
-        <div className="border-t border-hairline bg-white px-6 py-5 shadow-[0_18px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#0d0d0c] lg:hidden">
+      <div id="folio-mobile-nav" className="folio-mobile-nav border-t border-hairline bg-white px-6 py-5 shadow-[0_18px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#0d0d0c] lg:hidden" hidden={!menuOpen}>
           <div className="grid gap-2">
             
             <MobileLink href="/#work" onClick={closeMenu}>
@@ -183,12 +193,11 @@ export function AlternativeNavigation() {
                 }}
                 className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-ink transition duration-200 hover:text-signal dark:border-white dark:text-white"
               >
-                Resume
+                Résumé
               </Link>
             </div>
           </div>
-        </div>
-      ) : null}
+      </div>
     </header>
   );
 }

@@ -58,3 +58,14 @@ body {
 .editorial-card {
   @apply border border-hairline bg-white shadow-none dark:border-white/10 dark:bg-[#151514];
 }
+
+/* Shared identity for the portfolio, not the independent product/demo routes. */
+:root {
+  --folio-navy: #1c1b37;
+  --folio-paper: #f8f8f6;
+  --folio-aqua: #2bf0d7;
+  --folio-link: #006763;
+  --folio-gutter: clamp(1.25rem, 3.45vw, 4.75rem);
+}
+.folio-footer { max-width:106rem; margin-inline:auto; padding-inline:var(--folio-gutter); }
+.folio-footer > div { color:#535266; border-color:#d1d0d7; }

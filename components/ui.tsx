@@ -426,7 +426,7 @@ export function Contact() {
 
 export function Footer() {
   return (
-    <footer className="container-pad pb-8">
+    <footer className="folio-footer pb-8">
       <div className="flex flex-col gap-4 border-t hairline pt-8 text-sm text-black/55 dark:text-white/55 sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} Shaun Whiting</p>
         <p>Product design, systems thinking and careful execution.</p>

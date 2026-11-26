@@ -1,39 +1,11 @@
-/* Only the portfolio homepage adopts the approved brand direction; the existing
-   navigation component still owns menus, focus order, tracking and mobile links. */
 .folio-home {
-  --navy:#1c1b37; --paper:#f8f8f6; --aqua:#2bf0d7; --paper-link:#006763;
-  --gutter:clamp(1.25rem,3.45vw,4.75rem);
+  --navy:var(--folio-navy); --paper:var(--folio-paper); --aqua:var(--folio-aqua); --paper-link:var(--folio-link);
+  --gutter:var(--folio-gutter);
   background:var(--paper); color:var(--navy);
   font-family:'Portfolio SF Pro',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
 }
 .folio-home ::selection { background:var(--aqua); color:var(--navy); }
 .folio-home a:focus-visible, .folio-home button:focus-visible { outline:2px solid currentColor; outline-offset:5px; }
-.folio-home .alt-navigation {
-  position:sticky; top:0; background:var(--navy); color:var(--paper); border:0;
-}
-.folio-home .alt-navigation nav { max-width:106rem; margin:auto; height:4.75rem; padding:0 var(--gutter); }
-.folio-home .alt-navigation nav > a img { width:44px; height:auto; filter:brightness(0) invert(1); }
-.folio-home .alt-navigation nav > a > span:first-child { width:44px; height:44px; }
-.folio-home .alt-navigation nav > a > span:nth-child(2) { display:block; font-size:clamp(.9rem,1.7vw,1.55rem); letter-spacing:.075em; font-weight:430; color:white; }
-.folio-home .alt-nav-projects,
-.folio-home .alt-nav-actions { color:var(--paper); gap:clamp(.9rem,2.4vw,3rem); }
-.folio-home .alt-nav-projects .alt-nav-pill, .folio-home .alt-nav-actions > a {
-  width:auto; min-height:44px; padding:.25rem .3rem; background:transparent; border:0; color:var(--paper);
-  font-size:1rem; font-weight:400;
-}
-.folio-home .alt-nav-projects .group > div > div, .folio-home .alt-navigation > div {
-  background:var(--paper); color:var(--navy); border-color:#d4d3dc;
-}
-.folio-home .alt-nav-projects .group > div a, .folio-home .alt-navigation > div a { color:var(--navy); }
-.folio-home .alt-nav-projects .group > div a span:last-child { color:#535266; }
-.folio-home .alt-navigation .alt-nav-actions > a[href^="mailto:"],
-.folio-home .alt-navigation .alt-nav-actions > button {
-  border:1px solid #e7e6ef; color:var(--paper); background:transparent; border-radius:999px;
-}
-.folio-home .alt-navigation .alt-nav-actions > a[href^="mailto:"] { padding:.3rem 1.25rem; }
-.folio-home .alt-navigation nav :is(.alt-nav-pill,.alt-nav-actions > a,.alt-nav-actions > button):hover { color:var(--aqua); }
-.folio-home .alt-navigation :is(a,button):focus-visible { outline-color:var(--aqua); }
-.folio-home .alt-nav-projects .group > div a:focus-visible,.folio-home .alt-navigation > div a:focus-visible { outline-color:var(--paper-link); }
 .folio-home .folio-hero { position:relative; isolation:isolate; overflow:hidden; background:var(--navy); color:var(--paper); }
 .folio-hero-inner {
   position:relative; z-index:1; pointer-events:none; max-width:100rem; margin:auto;
@@ -75,22 +47,11 @@
 .folio-contact h2 { font-weight:440; font-size:clamp(2.7rem,5.2vw,6rem); letter-spacing:-.055em; line-height:1.15; }
 .folio-contact h2 span { color:var(--paper-link); }
 .folio-contact-links { display:flex; gap:1.6rem; }
-.folio-home footer { max-width:106rem; padding-inline:var(--gutter); }
-.folio-home footer > div { color:#535266; border-color:#d1d0d7; }
-@media (min-width:1024px) {
-  .folio-home .alt-navigation nav { column-gap:clamp(.9rem,2.4vw,3rem); }
-  .folio-home .alt-navigation nav > a { gap:1.1rem; }
-}
 @media (max-width:1099px) and (min-width:720px) {
   .folio-hero-inner { padding-inline:var(--gutter); column-gap:4%; grid-template-columns:1.12fr .88fr; }
   .folio-card h3 { font-size:clamp(1.5rem,2.8vw,1.925rem); }
 }
 @media (max-width:719px) {
-  .folio-home .alt-navigation nav { height:4rem; padding-inline:var(--gutter); }
-  .folio-home .alt-navigation nav > a { gap:.55rem; padding:0; }
-  .folio-home .alt-navigation nav > a img, .folio-home .alt-navigation nav > a > span:first-child { width:31px; }
-  .folio-home .alt-navigation .alt-nav-actions > a[href^="mailto:"] { padding:.25rem .7rem; font-size:.85rem; }
-  .folio-home .alt-navigation > div { max-height:calc(100dvh - 4rem); overflow:auto; }
   .folio-hero-inner { min-height:0; padding:2.4rem var(--gutter) 4rem; grid-template-columns:1fr; gap:2.2rem; }
   .folio-hero h1 { font-size:clamp(3.6rem,12vw,5.3rem); }
   .folio-intro { max-width:30rem; font-size:1.3rem; }
