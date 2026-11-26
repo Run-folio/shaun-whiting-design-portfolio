@@ -1,0 +1,30 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+.layer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/brand/wave-desktop.svg") center / 100% 100% no-repeat;
+}
+@media (max-width: 760px) {
+  .layer::before { background-image: url("/brand/wave-mobile.svg"); }
+}
+.layer[data-renderer="webgl"]::before { visibility: hidden; }
+.layer canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  visibility: hidden;
+}
+.layer[data-renderer="webgl"] canvas { visibility: visible; }
+@media (forced-colors: active) {
+  .layer { display: none; }
+}
