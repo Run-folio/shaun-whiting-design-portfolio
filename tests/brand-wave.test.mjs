@@ -16,11 +16,15 @@ test("wide wave climbs from the lower left, crests above the intro, trails down 
   assert.ok(dots.find(p => p.accent).x > 0.82);
 });
 
-test("mobile wave is parked at the seam; no field of dots through buttons or text", () => {
-  const { dots } = buildWave(390, 465);
-  assert.ok(Math.min(...dots.map(p => p.y)) >= 0.895);
-  assert.ok(dots.some(p => p.y > 0.975));
-  assert.ok(dots.length < 500);
+test("mobile wave has visible depth near the heading, clear of the controls", () => {
+  for (const [w,h] of [[320,490],[390,465],[430,490],[760,420]]) {
+    const { dots, rows } = buildWave(w,h);
+    assert.ok(rows >= 7);
+    assert.ok(Math.min(...dots.map(p => p.y)) < .22);
+    assert.ok(Math.max(...dots.map(p => p.y)) < .51);
+    const middle = dots.filter(p => p.column === 2);
+    assert.ok((Math.max(...middle.map(p=>p.y))-Math.min(...middle.map(p=>p.y)))*h > 40);
+  }
 });
 
 test("static art and WebGL share the same geometry; only one accent and no random shape", () => {

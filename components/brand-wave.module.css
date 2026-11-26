@@ -13,6 +13,7 @@
   background: url("/brand/wave-desktop.svg") center / 100% 100% no-repeat;
 }
 @media (max-width: 760px) {
+  .layer { opacity: .68; }
   .layer::before { background-image: url("/brand/wave-mobile.svg"); }
 }
 .layer[data-renderer="webgl"]::before { visibility: hidden; }

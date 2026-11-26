@@ -26,7 +26,7 @@
 }
 .folio-primary:hover { background:#8bfff0; }
 .folio-intro small { display:block; margin-top:.9rem; font-size:.985rem; line-height:1.4; letter-spacing:0; }
-.folio-home .folio-work { padding:clamp(1.5rem,2.6vw,3rem) var(--gutter) clamp(2rem,3.75vw,4rem); margin:auto; scroll-margin-top:4.7rem; }
+.folio-home .folio-work { padding:clamp(1.5rem,2.6vw,3rem) var(--gutter) clamp(.875rem,1.4vw,1.375rem); margin:auto; scroll-margin-top:4.7rem; }
 .folio-card { position:relative; }
 .folio-eyebrow { color:var(--pink); font:500 .75rem/1.45 'Portfolio Geist Mono',monospace; text-transform:uppercase; letter-spacing:.075em; }
 .folio-card h3 { margin:.8rem 0 clamp(1.4rem,2.4vw,2.75rem); font-size:clamp(1.6rem,2.45vw,2.8rem); line-height:1.03; letter-spacing:-.048em; font-weight:450; }
@@ -37,7 +37,7 @@
 .folio-home .folio-case-link:focus-visible { outline:none; }
 .folio-case-link:focus-visible::after { outline:2px solid var(--navy); outline-offset:-2px; }
 .folio-card:focus-within .folio-shot, .folio-card:hover .folio-shot { border-color:var(--navy); }
-.folio-contact { max-width:106rem; margin:auto; padding:clamp(2.5rem,5vw,6rem) var(--gutter); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; scroll-margin-top:4.75rem; }
+.folio-contact { max-width:106rem; margin:auto; padding:clamp(1rem,2vw,2rem) var(--gutter) clamp(2.5rem,5vw,6rem); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; scroll-margin-top:4.75rem; }
 .folio-contact h2 { font-weight:440; font-size:clamp(2.7rem,5.2vw,6rem); letter-spacing:-.055em; line-height:1.15; }
 .folio-contact h2 span { color:var(--aqua); }
 .folio-contact-links { display:flex; flex-wrap:wrap; gap:0 1.35rem; margin-top:.25rem; }
