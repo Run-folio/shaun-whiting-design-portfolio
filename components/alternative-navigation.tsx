@@ -119,14 +119,14 @@ export function AlternativeNavigation() {
             href="/resume.pdf"
             onClick={() =>
               trackEvent("cv_download_clicked", {
-                cta_label: "Resume",
+                cta_label: "View CV",
                 destination_url: "/resume.pdf",
                 location: "desktop_navigation",
               })
             }
             className="hidden min-h-11 items-center justify-center rounded-full border border-ink bg-white px-5 text-[15px] font-[480] tracking-[-0.01em] text-ink transition duration-200 hover:bg-white hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:border-white dark:bg-transparent dark:text-white dark:hover:bg-transparent sm:inline-flex"
           >
-            Résumé
+            View CV
           </Link>
           <a
             href="mailto:sw@shaunwhiting.com"
@@ -187,7 +187,7 @@ export function AlternativeNavigation() {
                 href="/resume.pdf"
                 onClick={() => {
                   trackEvent("cv_download_clicked", {
-                    cta_label: "Resume",
+                    cta_label: "View CV",
                     destination_url: "/resume.pdf",
                     location: "mobile_navigation",
                   });
@@ -195,7 +195,7 @@ export function AlternativeNavigation() {
                 }}
                 className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink px-5 text-[15px] font-[480] tracking-[-0.01em] text-ink transition duration-200 hover:text-signal dark:border-white dark:text-white"
               >
-                Résumé
+                View CV
               </Link>
             </div>
           </div>

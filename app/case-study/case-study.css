@@ -44,14 +44,27 @@
 .case-detail-jumps { gap:clamp(1.3rem,2.5vw,2.5rem); position:relative; }
 .case-detail-jumps::before,.case-detail-jumps::after { content:""; position:absolute; height:1px; left:var(--case-gutter); right:var(--case-gutter); background:var(--case-rule); }
 .case-detail-jumps::before { top:0; }.case-detail-jumps::after { bottom:0; }
-.case-detail-jumps a { position:relative; display:inline-flex; align-items:center; min-height:3.25rem; font-size:.93rem; font-weight:470; }
-.case-detail-jumps a:hover,.case-detail-jumps a:focus-visible { color:var(--case-link); text-decoration:underline; text-underline-offset:.35em; }
+/* Same-page shortcuts: pink line for selection, turquoise background for hover. */
+.case-detail-jumps a {
+  position:relative; isolation:isolate; display:inline-flex; align-items:center; min-height:3.25rem;
+  color:var(--case-navy); font-size:.93rem; font-weight:470; text-decoration:none;
+}
+.case-detail-jumps a::before {
+  content:""; position:absolute; inset:.5rem -.5rem; z-index:-1; border-radius:.3rem;
+  background:transparent; pointer-events:none;
+}
+@media (hover:hover) and (pointer:fine) {
+  .case-detail-jumps a:hover::before { background:var(--case-aqua); }
+}
+.case-detail-jumps a:hover,.case-detail-jumps a:focus-visible { text-decoration:none; }
 .case-detail:not(:has(:is(#decisions,#impact):target)) .case-detail-jumps a:first-child,
 .case-detail:has(#decisions:target) .case-detail-jumps a[href="#decisions"],
-.case-detail:has(#impact:target) .case-detail-jumps a[href="#impact"] { color:var(--case-link); }
+.case-detail:has(#impact:target) .case-detail-jumps a[href="#impact"] { font-weight:600; }
 .case-detail:not(:has(:is(#decisions,#impact):target)) .case-detail-jumps a:first-child::after,
 .case-detail:has(#decisions:target) .case-detail-jumps a[href="#decisions"]::after,
-.case-detail:has(#impact:target) .case-detail-jumps a[href="#impact"]::after { content:""; position:absolute; left:0; right:0; height:2px; bottom:1px; background:#00847b; }
+.case-detail:has(#impact:target) .case-detail-jumps a[href="#impact"]::after {
+  content:""; position:absolute; left:0; right:0; height:2px; bottom:1px; background:var(--case-pink);
+}
 .case-detail-context { padding-block:clamp(1.6rem,2.55vw,2.9rem) clamp(3rem,6vw,6rem); }
 /* An overview and its following section share one gap rather than stacking their default spacing. */
 .case-detail-context:has(+ :is(#vision,#walkthrough,#decisions)) { padding-block-end:clamp(1.5rem,2.5vw,2.25rem); }
@@ -77,12 +90,15 @@
 .case-detail .bg-mist { background:#eeefef; }
 .case-detail-callout,.case-detail-chip { border-radius:.42rem; }
 .case-detail-chip { background:var(--case-navy); color:var(--case-aqua); }
+.case-detail-chip[data-design-decision],
 .case-detail-callout { background:var(--case-aqua); color:var(--case-navy); }
 .case-detail-next { background:var(--case-navy); color:var(--case-paper); border-radius:.7rem; }
+.case-detail-next-label,
 .case-detail-next .text-signal,.case-detail .case-detail-next h2 > .text-signal { color:var(--case-aqua); }
 .case-detail-next-link { color:var(--case-navy); background:var(--case-aqua); font-weight:550; }
 .case-detail-next-link:hover { background:#aff9ef; }
 .case-detail :is(a,button,input):focus-visible { outline:2px solid var(--case-link); outline-offset:3px; }
+.case-detail .case-detail-jumps a:focus-visible { outline-color:var(--case-navy); outline-offset:-2px; }
 .case-detail :is(.case-detail-opening,.case-detail-next) :is(a,button):focus-visible { outline-color:var(--case-aqua); }
 .case-detail #decisions > div > div { grid-template-columns:minmax(0,1fr); gap:1.75rem; }
 .case-detail #decisions > div > div > div { order:0; justify-self:stretch; max-width:none; }

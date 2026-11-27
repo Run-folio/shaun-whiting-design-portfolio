@@ -14,7 +14,6 @@ export function FolioCollaborations() {
       <div className="folio-collaborations-inner">
         <div className="folio-collaborations-label">
           <h2 id="folio-collaborations-heading">Selected collaborations</h2>
-          <p>Brands I’ve designed with and for</p>
         </div>
         <ul className="folio-collaborations-marks" role="list">
           {brands.map(([name, key, file]) => (

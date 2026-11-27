@@ -4,6 +4,7 @@ import { BeforeAfterSlider } from "@/components/before-after-slider";
 import { CaseStudyAnalytics } from "@/components/case-study-analytics";
 import { CaseStudyPreviewImage as CaseStudyImage } from "@/components/case-study-preview-image";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion";
+import { PortfolioMetricMotion } from "@/components/portfolio-metric-motion";
 import { Footer, Navigation } from "@/components/ui";
 import { TrackedLink } from "@/components/tracked-link";
 import { ViewportVideo } from "@/components/viewport-video";
@@ -193,7 +194,7 @@ export function CaseStudyDetail({ study, nextStudy }: { study: CaseStudy; nextSt
           <section className="px-6 pb-20 pt-14 sm:px-8 lg:px-20 xl:px-24">
             <Reveal className="mx-auto max-w-[1200px]">
               <div className="case-detail-next p-8 sm:p-10 lg:p-14">
-                <p className="font-mono text-xs uppercase tracking-[0.18em]">Next case study</p>
+                <p className="case-detail-next-label font-mono text-xs uppercase tracking-[0.18em]">Next case study</p>
                 <div className="mt-8 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
                   <h2 className="max-w-3xl text-balance text-4xl font-[340] leading-[1.06] tracking-[-0.03em] sm:text-5xl">
                     {nextStudy.title}
@@ -232,13 +233,14 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
 }
 
 function StatBand({ metrics, scope, title, qualitative = false }: { metrics: Array<{ value: string; label: string }>; scope?: string; title: string; qualitative?: boolean }) {
+  const items = metrics.map(metric => <div key={metric.label}>
+    <dt>{metric.label}</dt><dd>{metric.value}</dd>
+  </div>);
   return (
     <section aria-label={`${title} ${qualitative ? "product highlights" : "outcomes"}`} className={`case-detail-outcomes case-detail-container${qualitative ? " case-detail-highlights" : ""}`}>
-      <dl className="case-detail-outcomes-grid">
-        {metrics.map(metric => <div key={metric.label}>
-          <dt>{metric.label}</dt><dd>{metric.value}</dd>
-        </div>)}
-      </dl>
+      {qualitative
+        ? <dl className="case-detail-outcomes-grid">{items}</dl>
+        : <PortfolioMetricMotion>{items}</PortfolioMetricMotion>}
       {scope ? <p className="case-detail-outcome-scope">{scope}</p> : null}
     </section>
   );
@@ -291,7 +293,7 @@ function DecisionSection({
       ) : null}
       {section.bullets?.length ? <ul className="mt-5 list-disc space-y-2 pl-5 text-base font-[330] leading-[1.55] text-black/70">{section.bullets.map(point => <li key={point}>{point}</li>)}</ul> : null}
       {section.resultChip ? (
-        <p className="case-detail-chip mt-6 inline-block px-3 py-2 font-mono text-[0.68rem] font-[540] uppercase tracking-[0.08em]">
+        <p data-design-decision={section.resultChip.startsWith("Design decision →") || undefined} className="case-detail-chip mt-6 inline-block px-3 py-2 font-mono text-[0.68rem] font-[540] uppercase tracking-[0.08em]">
           {section.resultChip}
         </p>
       ) : null}
