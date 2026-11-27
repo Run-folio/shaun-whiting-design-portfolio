@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ArrowDown, Linkedin, Mail } from "lucide-react";
 import { FolioCollaborations } from "@/components/folio-collaborations";
 import { FolioWorkCarousel } from "@/components/folio-work-carousel";
-import { Navigation, Footer } from "@/components/ui";
+import { Navigation } from "@/components/ui";
 import { BrandWave } from "@/components/brand-wave";
 import { TrackedAnchor } from "@/components/tracked-link";
 import "./folio-home.css";
@@ -43,17 +43,22 @@ export default function Home() {
           <FolioWorkCarousel />
         </section>
 
-        <section id="contact" className="folio-contact" aria-labelledby="folio-contact-heading">
-          <div><p className="folio-eyebrow">Get in touch</p><h2 id="folio-contact-heading">Let’s talk<span>.</span></h2></div>
-          <div><p>London on-site or hybrid | UK remote</p>
-            <div className="folio-contact-links">
-              <TrackedAnchor href="mailto:sw@shaunwhiting.com" eventName="email_contact_clicked" eventData={{ location: "home_contact" }}><Mail size={17} aria-hidden="true" /> <span>Email Shaun</span></TrackedAnchor>
-              <TrackedAnchor href="https://www.linkedin.com/in/shaunwhiting/" eventName="linkedin_clicked" eventData={{ location: "home_contact" }}><Linkedin size={17} aria-hidden="true" /> <span>LinkedIn</span></TrackedAnchor>
-            </div>
-          </div>
-        </section>
       </main>
-      <Footer />
+      <footer id="contact" className="folio-contact" aria-labelledby="folio-contact-heading">
+        <div>
+          <p className="folio-eyebrow">Get in touch</p>
+          <h2 id="folio-contact-heading">Let’s talk<span>.</span></h2>
+          <div className="folio-contact-links">
+            <TrackedAnchor href="mailto:sw@shaunwhiting.com" eventName="email_contact_clicked" eventData={{ location: "home_contact" }}><Mail size={17} aria-hidden="true" /> <span>Email Shaun</span></TrackedAnchor>
+            <TrackedAnchor href="https://www.linkedin.com/in/shaunwhiting/" eventName="linkedin_clicked" eventData={{ location: "home_contact" }}><Linkedin size={17} aria-hidden="true" /> <span>LinkedIn</span></TrackedAnchor>
+          </div>
+        </div>
+        <div className="folio-contact-details">
+          <p>London or UK Remote</p>
+          <p>Product design, systems thinking and careful execution.</p>
+          <p>© {new Date().getFullYear()} Shaun Whiting</p>
+        </div>
+      </footer>
     </div>
   );
 }

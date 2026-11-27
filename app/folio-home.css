@@ -73,10 +73,10 @@
 .folio-home .folio-case-link:focus-visible { outline:none; }
 .folio-case-link:focus-visible::after { outline:2px solid var(--navy); outline-offset:-2px; }
 .folio-card:focus-within .folio-shot { border-color:var(--navy); }
-.folio-contact { max-width:var(--folio-frame); margin:auto; padding:clamp(1rem,2vw,2rem) var(--gutter) clamp(2.5rem,5vw,6rem); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; scroll-margin-top:4.75rem; }
+.folio-contact { max-width:var(--folio-frame); margin:auto; padding:clamp(1.1rem,2.6vw,3rem) var(--gutter) clamp(2.25rem,4.2vw,5rem); display:flex; align-items:flex-end; justify-content:space-between; gap:1.5rem; scroll-margin-top:4.75rem; }
 .folio-contact h2 { font-weight:440; font-size:clamp(2.7rem,5.2vw,6rem); letter-spacing:-.055em; line-height:1.15; }
 .folio-contact h2 span { color:var(--aqua); }
-.folio-contact-links { display:flex; flex-wrap:wrap; gap:0 1.35rem; margin-top:.25rem; }
+.folio-contact-links { display:flex; flex-wrap:wrap; gap:0 1.35rem; margin-top:.5rem; }
 .folio-contact-links a {
   display:inline-flex; align-items:center; gap:.5rem; min-height:44px; color:var(--navy);
   font-size:1rem; font-weight:530;
@@ -84,6 +84,9 @@
 .folio-contact-links a span { text-decoration:underline; text-underline-offset:.23em; text-decoration-thickness:1px; }
 .folio-contact-links a:hover span { text-decoration-thickness:2px; }
 .folio-contact-links svg { flex:none; }
+.folio-contact-details { text-align:right; display:grid; gap:.25rem; color:#535266; font-size:.875rem; line-height:1.45; padding-bottom:.45rem; }
+.folio-contact-details p:first-child { color:var(--navy); font-weight:510; margin-bottom:.38rem; }
+
 @media (max-width:1099px) and (min-width:720px) {
   .folio-hero-inner { padding-inline:var(--gutter); column-gap:4%; grid-template-columns:1.12fr .88fr; }
   .folio-card h3 { font-size:clamp(1.5rem,2.8vw,1.925rem); }
@@ -96,7 +99,9 @@
   .folio-primary { min-height:46px; margin-top:1rem; font-size:1rem; }
   .folio-intro small { margin-top:.65rem; font-size:.85rem; }
   .folio-card h3 { font-size:clamp(1.85rem,6.5vw,2.5rem); margin:.55rem 0 1.2rem; }
-  .folio-contact { align-items:flex-start; flex-direction:column; }
+  .folio-contact { align-items:flex-start; flex-direction:column; gap:1.25rem; }
+  .folio-contact-details { text-align:left; padding:0; gap:.3rem; }
+  .folio-contact-details p:first-child { margin-bottom:0; }
 }
 
 /* Retain the original native looping rail, scoped to the navy homepage. */
