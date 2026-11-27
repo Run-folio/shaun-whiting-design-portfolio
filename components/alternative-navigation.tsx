@@ -11,7 +11,8 @@ import { caseStudies } from "@/lib/case-studies";
 import { projects } from "@/lib/content";
 
 const alternativeOrder = ["returns-platform", "rio", "morrovia", "returns-kiosk"];
-const navigationCaseStudies = [...caseStudies].sort((a, b) => {
+// Farfetch stays available by direct link, but is not featured in the Work menu.
+const navigationCaseStudies = caseStudies.filter((study) => study.slug !== "farfetch").sort((a, b) => {
   const rank = (slug: string) => {
     const featured = alternativeOrder.indexOf(slug);
     if (featured >= 0) return featured;
