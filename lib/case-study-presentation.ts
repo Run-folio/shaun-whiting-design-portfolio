@@ -33,7 +33,7 @@ const headerRoles: Record<string, string> = {
   "returns-platform": "Founding Product Designer",
   rio: "Staff Product Designer",
   morrovia: "Founder & Product Designer",
-  "returns-kiosk": "Founding / Senior Staff Product Designer",
+  "returns-kiosk": "Founding | Senior Staff Product Designer",
   farfetch: "Senior Product Designer (contract)",
 };
 

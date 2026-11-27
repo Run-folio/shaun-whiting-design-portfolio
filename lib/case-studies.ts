@@ -88,14 +88,14 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: "rio",
     shortTitle: "Rio",
-    eyebrow: "Convergent IS / Energy / AI Workflows",
+    eyebrow: "Convergent IS | Energy | AI Workflows",
     title: "87% fewer manual touch-points in field ticketing with Rio",
     summary:
       "Rio turns hydrocarbon field tickets into approved SAP service entry sheets through AI extraction, exception handling and orchestrated approvals.",
     image: "/rio/rio-field-ticket.png",
     imageAlt: "A complex paper field ticket processed by Rio",
     role: "Staff Product Designer, end-to-end UX",
-    industry: "Energy / AI Workflows",
+    industry: "Energy | AI Workflows",
     year: "Convergent IS",
     team: "North American energy operator",
     intro: {
@@ -147,7 +147,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     sections: [
       {
-        eyebrow: "Decision 01 / 03",
+        eyebrow: "Decision 01 | 03",
         title: "Let extraction do the typing",
         body: "Field tickets carry dozens of labour, equipment and materials lines. Rio extracts them into structured draft sheets automatically, shifting the reviewer's job from data entry to verification while keeping every value traceable to its source.",
         resultChip: "Design decision → extract a draft for people to verify",
@@ -160,7 +160,7 @@ export const caseStudies: CaseStudy[] = [
         ],
       },
       {
-        eyebrow: "Decision 02 / 03",
+        eyebrow: "Decision 02 | 03",
         title: "Review only what needs reviewing",
         body: "Every extracted line is validated against the purchase order. Clean sheets flow through untouched; only mismatches ask for human attention, with a reason captured for every accepted exception or rejected line.",
         resultChip: "Design decision → flag mismatches for review before posting",
@@ -174,7 +174,7 @@ export const caseStudies: CaseStudy[] = [
         ],
       },
       {
-        eyebrow: "Decision 03 / 03",
+        eyebrow: "Decision 03 | 03",
         title: "Approvals as a workflow, not an inbox",
         body: "Construction managers, coordinators and back-office roles see the sheets waiting on them as sequenced tasks with clear statuses. When the final approval lands, Rio posts the service entry sheet into SAP automatically.",
         resultChip: "Design decision → post approved sheets to SAP",
@@ -231,14 +231,14 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: "returns-kiosk",
     shortTitle: "Amazon Returns Kiosk",
-    eyebrow: "Amazon / Logistics / Retail",
+    eyebrow: "Amazon | Logistics | Retail",
     title: "$60 million in cost savings through Amazon Return Kiosks",
     summary: "I designed the self-service returns kiosk from scratch, helped shape the hardware and refined the experience over several years.",
     image: "/amazon-returns-kiosk.jpg",
     imageAlt: "Amazon Returns Kiosk interface and physical kiosk",
-    role: "Founding / Sr Staff Product Designer, end-to-end UX",
-    industry: "Logistics / Retail",
-    year: "Doddle / Blue Yonder",
+    role: "Founding | Sr Staff Product Designer, end-to-end UX",
+    industry: "Logistics | Retail",
+    year: "Doddle | Blue Yonder",
     intro: {
       challenge: [
         "Queues were building in high-volume stores and staff were turning kiosks off. Customers could not find the scanner, started the flow before finding their QR code and often dropped out before completing a return.",
@@ -295,7 +295,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     sections: [
       {
-        eyebrow: "Decision 01 / 03",
+        eyebrow: "Decision 01 | 03",
         title: "Scan from the very first screen",
         body: "Onsite research found that customers paused to find their QR code or the scanner. I combined the home and scan screens and made the scanner location explicit. The new flow warned against unsuitable items and used an animation to confirm a successful scan.",
         media: [
@@ -307,13 +307,13 @@ export const caseStudies: CaseStudy[] = [
         ],
       },
       {
-        eyebrow: "Decision 02 / 03",
+        eyebrow: "Decision 02 | 03",
         title: "Process multiple returns in one session",
         body: "People returning several orders had to start again for each one. The dedicated path let them scan multiple QR codes in one session. A dark theme signalled that the session was still active.",
         resultChip: "Design decision → scan several QR codes without restarting",
       },
       {
-        eyebrow: "Decision 03 / 03",
+        eyebrow: "Decision 03 | 03",
         title: "Designed in the store, not the studio",
         body: "Drop-out data pointed at the screens, but the failures were physical: hidden scanners, jammed hatch doors, parcels that did not fit and staff workarounds. I validated against real kiosk hardware, observed handover with engineering and used store context to protect uptime as much as screen completion.",
         resultChip: "Validation → tested on real kiosk hardware",
@@ -384,15 +384,15 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: "returns-platform",
     shortTitle: "Returns Platform",
-    eyebrow: "B2B SaaS / Reverse Logistics",
+    eyebrow: "B2B SaaS | Reverse Logistics",
     title: "$12 million saved through optimized reverse logistics",
     summary:
       "Designed an enterprise-level B2B SaaS returns platform used across five continents, covering customer initiation, merchant configuration, returns orchestration and store processing.",
     image: "/returns-platform.png",
     imageAlt: "Returns platform dashboard interface",
     role: "Product strategy, UX architecture, design systems",
-    industry: "B2B SaaS / Reverse Logistics",
-    year: "Doddle / Blue Yonder",
+    industry: "B2B SaaS | Reverse Logistics",
+    year: "Doddle | Blue Yonder",
     intro: {
       challenge: [
         "Returns are broken: paper labels are unsustainable, staff time leaks away and routing decisions waste money. The platform had to serve merchants, consumers and carriers across one complex reverse-logistics model.",
@@ -434,7 +434,7 @@ export const caseStudies: CaseStudy[] = [
     },
     sections: [
       {
-        eyebrow: "Decision 01 / 03",
+        eyebrow: "Decision 01 | 03",
         title: "Returns start in the merchant's brand",
         body: "Customers initiate a paperless return inside the retailer's own look and feel, then get a reason, pick the best drop-off point nearby and continue with a choice shaped by the merchant's rules. The product had to feel simple for shoppers while still respecting the policies, branding and routing logic behind the scenes.",
         resultChip: "Design decision → merchant-branded, label-free returns",
@@ -447,7 +447,7 @@ export const caseStudies: CaseStudy[] = [
         ],
       },
       {
-        eyebrow: "Decision 02 / 03",
+        eyebrow: "Decision 02 | 03",
         title: "Rules merchants can read",
         body: "Reverse logistics is really a policy problem. Instead of vendor tickets and config files, merchants write plain-language if/then rules for carrier selection, return windows, warehouse routing, non-resellable items and re-order them by priority. The same grammar covers branding, policies and routing, so one mental model runs the whole platform.",
         resultChip: "Design decision → routing rules merchants can configure",
@@ -460,7 +460,7 @@ export const caseStudies: CaseStudy[] = [
         ],
       },
       {
-        eyebrow: "Decision 03 / 03",
+        eyebrow: "Decision 03 | 03",
         title: "Grade at the counter, not the warehouse",
         body: "Store staff record each item’s condition at the counter so that its next destination can be decided before shipping.",
         resultChip: "Design decision → capture the item’s condition before dispatch",
@@ -523,13 +523,13 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: "farfetch",
     shortTitle: "Farfetch Mobile",
-    eyebrow: "Ecommerce / AI Retail",
+    eyebrow: "Ecommerce | AI Retail",
     title: "Farfetch’s native shopping apps reached 20 million+ downloads",
     summary: "Native ecommerce apps and a future retail concept exhibited at the London Design Museum.",
     image: "/farfetch-mobile.png",
     imageAlt: "Farfetch mobile commerce interface",
     role: "Native app UX, interaction design, design systems",
-    industry: "Luxury Ecommerce / AI Retail",
+    industry: "Luxury Ecommerce | AI Retail",
     year: "Farfetch",
     intro: {
       challenge: [

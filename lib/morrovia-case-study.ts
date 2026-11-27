@@ -4,14 +4,14 @@ import type { CaseStudy } from "./case-studies";
 export const morroviaCaseStudy: CaseStudy = {
   slug: "morrovia",
   shortTitle: "Morrovia",
-  eyebrow: "Morrovia / Travel / AI-assisted planning",
+  eyebrow: "Morrovia | Travel | AI-assisted planning",
   title: "Complex trips, made simple",
   summary:
     "Founding, designing and building a travel-planning beta that brings a multi-stop route, itinerary and connections into one editable plan.",
   image: "/morrovia/homepage-2026-11.webp",
   imageAlt: "Morrovia’s Plan and Describe search above seven featured routes in Our Picks",
   role: "Founder, product design and AI-assisted building",
-  industry: "Travel / AI-assisted planning",
+  industry: "Travel | AI-assisted planning",
   year: "Morrovia",
   team: "Independent product",
   intro: {
@@ -52,7 +52,7 @@ export const morroviaCaseStudy: CaseStudy = {
       body: "The vision is a planning companion that helps someone shape a complex trip without losing control of it. A route is the starting point, then places, nights, activities and transport become parts of the same plan. The experience should support both exploration and practical decisions: what could this trip look like, and what still needs checking before I rely on it?",
     },
     {
-      eyebrow: "Decision 01 / 03",
+      eyebrow: "Decision 01 | 03",
       title: "Start with intent, not a long form",
       body: "The public homepage offers two starting points: choose stops or describe a trip. I designed the flow around turning that intent into a suggested route the traveller can review and change. The aim is a useful starting point with visible assumptions, rather than a finished answer to accept. The itinerary brings day-by-day planning and activity ideas into the same workspace.",
       resultChip: "Design principle → a starting point the traveller can change",
@@ -63,7 +63,7 @@ export const morroviaCaseStudy: CaseStudy = {
       }],
     },
     {
-      eyebrow: "Decision 02 / 03",
+      eyebrow: "Decision 02 | 03",
       title: "Make the journey between places realistic",
       body: "A route on a map is not proof that a connection works. I designed distinct states for transport mode, planning estimates, booking status and transfers that need checking. The public experience presents travel between stops and flags timing to confirm.",
       resultChip: "Design principle → show uncertainty where the decision happens",
@@ -77,7 +77,7 @@ export const morroviaCaseStudy: CaseStudy = {
       ],
     },
     {
-      eyebrow: "Decision 03 / 03",
+      eyebrow: "Decision 03 | 03",
       title: "Treat the saved trip as the product",
       body: "My Trips gives the plan a place to return to. I designed the route, itinerary and map as connected views of the same saved trip, so travellers can pick up their planning where they left off.",
       resultChip: "Design principle → reliability earns the right to feel simple",
