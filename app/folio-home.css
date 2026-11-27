@@ -73,7 +73,7 @@
 .folio-home .folio-case-link:focus-visible { outline:none; }
 .folio-case-link:focus-visible::after { outline:2px solid var(--navy); outline-offset:-2px; }
 .folio-card:focus-within .folio-shot { border-color:var(--navy); }
-.folio-contact { max-width:106rem; margin:auto; padding:clamp(1rem,2vw,2rem) var(--gutter) clamp(2.5rem,5vw,6rem); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; scroll-margin-top:4.75rem; }
+.folio-contact { max-width:var(--folio-frame); margin:auto; padding:clamp(1rem,2vw,2rem) var(--gutter) clamp(2.5rem,5vw,6rem); display:flex; align-items:center; justify-content:space-between; gap:1.5rem; scroll-margin-top:4.75rem; }
 .folio-contact h2 { font-weight:440; font-size:clamp(2.7rem,5.2vw,6rem); letter-spacing:-.055em; line-height:1.15; }
 .folio-contact h2 span { color:var(--aqua); }
 .folio-contact-links { display:flex; flex-wrap:wrap; gap:0 1.35rem; margin-top:.25rem; }
@@ -137,8 +137,12 @@
   .folio-carousel .folio-card:hover .folio-shot { border-color:#b7b7c4; }
 }
 @media (min-width:1100px) {
-  .folio-home .folio-work { padding-inline-end:0; }
-  .folio-carousel .alt-gallery-toolbar { padding-inline-end:var(--gutter); }
+  /* Align homepage content with the shared nav and contact grid. */
+  .folio-home { --folio-grid-edge:calc(max(0px, (100vw - var(--folio-frame)) / 2) + var(--gutter)); }
+  .folio-home .folio-hero-inner { max-width:var(--folio-frame); padding-inline:var(--gutter); column-gap:clamp(3rem, 8vw, 10rem); }
+  .folio-home .folio-collaborations-inner { max-width:calc(var(--folio-frame) - 2 * var(--gutter)); }
+  .folio-home .folio-work { padding-inline:var(--folio-grid-edge) 0; }
+  .folio-home .folio-carousel .alt-gallery-toolbar { padding-inline-end:var(--folio-grid-edge); }
   .folio-carousel .alt-project-track:focus-visible { outline-offset:-2px; }
 }
 @media (prefers-reduced-motion:no-preference) {

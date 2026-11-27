@@ -15,7 +15,7 @@
 }
 .case-detail ::selection { background:var(--case-aqua); color:var(--case-navy); }
 .case-detail [id] { scroll-margin-top:6rem; }
-.case-detail-container { width:min(100%,106rem); padding-inline:var(--case-gutter); margin-inline:auto; }
+.case-detail-container { width:min(100%,var(--folio-frame,106rem)); padding-inline:var(--case-gutter); margin-inline:auto; }
 .case-detail-opening {
   position:relative; isolation:isolate; overflow:hidden; background:var(--case-navy); color:var(--case-paper);
   padding-block:clamp(1.5rem,3vw,3.25rem) clamp(2.15rem,4vw,3.85rem);
@@ -69,6 +69,12 @@
 /* An overview and its following section share one gap rather than stacking their default spacing. */
 .case-detail-context:has(+ :is(#vision,#walkthrough,#decisions)) { padding-block-end:clamp(1.5rem,2.5vw,2.25rem); }
 .case-detail-context + :is(#vision,#walkthrough,#decisions) { padding-block-start:clamp(1.5rem,2.5vw,2.25rem); }
+/* Mark the transition from the overview to the narrower decision stories. */
+.case-detail-context:has(+ #decisions) { position:relative; }
+.case-detail-context:has(+ #decisions)::after {
+  content:""; position:absolute; inset-inline:var(--case-gutter); bottom:0;
+  height:1px; background:var(--case-rule); pointer-events:none;
+}
 .case-detail-feature { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(0,.8fr); gap:clamp(1.75rem,3.6vw,4rem); align-items:start; }
 .case-detail figure { border-radius:.7rem; }
 .case-detail-product { border:1px solid #d8d9e0; background:#e8e9ed; overflow:hidden; }

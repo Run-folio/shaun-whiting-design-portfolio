@@ -30,7 +30,7 @@
   background: var(--folio-navy);
   color: var(--folio-paper);
 }
-.folio-nav nav { max-width: 106rem; margin-inline: auto; height: 4.75rem; padding-inline: var(--folio-gutter); }
+.folio-nav nav { max-width: var(--folio-frame,106rem); margin-inline: auto; height: 4.75rem; padding-inline: var(--folio-gutter); }
 .folio-nav nav > a img { width: 44px; height: auto; filter: invert(1); mix-blend-mode: screen; }
 .folio-nav nav > a > span:first-child { width: 44px; height: 44px; }
 .folio-nav nav > a > span:nth-child(2) {
